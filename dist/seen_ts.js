@@ -107,16 +107,46 @@ console.log('I am ALIVE');
 var width = 900;
 var height = 500;
 var ctx = new _src_render_canvas__WEBPACK_IMPORTED_MODULE_1__["CanvasRenderContext"]('seen-canvas');
+// ////////////////// threeJS syntax  /////////////////
+// var scene = new Scene();
+// var camera = new PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+// var renderer = new THREE.WebGLRenderer();
+// renderer.setSize( window.innerWidth, window.innerHeight );
+// document.body.appendChild( renderer.domElement );
+// var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+// var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+// var cube = new THREE.Mesh( geometry, material );
+// scene.add( cube );
+// camera.position.z = 5;
+// function animate() {
+// 	requestAnimationFrame( animate );
+// 	renderer.render( scene, camera );
+// }
+// animate();
+// ////////////////// SEEN_TS  syntax  /////////////////
+var scene = new _src_Seen2__WEBPACK_IMPORTED_MODULE_0__["Scene"]('seen-canvas'); // includes the camera, renderer is always CANVAS
+var cube = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Cube"](1, 1, 1, { color: 0x00ff00 }); // defaults to basic material
+scene.add(cube);
+scene.camera.position.z = 5; // actually a default, but doesn't hurt
+scene.render();
+// function animate() {
+// 	requestAnimationFrame( animate );
+// 	renderer.render( scene, camera );
+// }
+// animate();
 // // create a cube
 // let shape = Cube()
 // console.log('shape',shape)
 // shape.render()
 // Create scene and add cube to model
-var scene = new _src_Seen2__WEBPACK_IMPORTED_MODULE_0__["Scene"]();
-var shape = Object(_src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["pyramid"])();
-var model = new _src_Seen2__WEBPACK_IMPORTED_MODULE_0__["Model"](shape);
-scene.model = model;
-scene.render();
+// let scene = new Scene();
+// console.log('SCENE',scene)
+// let shape = pyramid()
+// console.log('SHAPE',shape)
+// let model = new Model(shape)
+// console.log('MODEL',model)
+// scene.model = model
+// scene.render()
 // let viewport = new Viewport.center(width, height)
 // Create sphere shape with randomly colored surfaces
 //let shape = seen.Shapes.sphere(2).scale(height * 0.4)
@@ -1046,234 +1076,14 @@ var CanvasRenderContext /*extends RenderContext*/ = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "./src/render/rendermodel.ts":
-/*!***********************************!*\
-  !*** ./src/render/rendermodel.ts ***!
-  \***********************************/
-/*! exports provided: RenderModel */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RenderModel", function() { return RenderModel; });
-/* harmony import */ var _point__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../point */ "./src/point.ts");
-
-// //// RenderModels
-// ------------------
-var DEFAULT_NORMAL = Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 1); // Z
-// The `RenderModel` object contains the transformed and projected points as
-// well as various data needed to shade and paint a `Surface`.
-//
-// Once initialized, the object will have a constant memory footprint down to
-// `Number` primitives. Also, we compare each transform and projection to
-// prevent unnecessary re-computation.
-//
-// If you need to force a re-computation, mark the surface as 'dirty'.
-var RenderModel = /** @class */ (function () {
-    function RenderModel(surface, transform, projection, viewport) {
-        this.surface = surface;
-        this.points = this.surface.points;
-        // this.transformed = this._initRenderData()
-        // this.projected   = this._initRenderData()
-        this._update();
-    }
-    RenderModel.prototype.update = function (transform, projection, viewport) {
-        if (!this.surface.dirty
-            && transform.isEqual(this.transformed)
-            && projection.isEqual(this.projected)
-            && viewport.prescale.isEqual(this.viewport.prescale)) {
-            // do nothing
-        }
-        else {
-            this.transform = transform;
-            this.projection = projection;
-            this.viewport.prescale = viewport.prescale;
-            this.viewport.postscale = viewport.postscale;
-            this._update();
-        }
-    };
-    RenderModel.prototype._update = function () {
-        //   // Apply model transforms to surface points
-        //   this._math(this.transformed, this.points, this.transform, false)
-        //   // Project into camera space
-        //   let cameraSpace:Point[] = this.points.map(p => { p.copy().transform(this.projection.m)})
-        //   this.inFrustrum = this._checkFrustrum(cameraSpace)
-        //   // Project into screen space
-        //   this._math(this.projected, cameraSpace, this.viewport, true)
-        //   this.surface.dirty = false
-        console.log('renderModel._update()');
-    };
-    return RenderModel;
-}());
-
-// The `LightRenderModel` stores pre-computed values necessary for shading
-// surfaces with the supplied `Light`.
-var LightRenderModel = /** @class */ (function () {
-    function LightRenderModel(light, transform) {
-        this.colorIntensity = light.color.copy().scale(light.intensity);
-        this.type = light.type;
-        this.intensity = light.intensity;
-        this.point = light.point.copy().transform(transform);
-        this.origin = _point__WEBPACK_IMPORTED_MODULE_0__["POINT_ZERO"].transform(transform);
-        this.normal = light.normal.copy().transform(transform).subtract(this.origin).normalize();
-    }
-    return LightRenderModel;
-}());
-
-
-/***/ }),
-
 /***/ "./src/scene.ts":
 /*!**********************!*\
   !*** ./src/scene.ts ***!
   \**********************/
 /*! exports provided: Scene */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports) {
 
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Scene", function() { return Scene; });
-/* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./model */ "./src/model.ts");
-/* harmony import */ var _camera__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./camera */ "./src/camera.ts");
-/* harmony import */ var _render_rendermodel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./render/rendermodel */ "./src/render/rendermodel.ts");
-/* harmony import */ var _shapes_primitives__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./shapes/primitives */ "./src/shapes/primitives.ts");
-// //// Scene
-
-
-
-
-/** A `Scene` is the main object for a view of a scene. */
-var Scene = /** @class */ (function () {
-    function Scene(options) {
-        // The root model for the scene, which contains `Shape`s and
-        // other `Model`s (Models are hierarchical).  
-        this.model = new _model__WEBPACK_IMPORTED_MODULE_0__["Model"](Object(_shapes_primitives__WEBPACK_IMPORTED_MODULE_3__["NullShape"])());
-        // The `Camera`, which defines the projection transformation. The default
-        // projection is perspective.
-        this.camera = new _camera__WEBPACK_IMPORTED_MODULE_1__["Camera"]();
-        // The `Viewport`, which defines the projection from shape-space to
-        // projection-space then to screen-space. The default viewport is on a
-        // space from (0,0,0) to (1,1,1). To map more naturally to pixels, create a
-        // viewport with the same width/height as the DOM element.
-        this.viewport = new _camera__WEBPACK_IMPORTED_MODULE_1__["Viewport"]().origin(1, 1);
-        // The scene's shader determines which lighting model is used.
-        // TODO: add this back
-        // public shader = new Shaders()
-        // The `cullBackfaces` boolean can be used to turn off backface-culling
-        // for the whole scene. Beware, turning this off can slow down a scene's
-        // rendering by a factor of 2. You can also turn off backface-culling for
-        // individual surfaces with a boolean on those objects.
-        this.cullBackfaces = true;
-        // The `fractionalPoints` boolean determines if we round the surface
-        // coordinates to the nearest integer. Rounding the coordinates before
-        // display speeds up path drawing  especially when using an SVG context
-        // since it cuts down on the length of path data. Anecdotally, my speedup
-        // on a complex demo scene was 10 FPS. However, it does introduce a slight
-        // jittering effect when animating.
-        this.fractionalPoints = false;
-        // The `cache` boolean (default : true) enables a simple cache for
-        // renderModels, which are generated for each surface in the scene. The
-        // cache is a simple Object keyed by the surface's unique id. The cache has
-        // no eviction policy. To flush the cache, call `.flushCache()`
-        this.cache = true;
-        //Util.defaults(this, options, this.defaults())
-        this._renderModelCache = {};
-    }
-    // The primary method that produces the render models, which are then used
-    // by the `RenderContext` to paint the scene.
-    Scene.prototype.render = function () {
-        // Compute the projection matrix including the viewport and camera
-        // transformation matrices.
-        // 
-        var projection = this.camera
-            .m
-            .multiply(this.viewport.prescale);
-        // TODO  .multiply(this.camera.projection)
-        var transform = this.model.m;
-        // TODO: ??? what is this?
-        // this.viewport   = this.viewport.postscale
-        var renderModels = [];
-        // Compute transformed and projected geometry.
-        var results = [];
-        for (var i = 0, len = this.model.surfaces.length; i < len; i++) {
-            var surface = this.model.surfaces[i];
-            var renderModel = this._renderSurface(surface, transform, projection, this.viewport);
-            // Test projected normal's z-coordinate for culling (if enabled).
-            // if ((!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) && renderModel.inFrustrum) {
-            //   renderModel.fill = (ref1 = surface.fillMaterial) != null ? ref1.render(lights, _this.shader, renderModel.transformed) : void 0;
-            //   renderModel.stroke = (ref2 = surface.strokeMaterial) != null ? ref2.render(lights, _this.shader, renderModel.transformed) : void 0;
-            //   // Round coordinates (if enabled)
-            //   if (_this.fractionalPoints !== true) {
-            //     ref3 = renderModel.projected.points;
-            //     for (j = 0, len1 = ref3.length; j < len1; j++) {
-            //       p = ref3[j];
-            //       p.round();
-            //     }
-            //   }
-            //   results.push(renderModels.push(renderModel));
-            // } else {
-            results.push(void 0);
-            //}
-        }
-    };
-    // this.model.eachRenderable(function(light, transform) {
-    //     // Compute light model data.
-    //     return new seen.LightRenderModel(light, transform);
-    // }, (function(_this) {
-    //   return function(shape, lights, transform) {
-    //     var i, j, len, len1, p, ref, ref1, ref2, ref3, renderModel, results, surface;
-    //       // Compute transformed and projected geometry.
-    //       ref = shape.surfaces;
-    //     results = [];
-    //     for (i = 0, len = ref.length; i < len; i++) {
-    //       surface = ref[i];
-    //       renderModel = _this._renderSurface(surface, transform, projection, viewport);
-    //       // Test projected normal's z-coordinate for culling (if enabled).
-    //       if ((!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) && renderModel.inFrustrum) {
-    //         renderModel.fill = (ref1 = surface.fillMaterial) != null ? ref1.render(lights, _this.shader, renderModel.transformed) : void 0;
-    //         renderModel.stroke = (ref2 = surface.strokeMaterial) != null ? ref2.render(lights, _this.shader, renderModel.transformed) : void 0;
-    //         // Round coordinates (if enabled)
-    //         if (_this.fractionalPoints !== true) {
-    //           ref3 = renderModel.projected.points;
-    //           for (j = 0, len1 = ref3.length; j < len1; j++) {
-    //             p = ref3[j];
-    //             p.round();
-    //           }
-    //         }
-    //         results.push(renderModels.push(renderModel));
-    //       } else {
-    //         results.push(void 0);
-    //       }
-    //     }
-    //     return results;
-    //   };
-    // })(this));
-    /** Sort render models by projected z coordinate. This ensures that the surfaces
-     farthest from the eye are painted first. (Painter's Algorithm) */
-    Scene.prototype.renderModels = function (a, b) {
-        return b.projected.barycenter.z - a.projected.barycenter.z;
-    };
-    /** Get or create the rendermodel for the given surface.
-        If `this.cache` is true, we cache these models to reduce object creation and recomputation. */
-    Scene.prototype._renderSurface = function (surface, transform, projection, viewport) {
-        if (!this.cache)
-            return new _render_rendermodel__WEBPACK_IMPORTED_MODULE_2__["RenderModel"](surface, transform, projection, viewport);
-        var renderModel = this._renderModelCache[surface.id];
-        if (!renderModel) //was existential operator
-            renderModel = this._renderModelCache[surface.id] = new _render_rendermodel__WEBPACK_IMPORTED_MODULE_2__["RenderModel"](surface, transform, projection, viewport);
-        else
-            renderModel.update(transform, projection, viewport);
-        return renderModel;
-    };
-    /** Removes all elements from the cache. This may be necessary if you add and
-     remove many shapes from the scene's models since this cache has no eviction policy. */
-    Scene.prototype.flushCache = function () {
-        this._renderModelCache = {};
-    };
-    return Scene;
-}());
-
-
+throw new Error("Module parse failed: 'return' outside of function (130:4)\nFile was processed with these loaders:\n * ./node_modules/ts-loader/index.js\nYou may need an additional loader to handle the result of these loaders.\n| renderModels(a, any, b, any);\n| {\n>     return b.projected.barycenter.z - a.projected.barycenter.z;\n| }\n| /** Get or create the rendermodel for the given surface.");
 
 /***/ }),
 
@@ -1806,7 +1616,7 @@ var Matrix = /** @class */ (function () {
     // temporary matrix every time. This drastically improves performance.
     Matrix.prototype.multiply = function (m) {
         if (!Array.isArray(m)) // will fail anyhow, but want a stack trace
-            console.trace('transformable multiply');
+            console.trace('transformable multiply', m);
         var c = this.ARRAY_POOL; // just a reference pointer
         for (var j = 0; j < 4; j++) {
             for (var i = 0; i < 16; i += 4) {

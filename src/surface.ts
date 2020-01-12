@@ -40,7 +40,7 @@ export class Surface extends Transformable{
     this.triangle = [p1,p2,p3]
 
     // We store a unique id for every surface so we can look them up quickly
-    // with the `renderModel` cache.
+    // with the `renderGroup` cache.
     this.id = 's' + Util.uniqueId()
     //this.painter = painter
   }

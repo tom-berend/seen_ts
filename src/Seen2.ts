@@ -3,8 +3,10 @@
 // supports
 //    import {Scene, Matrix} from 'seen'
 
+
+
  export { Scene } from './scene';
- export { Model } from './model';
+ export { Group } from './model';
 export { Primitive } from './shapes/primitives';
 export { Viewport } from "./camera";   // TODO: should this be exported, or is it just part of camera?
 export {Shape} from './surface';

@@ -4,6 +4,7 @@
 
 import { Point, P } from '../point'
 import { Shape, Surface } from '../surface'  // TODO: rename Shape to Surface, Surface to Triangle
+import { Material } from '../materials'
 
 
 
@@ -101,14 +102,18 @@ export class Primitive {
     public triangles: Triangle[] = []
 }
 
-/** Sometimes we just want an empty `Model` that we can add children to */
+/** Sometimes we just want an empty `Group` that we can add children to */
 export function NullShape() {
     let points = [P(0, 0, 0), P(0, 0, 0), P(0, 0, 0)]
     return new Shape('nullshape', mapPointsToSurfaces(points, []))
 }
 
+interface ShapeOptions {
+    material?: Material,
+}
 
-export function Cube() {
+
+export function Cube(options?: any[]) {
     let points = [P(-1, -1, -1), P(-1, -1, 1), P(-1, 1, -1), P(-1, 1, 1), P(1, -1, -1), P(1, -1, 1), P(1, 1, -1), P(1, 1, 1)];
     return new Shape('cube', mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
 }

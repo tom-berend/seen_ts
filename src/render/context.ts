@@ -12,7 +12,7 @@ interface LayerContext {
     context: RenderContext;
 }
 
-/** The `RenderContext` uses `RenderModel`s produced by the scene's render method to paint the shapes into an HTML element.
+/** The `RenderContext` uses `RenderGroup`s produced by the scene's render method to paint the shapes into an HTML element.
  We support both SVG and Canvas painters, the `RenderContext` and `RenderLayerContext` define a common interface.*/
 export class RenderContext {
 

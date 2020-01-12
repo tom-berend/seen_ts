@@ -17,8 +17,8 @@ export class SceneLayer extends RenderLayer {
 
     render(context: RenderContext) {
         console.log("Missing RENDER()")
-        // this.scene.render().forEach((renderModel) => {
-        //     renderModel.surface.painter.paint(renderModel, context)
+        // this.scene.render().forEach((renderGroup) => {
+        //     renderGroup.surface.painter.paint(renderGroup, context)
         // })
     }
 }
