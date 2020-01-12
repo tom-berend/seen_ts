@@ -1,5 +1,5 @@
 
-import { Scene, Model, Shape, Viewport, P } from "./src/Seen2";
+import { Scene, Group, Shape, Viewport, P } from "./src/Seen2";
 // this will be somewhere else....
 import {CanvasRenderContext} from "./src/render/canvas";
 //import {P} from "./src/point"
@@ -13,17 +13,62 @@ let height = 500
 
 let ctx = new CanvasRenderContext('seen-canvas');
 
+// ////////////////// threeJS syntax  /////////////////
+// var scene = new Scene();
+// var camera = new PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+// var renderer = new THREE.WebGLRenderer();
+// renderer.setSize( window.innerWidth, window.innerHeight );
+// document.body.appendChild( renderer.domElement );
+
+// var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+// var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+// var cube = new THREE.Mesh( geometry, material );
+// scene.add( cube );
+
+// camera.position.z = 5;
+
+// function animate() {
+// 	requestAnimationFrame( animate );
+// 	renderer.render( scene, camera );
+// }
+// animate();
+
+
+
+// ////////////////// SEEN_TS  syntax  /////////////////
+let scene = new Scene('seen-canvas');   // includes the camera, renderer is always CANVAS
+let cube = new Cube( { color: 0x00ff00 }  );  // defaults to basic material
+scene.add( cube );
+
+// scene.camera.position.z = 5;   // actually a default, but doesn't hurt
+scene.render()
+
+// function animate() {
+// 	requestAnimationFrame( animate );
+// 	renderer.render( scene, camera );
+// }
+// animate();
+
+
+
+
 // // create a cube
 // let shape = Cube()
 // console.log('shape',shape)
 // shape.render()
 
 // Create scene and add cube to model
-let scene = new Scene();
-let shape = pyramid()
-let model = new Model(shape)
-scene.model = model
-scene.render()
+// let scene = new Scene();
+// console.log('SCENE',scene)
+// let shape = pyramid()
+// console.log('SHAPE',shape)
+// let model = new Group(shape)
+// console.log('MODEL',model)
+// scene.model = model
+// scene.render()
+
+
 
 // let viewport = new Viewport.center(width, height)
 
