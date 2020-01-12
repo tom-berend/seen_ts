@@ -1,0 +1,41 @@
+{
+  "name": "seen_ts",
+  "description": "beginning of a rewrite of seen.js in Typescript.",
+  "version": "0.0.1",
+  "author": "Tom Berend",
+  "license": "Apache-2.0",
+  "url": "http://seenjs.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/themadcreator/seen"
+  },
+  "main": "dist/seen_ts.js",
+  "keywords": [
+    "3d",
+    "svg",
+    "canvas"
+  ],
+  "scripts": {
+    "build": "webpack",
+    "watch": "webpack --mode=development -w",
+    "test-render": "phantomjs ./test/phantom/render-scenes.coffee",
+    "test": "cake build && mocha ./test/mocha/*.coffee",
+    "build-bvh-parser": "pegjs --export-var 'seen.BvhParser' src/ext/bvh.pegjs src/ext/bvh-parser.js"
+  },
+  "devDependencies": {
+    "chai": ">=1.9.1",
+    "core-js": "^3.1.2",
+    "mocha": ">=1.18.2",
+    "pngjs": ">=0.4.0",
+    "ts-loader": "^6.2.1",
+    "ts-node": "^8.2.0",
+    "tslib": "^1.9.3",
+    "tslint": "^5.17.0",
+    "typescript": "^3.7.4",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "@babel/core": "^7.5.0"
+  }
+}

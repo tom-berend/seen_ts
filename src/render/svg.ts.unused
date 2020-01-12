@@ -1,0 +1,182 @@
+// //// SVG Context
+// ------------------
+
+/** Creates a new SVG element in the SVG namespace.*/
+function _svg (name:string) {
+  return document.createElementNS('http://www.w3.org/2000/svg', name)
+}
+
+
+class SvgStyler{
+  private _attributes : {}
+  private _svgTag:string = 'g'
+
+  elementFactory: any;
+
+  constructor (elementFactory:any){
+    this.elementFactory = elementFactory;
+  }
+
+  clear (){
+    this._attributes = {}
+    return this
+  }
+
+
+  fill (style = {}) {
+    this._paint(style)
+    return this
+  }
+
+  draw (style = {}) {
+    this._paint(style)
+    return this
+  }
+
+  _paint (style) {
+    let el = this.elementFactory(this._svgTag)
+
+    let str = '';
+    for (const [key, value] of Object.entries(style)) {
+        str += "//{key}://{value};"
+    }
+    el.setAttribute('style', str)
+
+    for (const [key, value] of Object.entries(this._attributes)) {
+      el.setAttribute(key, value)
+    }
+    return el
+  }
+}
+
+class SvgPathPainter extends SvgStyler{
+  private _svgTag :string = 'path';
+
+  path (points:Point[]){
+    this._attributes.d = 'M' + points.map((p) -> "//{p.x} //{p.y}").join 'L'
+    return this
+  }
+}
+
+class SvgTextPainter{
+  private _svgTag :string = 'text';
+
+  constructor (elementFactory:ElementFactory) {
+    this.elementFactory = elementFactory;
+
+  }
+
+  fillText (m, text, style = {}) {
+    el = this.elementFactory(this._svgTag)
+    el.setAttribute('transform', "matrix(//{m[0]} //{m[3]} //{-m[1]} //{-m[4]} //{m[2]} //{m[5]})")
+
+    str = ''
+    for key, value of style
+      if value? then str += "//{key}://{value};"
+    el.setAttribute('style', str)
+
+    el.textContent = text
+}
+}
+
+class SvgRectPainter extends SvgStyler{
+  private _svgTag:string = 'rect'
+
+  rect (width, height) {
+    this._attributes.width  = width
+    this._attributes.height = height
+    return this
+  }
+}
+
+class seen.SvgCirclePainter extends seen.SvgStyler
+  _svgTag : 'circle'
+
+  circle: (center, radius) ->
+    this._attributes.cx = center.x
+    this._attributes.cy = center.y
+    this._attributes.r  = radius
+    return this.
+
+class SvgLayerRenderContext extends RenderLayerContext{
+  private _i:number;
+  public group:Group ;
+
+  constructor  (group:Group) {
+    super();
+    this.group = group;
+    this.pathPainter   = new SvgPathPainter(this._elementFactory)
+    this.textPainter   = new SvgTextPainter(this._elementFactory)
+    this.circlePainter = new SvgCirclePainter(this._elementFactory)
+    this.rectPainter   = new SvgRectPainter(this._elementFactory)
+    this._i = 0
+}
+
+  path   (){ this.pathPainter.clear()}
+  rect   (){ this.rectPainter.clear()}
+  circle (){ this.circlePainter.clear()}
+  text   (){ this.textPainter}
+
+  reset(){
+    this._i = 0
+  }
+
+  cleanup(){
+    children = this.group.childNodes
+    while (this._i < children.length)
+      children[this._i].setAttribute('style', 'display: none;')
+      this._i++
+  }
+
+      // Returns an element with tagname `type`.
+  //
+  // This method uses an internal iterator to add new elements as they are
+  // drawn. If there is no child element at the current index, we append one
+  // and return it. If an element exists at the current index and it is the
+  // same type, we return that. If the element is a different type, we create
+  // one and replace it then return it.
+  _elementFactory (type) {
+    children = this.group.childNodes
+    if this._i >= children.length
+      path = _svg(type)
+      this.group.appendChild(path)
+      this._i++
+      return path
+
+    current = children[this._i]
+    if current.tagName is type
+      this._i++
+      return current
+    else
+      path = _svg(type)
+      this.group.replaceChild(path, current)
+      this._i++
+      return path
+  }
+
+/** CanvasRenderContext and SVGRenderContext extend RenderContext for Canvas or SVG. */
+class SvgRenderContext extends RenderContext{
+  public svg:string;
+
+  constructor (this.svg) {
+    super()
+    this.svg = seen.Util.element(this.svg)
+  }
+
+  layer (layer) {
+    this.svg.appendChild(group = _svg('g'))
+    this.layers.push {
+      layer   : layer
+      context : new seen.SvgLayerRenderContext(group)
+    }
+    return this
+  }
+  reset(){}
+  }
+
+function SvgContext (elementId, scene) {
+  let context = new SvgRenderContext(elementId)
+  if (scene){
+     context.sceneLayer(scene)}
+  return context
+}

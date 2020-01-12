@@ -1,0 +1,58 @@
+<!-- saved from url=(0045)http://seenjs.io/demo-simple-interactive.html -->
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Hello, World! | seen.js</title>
+
+
+  <script src="dist/0.2.7//seen.js"></script>
+
+</head>
+
+<body>
+
+  <canvas width="900" height="500" id="seen-canvas"></canvas>
+
+
+  <script type="text/javascript" id="code">
+      let width = 900
+      let height = 500
+
+      // Create sphere shape with randomly colored surfaces
+      let shape = seen.Shapes.sphere(2).scale(height * 0.4)
+      seen.Colors.randomSurfaces2(shape)
+
+
+      // Create scene and add shape to model
+      let scene = new seen.Scene({
+        model: seen.Models.default().add(shape),
+        viewport: seen.Viewports.center(width, height)
+      })
+
+      // Create render context from canvas
+      let context = seen.Context('seen-canvas', scene).render()
+
+      // Slowly rotate sphere
+      context.animate().onBefore(function (t, dt) {
+        return shape.rotx(dt * 1e-4).roty(0.7 * dt * 1e-4);
+      }).start();
+
+
+      // create a dragger and attach it to the canvas
+      let dragger = new seen.Drag('seen-canvas', {
+        inertia: true
+      });
+
+      dragger.on('drag.rotate', function (e) {
+        let xform = seen.Quaternion.xyToTransform(...e.offsetRelative);
+        shape.transform(xform);
+        return context.render();
+      });
+
+  </script>
+
+
+</body>
+
+</html>
