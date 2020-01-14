@@ -28,6 +28,11 @@ export class Point {
         this.w = w
     }
 
+    /** useful for looking at a point with console.log()  */
+    show():string{
+        return (`P(${this.x}, ${this.y}, ${this.z}) `)
+    } 
+
     /** Creates and returns a new `Point` with the same values as this object. */
     copy() {
         return P(this.x, this.y, this.z, this.w)

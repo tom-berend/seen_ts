@@ -84,25 +84,28 @@ export class CanvasRenderContext /*extends RenderContext*/ {
     path(points: Point[]) {
         this.ctx.beginPath()
 
-        
-
-
+      
         for (let i = 0, j = 0, len = points.length; j < len; i = ++j) {
             let p = points[i];
 
         // tom's kluge for now /////////////////////
-        // scale points by 10, and move them to 50,50
-        p.x = p.x * 10 + 50
-        p.y = p.y * 10 + 50
-        /////////////////////////////
+        // scale points by 5, and move them to 50,50
+        if (i === 0) {
+            this.ctx.moveTo(p.x*5+50, p.y*5+50);
+            console.log('moveTo',p.x,p.y)
+        } else {
+            this.ctx.lineTo(p.x*5+50, p.y*5+50);
+            console.log('lineTo',p.x,p.y)
+        }
+    /////////////////////////////
 
-            if (i === 0) {
-                this.ctx.moveTo(p.x, p.y);
-                console.log('moveTo',p.x,p.y)
-            } else {
-                this.ctx.lineTo(p.x, p.y);
-                console.log('lineTo',p.x,p.y)
-            }
+            // if (i === 0) {
+            //     this.ctx.moveTo(p.x, p.y);
+            //     console.log('moveTo',p.x,p.y)
+            // } else {
+            //     this.ctx.lineTo(p.x, p.y);
+            //     console.log('lineTo',p.x,p.y)
+            // }
         }
         this.ctx.closePath()
         return this
@@ -170,3 +173,4 @@ export class CanvasRenderContext /*extends RenderContext*/ {
 //   }
 //   return context
 // }
+

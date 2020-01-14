@@ -122,12 +122,13 @@ export class Viewport {
 // this will place all viewable objects into a cube with coordinates:
 // x = -1 to 1, y = -1 to 1, z = 1 to 2
 //
-// Second, we apply the projection trasform to create perspective parallax and what not.
+// Second, we apply the projection transform to create perspective parallax and what not.
 //
 // Finally, we rescale to the viewport size.
 //
 // These three steps allow us to easily create shapes whose coordinates match up to
 // screen coordinates in the z = 0 plane.
+
 export class Camera extends Transformable{
     
   constructor(options?:string){
@@ -135,4 +136,12 @@ export class Camera extends Transformable{
     //seen.Util.defaults(this., options, this.defaults)
     this.m = Projection.perspective()
   }
+}
+
+export class PixelCamera extends Transformable{
+  constructor(){
+    super()
+  }
+
+  
 }

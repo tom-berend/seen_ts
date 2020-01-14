@@ -9,18 +9,19 @@ import {Point,P} from './point'
 import {Util} from './util'
 import {Material} from './materials'
 import {Transformable} from './transformable'
+import {StrokeProperties, FillProperties} from './canvas'
 
 // A `Surface` is a defined as a planar object in 3D space. These paths don't
 // necessarily need to be convex, but they should be non-degenerate. This
 // library does not support shapes with holes.
 
+
 // TODO: rename 'Surface' to 'Triangle' and fix up the code
 export class Surface extends Transformable{
   
-  triangle: Point[]
-
-  // this is no longer used....
-  points: Point[]
+  surfaceType: string // TODO change to ENUM 'triangle', 'rectangle', etc
+  
+  points: Point[]  // means different things for different surfaces
   
   // When 'false' this will override backface culling, which is useful if your
   // material is transparent. See comment in `Scene`.
@@ -35,14 +36,20 @@ export class Surface extends Transformable{
   painter:any; // TODO: fixup to this.painter? = Painters.path
   id:string;
 
-  constructor (p1:Point, p2:Point, p3:Point) {
+
+  constructor (stype:string, p1:Point, p2:Point, p3?:Point, p4?:Point) {
     super()
-    this.triangle = [p1,p2,p3]
+    this.points = [p1,p2,p3]
 
     // We store a unique id for every surface so we can look them up quickly
     // with the `renderGroup` cache.
     this.id = 's' + Util.uniqueId()
     //this.painter = painter
+
+    this.fillMaterial = new Material('gray')
+    this.strokeMaterial = new Material('blue')
+
+    
   }
   fill (fill:any) {   // TODO: type?
     this.fillMaterial = new Material('gray').create(fill)

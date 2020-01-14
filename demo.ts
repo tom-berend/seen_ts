@@ -1,9 +1,9 @@
 
 import { Scene, Group, Shape, Viewport, P } from "./src/Seen2";
 // this will be somewhere else....
-import {CanvasRenderContext} from "./src/render/canvas";
+import { CanvasRenderContext } from "./src/render/canvas";
 //import {P} from "./src/point"
-import {Cube,Primitive, pyramid} from './src/shapes/primitives'
+import { Cube, Primitive, Pyramid } from './src/shapes/primitives'
 
 
 
@@ -38,8 +38,8 @@ let ctx = new CanvasRenderContext('seen-canvas');
 
 // ////////////////// SEEN_TS  syntax  /////////////////
 let scene = new Scene('seen-canvas');   // includes the camera, renderer is always CANVAS
-let cube = new Cube( { color: 0x00ff00 }  );  // defaults to basic material
-scene.add( cube );
+let pyramid = Pyramid({ color: 0x00ff00 })   // defaults to basic material
+scene.add(pyramid);
 
 // scene.camera.position.z = 5;   // actually a default, but doesn't hurt
 scene.render()

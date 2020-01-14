@@ -94,7 +94,7 @@ const ICOSAHEDRON_COORDINATE_MAP = [
 
 export class Triangle {
     public points: Point[]
-//    public normal: Quaternion;
+    //    public normal: Quaternion;
 }
 
 
@@ -109,14 +109,15 @@ export function NullShape() {
 }
 
 interface ShapeOptions {
-    material?: Material,
+    color?: Number
 }
 
 
-export function Cube(options?: any[]) {
+export function Cube(options?: ShapeOptions): Shape {
     let points = [P(-1, -1, -1), P(-1, -1, 1), P(-1, 1, -1), P(-1, 1, 1), P(1, -1, -1), P(1, -1, 1), P(1, 1, -1), P(1, 1, 1)];
     return new Shape('cube', mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
 }
+
 
 
 //   unitcube() {
@@ -135,7 +136,7 @@ export function Cube(options?: any[]) {
 //     };
 //   })(this),
 
-export function pyramid() {
+export function Pyramid(options?: ShapeOptions): Shape {
     let points = [P(0, 0, 0), P(0, 0, 1), P(1, 0, 0), P(1, 0, 1), P(0.5, 1, 0.5)];
     return new Shape('pyramid', mapPointsToSurfaces(points, PYRAMID_COORDINATE_MAP));
 }
@@ -329,10 +330,14 @@ export function pyramid() {
 function mapPointsToSurfaces(points: Point[], coordinateMap: any[]): Surface[] {
     // TODO: convert all exterior quads to triangles  (eg: two triangles per side for a cube)
     let s: Surface[] = [];
+    points.forEach(point => {
+        console.log('POINTS', point)
+    })
     coordinateMap.forEach(element => {
-        // 
-        s.push(new Surface(points[element[0]], points[element[1]], points[element[2]]))
-    });
+        console.log('ELEMENT', element)
+
+        s.push(new Surface('triangle', points[element[0]], points[element[1]], points[element[2]]))
+    })
     return s
 }
 

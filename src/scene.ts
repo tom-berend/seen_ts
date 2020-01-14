@@ -61,7 +61,7 @@ export class Scene {
 
     private _renderGroupCache: any = {}
 
-    constructor(domElementID: string, options?: string[]) {
+    constructor(domElementID: string, options?: SceneOptions) {
 
         this.canvas = new Canvas(domElementID)
 
@@ -78,10 +78,57 @@ export class Scene {
         this.world.add(child)
     }
 
-    
+    findAllSurfaces(group: Group): Surface[] {
+        let surfaceList: Surface[] = []
+        group.shapes.forEach((shape) => {
+            shape.surfaces.forEach((surface) => {
+                surfaceList.push(surface)
+            })
+        })
+
+        return (surfaceList)
+    }
+
+    // TODO actually cull
+    cullSurfaces(surfaceList: Surface[], camera: Camera): Surface[] {
+        return (surfaceList)
+    }
+
+
     // The primary method that produces the render models, which are then used
     // by the `RenderContext` to paint the scene.
     render() {
+        // get all surfaces
+        let allSurfaces = this.findAllSurfaces(this.world)
+
+        // cull the ones pointing the wrong way
+        let culledSurfaces: Surface[]
+        if (this.cullBackfaces) {
+            culledSurfaces = this.cullSurfaces(allSurfaces, this.camera)
+        } else {
+            culledSurfaces = allSurfaces;
+        }
+
+        console.log('SurfaceList', culledSurfaces)
+
+
+        culledSurfaces.forEach((surface) => {
+            surface.points.map((p) => console.log(p.show()))
+
+            this.canvas.draw(surface.strokeMaterial)
+            this.canvas.path(surface.points)
+            
+        })
+
+        return
+        //////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////
+32
+
+        //   renderGroup.fill = (ref1 = surface.fillMaterial) != null ? ref1.render(lights, _this.shader, renderGroup.transformed) : void 0;
+        //   renderGroup.stroke = (ref2 = surface.strokeMaterial) != null ? ref2.render(lights, _this.shader, renderGroup.transformed) : void 0;
+
         // Compute the projection matrix including the viewport and camera
         // transformation matrices.
         // 
