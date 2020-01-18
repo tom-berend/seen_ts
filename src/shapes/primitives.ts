@@ -25,69 +25,18 @@ const TETRA_MAP = [
 ]
 
 
-// Map to points in the surfaces of a cube
-const CUBE_COORDINATE_MAP = [
-    [0, 1, 3, 2], // left
-    [5, 4, 6, 7], // right
-    [1, 0, 4, 5], // bottom
-    [2, 3, 7, 6], // top
-    [3, 1, 5, 7], // front
-    [0, 2, 6, 4], // back
-]
+// // Map to points in the surfaces of a cube
+// const CUBE_COORDINATE_MAP = [
+//     [0, 1, 3, 2], // left
+//     [5, 4, 6, 7], // right
+//     [1, 0, 4, 5], // bottom
+//     [2, 3, 7, 6], // top
+//     [3, 1, 5, 7], // front
+//     [0, 2, 6, 4], // back
+// ]
 
-// Map to points in the surfaces of a rectangular pyramid
-const PYRAMID_COORDINATE_MAP = [
-    [1, 0, 2, 3], // bottom
-    [0, 1, 4], // left
-    [2, 0, 4], // rear
-    [3, 2, 4], // right
-    [1, 3, 4], // front
-]
 
-// Altitude of eqiulateral triangle for computing triangular patch size
-const EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(3.0) / 2.0
 
-// Points array of an icosahedron
-const ICOS_X = 0.525731112119133606
-const ICOS_Z = 0.850650808352039932
-const ICOSAHEDRON_POINTS = [
-    P(-ICOS_X, 0.0, -ICOS_Z),
-    P(ICOS_X, 0.0, -ICOS_Z),
-    P(-ICOS_X, 0.0, ICOS_Z),
-    P(ICOS_X, 0.0, ICOS_Z),
-    P(0.0, ICOS_Z, -ICOS_X),
-    P(0.0, ICOS_Z, ICOS_X),
-    P(0.0, -ICOS_Z, -ICOS_X),
-    P(0.0, -ICOS_Z, ICOS_X),
-    P(ICOS_Z, ICOS_X, 0.0),
-    P(-ICOS_Z, ICOS_X, 0.0),
-    P(ICOS_Z, -ICOS_X, 0.0),
-    P(-ICOS_Z, -ICOS_X, 0.0),
-]
-
-// Map to points in the surfaces of an icosahedron
-const ICOSAHEDRON_COORDINATE_MAP = [
-    [0, 4, 1],
-    [0, 9, 4],
-    [9, 5, 4],
-    [4, 5, 8],
-    [4, 8, 1],
-    [8, 10, 1],
-    [8, 3, 10],
-    [5, 3, 8],
-    [5, 2, 3],
-    [2, 7, 3],
-    [7, 10, 3],
-    [7, 6, 10],
-    [7, 11, 6],
-    [11, 0, 6],
-    [0, 1, 6],
-    [6, 1, 10],
-    [9, 0, 11],
-    [9, 11, 2],
-    [9, 2, 5],
-    [7, 2, 11],
-]
 
 // TODO: Shapes should be part of the Shape() class  - box:Shape = new Shape().box()
 /** static methods to create `Shape` */
@@ -113,11 +62,98 @@ interface ShapeOptions {
 }
 
 
-export function Cube(options?: ShapeOptions): Shape {
-    let points = [P(-1, -1, -1), P(-1, -1, 1), P(-1, 1, -1), P(-1, 1, 1), P(1, -1, -1), P(1, -1, 1), P(1, 1, -1), P(1, 1, 1)];
-    return new Shape('cube', mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
+const cubePoints = [P(-1, -1, -1), P(-1, -1, 1), P(-1, 1, -1), P(-1, 1, 1), P(1, -1, -1), P(1, -1, 1), P(1, 1, -1), P(1, 1, 1)];
+// Map to points in the surfaces of a cube, two triangles to a side
+const CUBE_COORDINATE_MAP = [
+    [0, 1, 3], // leftA
+    [0, 3, 2], // leftB
+    [5, 4, 6], // rightA
+    [5, 6, 7], // rightB
+    [1, 0, 4], // bottomA
+    [1, 4, 5], // bottomB
+    [2, 3, 7], // topA
+    [2, 7, 6], // topB
+    [3, 1, 5], // frontA
+    [3, 5, 7], // frontB
+    [0, 2, 6], // backA
+    [0, 6, 4], // backB
+]
+export class Cube extends Shape {
+    constructor(options?: ShapeOptions) {
+        super('cube', mapPointsToSurfaces(cubePoints, CUBE_COORDINATE_MAP))
+    }
 }
 
+
+
+
+const pyramidPoints = [P(0, 0, 0), P(0, 0, 1), P(1, 0, 0), P(1, 0, 1), P(0.5, 1, 0.5)] 
+// Map to points in the surfaces of a rectangular pyramid
+const PYRAMID_COORDINATE_MAP = [
+    [1, 0, 2, 3], // bottom
+    [0, 1, 4], // left
+    [2, 0, 4], // rear
+    [3, 2, 4], // right
+    [1, 3, 4], // front
+]
+export class Pyramid extends Shape {
+    constructor(options?: ShapeOptions) {
+        super('pyramid', mapPointsToSurfaces(pyramidPoints, PYRAMID_COORDINATE_MAP))
+    }
+}
+
+
+
+
+// Map to points in the surfaces of an icosahedron
+const ICOSAHEDRON_COORDINATE_MAP = [
+    [0, 4, 1],
+    [0, 9, 4],
+    [9, 5, 4],
+    [4, 5, 8],
+    [4, 8, 1],
+    [8, 10, 1],
+    [8, 3, 10],
+    [5, 3, 8],
+    [5, 2, 3],
+    [2, 7, 3],
+    [7, 10, 3],
+    [7, 6, 10],
+    [7, 11, 6],
+    [11, 0, 6],
+    [0, 1, 6],
+    [6, 1, 10],
+    [9, 0, 11],
+    [9, 11, 2],
+    [9, 2, 5],
+    [7, 2, 11],
+]
+// Altitude of eqiulateral triangle for computing triangular patch size
+const EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(3.0) / 2.0
+
+// Points array of an icosahedron
+const ICOS_X = 0.525731112119133606
+const ICOS_Z = 0.850650808352039932
+const ICOSAHEDRON_POINTS = [
+    P(-ICOS_X, 0.0, -ICOS_Z),
+    P(ICOS_X, 0.0, -ICOS_Z),
+    P(-ICOS_X, 0.0, ICOS_Z),
+    P(ICOS_X, 0.0, ICOS_Z),
+    P(0.0, ICOS_Z, -ICOS_X),
+    P(0.0, ICOS_Z, ICOS_X),
+    P(0.0, -ICOS_Z, -ICOS_X),
+    P(0.0, -ICOS_Z, ICOS_X),
+    P(ICOS_Z, ICOS_X, 0.0),
+    P(-ICOS_Z, ICOS_X, 0.0),
+    P(ICOS_Z, -ICOS_X, 0.0),
+    P(-ICOS_Z, -ICOS_X, 0.0),
+]
+
+export class Icosahedron extends Shape {
+    constructor(options?: ShapeOptions) {
+        super('icosahedron', mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP))
+    }
+}
 
 
 //   unitcube() {
@@ -136,10 +172,8 @@ export function Cube(options?: ShapeOptions): Shape {
 //     };
 //   })(this),
 
-export function Pyramid(options?: ShapeOptions): Shape {
-    let points = [P(0, 0, 0), P(0, 0, 1), P(1, 0, 0), P(1, 0, 1), P(0.5, 1, 0.5)];
-    return new Shape('pyramid', mapPointsToSurfaces(points, PYRAMID_COORDINATE_MAP));
-}
+
+
 
 //   tetrahedron: (function (_this) {
 //     return function () {
@@ -149,9 +183,6 @@ export function Pyramid(options?: ShapeOptions): Shape {
 //     };
 //   })(this),
 
-//   icosahedron: function () {
-//     return new Shape('icosahedron', Shapes.mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP));
-//   },
 //   sphere: function (subdivisions) {
 //     var i, j, ref, triangles;
 //     if (subdivisions == null) {

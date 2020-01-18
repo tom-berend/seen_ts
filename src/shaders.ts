@@ -1,5 +1,9 @@
 import { Light } from "./light";
-import { RenderGroup } from "./render/rendermodel";
+
+// TODO see what needs to change from RenderGroup to Group
+// import { RenderGroup } from "./render/rendermodel";
+import {Group}  from './model'
+
 import { Material } from "./materials";
 import { Point, POINT_Z } from './point'
 import { Color } from "./color";
@@ -47,7 +51,7 @@ class ShaderUtils {
 // The `Shader` class is the base class for all shader objects.
 export abstract class Shader {
     public lights: Light
-    public renderGroup: RenderGroup
+    // public renderGroup: RenderGroup
     public material: Material
 
     /** Every `Shader` implementation must override the `shade` method.
@@ -56,7 +60,7 @@ export abstract class Shader {
     `renderGroup` is an instance of `RenderGroup` and contains the transformed and projected surface data.
     `material` is an instance of `Material` and contains the color and other attributes for determining how light reflects off the surface.*/
 
-    shade(lights: Light[], renderGroup: RenderGroup, material: Material): Color {
+    shade(lights: Light[], renderGroup: Group, material: Material): Color {
         return new Color()
     }
 
@@ -77,7 +81,7 @@ export abstract class Shader {
 //
 // See https://en.wikipedia.org/wiki/Phong_reflection_model for more information
 export class Phong extends Shader {
-    shade(lights: Light[], renderGroup: RenderGroup, material: Material): Color {
+    shade(lights: Light[], renderGroup: Group, material: Material): Color {
         let c = new Color()
 
         lights.forEach((light: Light) => {
@@ -109,7 +113,7 @@ export class Phong extends Shader {
 // The `DiffusePhong` shader implements the Phong shading model with a diffuse
 // and ambient term (no specular).
 class DiffusePhong extends Shader {
-    shade(lights: Light[], renderGroup: RenderGroup, material: Material): Color {
+    shade(lights: Light[], renderGroup: Group, material: Material): Color {
         let c = new Color()
 
         lights.forEach((light: Light) => {
@@ -132,7 +136,7 @@ class DiffusePhong extends Shader {
 // The `Ambient` shader colors surfaces from ambient light only.
 class Ambient extends Shader {
 
-    shade(lights: Light[], renderGroup: RenderGroup, material: Material): Color {
+    shade(lights: Light[], renderGroup: Group, material: Material): Color {
         let c = new Color()
 
         lights.forEach((light: Light) => {
@@ -150,7 +154,7 @@ class Ambient extends Shader {
 // The `Flat` shader colors surfaces with the material color, disregarding all
 // light sources.
 class Flat extends Shader {
-    shade(lights: Light[], renderGroup: RenderGroup, material: Material): Color {
+    shade(lights: Light[], renderGroup: Group, material: Material): Color {
         return material.color
     }
 }

@@ -4,6 +4,7 @@
 import { Transformable } from './transformable';
 import { Light } from './light'
 import { Surface, Shape } from './surface'
+import {Point} from './point'
 
 
 // The object group class. It stores `Shapes`, `Lights`, and sub-Groups
@@ -18,6 +19,8 @@ export class Group extends Transformable {
     public surfaces: Surface[] = [];
     public shapes: Shape[] = []
 
+    public barycenter: Point
+    public normal:Point
 
     /** Add a `Shape`, `Surface`, Light`, and other `Group` */
     add(child: Shape | Surface | Group | Light) {

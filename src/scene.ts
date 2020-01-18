@@ -1,9 +1,12 @@
 // //// Scene
 
-import { Group } from './model'
 import { Camera, Viewport } from './camera'
 import { Matrix, Transformable } from './transformable'
-import { RenderGroup } from './render/rendermodel'
+
+// TODO resolve between RenderGroup and Group
+// import { RenderGroup } from './render/rendermodel'
+import {Group} from './model'
+
 import { Shaders } from './shaders'
 import { Canvas } from './canvas'
 import { Shape, Surface } from './surface'
@@ -71,7 +74,7 @@ export class Scene {
         }
         Object.assign(this.options, options);
     }
-
+ 
 
     /** Add a `Shape`, `Surface`, Light`, and other `Group` */
     add(child: Shape | Surface | Group | Light) {
@@ -216,15 +219,15 @@ export class Scene {
     /** Get or create the rendermodel for the given surface.
         If `this.cache` is true, we cache these models to reduce object creation and recomputation. */
     _renderSurface(surface: Surface, transform: Matrix, projection: Matrix, viewport: Viewport) {
-        if (!this.options.cache)
-            return new RenderGroup(surface, transform, projection, viewport);
+        // if (!this.options.cache)
+        //     return new RenderGroup(surface, transform, projection, viewport);
 
-        let renderGroup = this._renderGroupCache[surface.id]
-        if (!renderGroup)  //was existential operator
-            renderGroup = this._renderGroupCache[surface.id] = new RenderGroup(surface, transform, projection, viewport)
-        else
-            renderGroup.update(transform, projection, viewport)
-        return renderGroup
+        // let renderGroup = this._renderGroupCache[surface.id]
+        // if (!renderGroup)  //was existential operator
+        //     renderGroup = this._renderGroupCache[surface.id] = new Group(surface, transform, projection, viewport)
+        // else
+        //     renderGroup.update(transform, projection, viewport)
+        // return renderGroup
     }
 
 

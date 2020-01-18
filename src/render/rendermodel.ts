@@ -5,12 +5,12 @@ import {Point,P,POINT_ZERO } from '../point'
 import { Color } from "../color"
 import {Light} from "../light"
 
-// //// RenderGroups
+// //// RenderModels
 // ------------------
 
 const DEFAULT_NORMAL = P(0, 0, 1)  // Z
 
-// The `RenderGroup` object contains the transformed and projected points as
+// The `RenderModel` object contains the transformed and projected points as
 // well as various data needed to shade and paint a `Surface`.
 //
 // Once initialized, the object will have a constant memory footprint down to
@@ -18,7 +18,7 @@ const DEFAULT_NORMAL = P(0, 0, 1)  // Z
 // prevent unnecessary re-computation.
 //
 // If you need to force a re-computation, mark the surface as 'dirty'.
-export class RenderGroup{
+export class RenderModel{
 
   surface: Surface;
   points: Point[];
@@ -68,7 +68,7 @@ export class RenderGroup{
   //   // Project into screen space
   //   this._math(this.projected, cameraSpace, this.viewport, true)
   //   this.surface.dirty = false
-  console.log('renderGroup._update()')
+  console.log('renderModel._update()')
    }
 
   // _checkFrustrum  (points:Point[]) {
@@ -123,9 +123,9 @@ export class RenderGroup{
 //   }
  }
 
-// The `LightRenderGroup` stores pre-computed values necessary for shading
+// The `LightRenderModel` stores pre-computed values necessary for shading
 // surfaces with the supplied `Light`.
-class LightRenderGroup{
+class LightRenderModel{
   colorIntensity:Color
   type :string
   intensity: number

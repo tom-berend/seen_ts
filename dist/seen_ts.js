@@ -96,17 +96,16 @@
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _src_Seen2__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./src/Seen2 */ "./src/Seen2.ts");
-/* harmony import */ var _src_render_canvas__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./src/render/canvas */ "./src/render/canvas.ts");
+/* harmony import */ var _src_canvas__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./src/canvas */ "./src/canvas.ts");
 /* harmony import */ var _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./src/shapes/primitives */ "./src/shapes/primitives.ts");
 
-// this will be somewhere else....
 
 //import {P} from "./src/point"
 
 console.log('I am ALIVE');
 var width = 900;
 var height = 500;
-var ctx = new _src_render_canvas__WEBPACK_IMPORTED_MODULE_1__["CanvasRenderContext"]('seen-canvas');
+var ctx = new _src_canvas__WEBPACK_IMPORTED_MODULE_1__["Canvas"]('seen-canvas');
 // ////////////////// threeJS syntax  /////////////////
 // var scene = new Scene();
 // var camera = new PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -121,19 +120,19 @@ var ctx = new _src_render_canvas__WEBPACK_IMPORTED_MODULE_1__["CanvasRenderConte
 // function animate() {
 // 	requestAnimationFrame( animate );
 // 	renderer.render( scene, camera );
-// }
+// 
 // animate();
 // ////////////////// SEEN_TS  syntax  /////////////////
 var scene = new _src_Seen2__WEBPACK_IMPORTED_MODULE_0__["Scene"]('seen-canvas'); // includes the camera, renderer is always CANVAS
-var pyramid = Object(_src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Pyramid"])({ color: 0x00ff00 }); // defaults to basic material
-scene.add(pyramid);
-// scene.camera.position.z = 5;   // actually a default, but doesn't hurt
-scene.render();
-// function animate() {
-// 	requestAnimationFrame( animate );
-// 	renderer.render( scene, camera );
-// }
-// animate();
+var pyramid = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Pyramid"]({ color: 0x00ff00 }); // defaults to basic material
+var cube = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Cube"]({ color: 0x0000ff });
+var ico = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Icosahedron"]({ color: 0x0000ff });
+scene.add(ico);
+var animate = function () {
+    ico.m.rotx(.1);
+    scene.render();
+};
+scene.canvas.animationObservable.addObserver('tick', animate);
 // // create a cube
 // let shape = Cube()
 // console.log('shape',shape)
@@ -1243,223 +1242,6 @@ var POINT_Z = P(0, 0, 1);
 
 /***/ }),
 
-/***/ "./src/render/canvas.ts":
-/*!******************************!*\
-  !*** ./src/render/canvas.ts ***!
-  \******************************/
-/*! exports provided: CanvasRenderContext */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasRenderContext", function() { return CanvasRenderContext; });
-// //// HTML5 Canvas Context
-// ------------------
-/** The very lowest-level commands for drawing on Canvas.
-  CanvasRenderContext and SVGRenderContext extend `RenderContext` for Canvas or SVG. */
-var CanvasRenderContext /*extends RenderContext*/ = /** @class */ (function () {
-    function CanvasRenderContext(el) {
-        //super()
-        // console.log(el)
-        this.el = document.getElementById(el);
-        // console.log(this.el)
-        this.ctx = this.el.getContext('2d');
-        // console.log(this.ctx)
-    }
-    // layer (layer) {
-    //   this.layers.push {
-    //     layer   : layer
-    //     context : new seen.CanvasLayerRenderContext(this.ctx)
-    //   }
-    //   return this
-    // }
-    CanvasRenderContext.prototype.reset = function () {
-        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-        this.ctx.clearRect(0, 0, this.el.width, this.el.height);
-    };
-    CanvasRenderContext.prototype.draw = function (style) {
-        // Copy over SVG CSS attributes
-        if (style.strokeStyle)
-            this.ctx.strokeStyle = style.strokeStyle;
-        // TODO: which do we need of the rest?  Can we deal with them as a class?
-        if (style.lineWidth)
-            this.ctx.lineWidth = style.lineWidth;
-        // if (style.textAnchor)
-        //     this.ctx.textAlign = style.textAnchor
-        this.ctx.stroke();
-        return this;
-    };
-    CanvasRenderContext.prototype.fill = function (style) {
-        // Copy over SVG CSS attributes
-        if (style.fillStyle)
-            this.ctx.fillStyle = style.fillStyle;
-        console.log('fillStyle', style.fillStyle);
-        // if (style['text-anchor'])
-        //     this.ctx.textAlign = style['text-anchor']
-        // if (style['fill-opacity'])
-        //     this.ctx.globalAlpha = style['fill-opacity']
-        this.ctx.fill();
-        return this;
-    };
-    /** Create a polygon path for a CANVAS rendering */
-    CanvasRenderContext.prototype.path = function (points) {
-        this.ctx.beginPath();
-        for (var i = 0, j = 0, len = points.length; j < len; i = ++j) {
-            var p = points[i];
-            // tom's kluge for now /////////////////////
-            // scale points by 5, and move them to 50,50
-            if (i === 0) {
-                this.ctx.moveTo(p.x * 5 + 50, p.y * 5 + 50);
-                console.log('moveTo', p.x, p.y);
-            }
-            else {
-                this.ctx.lineTo(p.x * 5 + 50, p.y * 5 + 50);
-                console.log('lineTo', p.x, p.y);
-            }
-            /////////////////////////////
-            // if (i === 0) {
-            //     this.ctx.moveTo(p.x, p.y);
-            //     console.log('moveTo',p.x,p.y)
-            // } else {
-            //     this.ctx.lineTo(p.x, p.y);
-            //     console.log('lineTo',p.x,p.y)
-            // }
-        }
-        this.ctx.closePath();
-        return this;
-    };
-    CanvasRenderContext.prototype.rect = function (width, height) {
-        this.ctx.rect(0, 0, width, height);
-        return this;
-    };
-    CanvasRenderContext.prototype.circle = function (center, radius) {
-        this.ctx.beginPath();
-        this.ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI, true);
-        return this;
-    };
-    CanvasRenderContext.prototype.fillText = function (m, text, style) {
-        this.ctx.save();
-        this.ctx.setTransform(m[0], m[3], -m[1], -m[4], m[2], m[5]);
-        if (style.font)
-            this.ctx.font = style.font;
-        if (style.fill)
-            this.ctx.fillStyle = style.fill;
-        // TODO: string is not assignable...
-        // if (style['text-anchor'])
-        //     this.ctx.textAlign = this._cssToCanvasAnchor(style['text-anchor'])
-        this.ctx.fillText(text, 0, 0);
-        this.ctx.restore();
-        return this;
-    };
-    CanvasRenderContext.prototype._cssToCanvasAnchor = function (anchor) {
-        if (anchor == 'middle')
-            return 'center';
-        return anchor;
-    };
-    return CanvasRenderContext;
-}());
-
-// TODO: figure out whether we need these two...
-// class CanvasLayerRenderContext extends RenderLayerContext
-//   constructor  (this.ctx) {
-//     this.pathPainter  = new CanvasPathPainter(this.ctx)
-//     this.ciclePainter = new CanvasCirclePainter(this.ctx)
-//     this.textPainter  = new CanvasTextPainter(this.ctx)
-//     this.rectPainter  = new CanvasRectPainter(this.ctx)
-//   }
-//   path    () {this.pathPainter()}
-//   rect    () {this.rectPainter()}
-//   circle  () {this.ciclePainter()}
-//   text    () {this.textPainter()}
-// }
-// function CanvasContext (elementId, scene){
-//   let context = new CanvasRenderContext(elementId)
-//   if (scene) {
-//     context.sceneLayer(scene)
-//   }
-//   return context
-// }
-
-
-/***/ }),
-
-/***/ "./src/render/rendermodel.ts":
-/*!***********************************!*\
-  !*** ./src/render/rendermodel.ts ***!
-  \***********************************/
-/*! exports provided: RenderGroup */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RenderGroup", function() { return RenderGroup; });
-/* harmony import */ var _point__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../point */ "./src/point.ts");
-
-// //// RenderGroups
-// ------------------
-var DEFAULT_NORMAL = Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 1); // Z
-// The `RenderGroup` object contains the transformed and projected points as
-// well as various data needed to shade and paint a `Surface`.
-//
-// Once initialized, the object will have a constant memory footprint down to
-// `Number` primitives. Also, we compare each transform and projection to
-// prevent unnecessary re-computation.
-//
-// If you need to force a re-computation, mark the surface as 'dirty'.
-var RenderGroup = /** @class */ (function () {
-    function RenderGroup(surface, transform, projection, viewport) {
-        this.surface = surface;
-        this.points = this.surface.points;
-        // this.transformed = this._initRenderData()
-        // this.projected   = this._initRenderData()
-        this._update();
-    }
-    RenderGroup.prototype.update = function (transform, projection, viewport) {
-        if (!this.surface.dirty
-            && transform.isEqual(this.transformed)
-            && projection.isEqual(this.projected)
-            && viewport.prescale.isEqual(this.viewport.prescale)) {
-            // do nothing
-        }
-        else {
-            this.transform = transform;
-            this.projection = projection;
-            this.viewport.prescale = viewport.prescale;
-            this.viewport.postscale = viewport.postscale;
-            this._update();
-        }
-    };
-    RenderGroup.prototype._update = function () {
-        //   // Apply model transforms to surface points
-        //   this._math(this.transformed, this.points, this.transform, false)
-        //   // Project into camera space
-        //   let cameraSpace:Point[] = this.points.map(p => { p.copy().transform(this.projection.m)})
-        //   this.inFrustrum = this._checkFrustrum(cameraSpace)
-        //   // Project into screen space
-        //   this._math(this.projected, cameraSpace, this.viewport, true)
-        //   this.surface.dirty = false
-        console.log('renderGroup._update()');
-    };
-    return RenderGroup;
-}());
-
-// The `LightRenderGroup` stores pre-computed values necessary for shading
-// surfaces with the supplied `Light`.
-var LightRenderGroup = /** @class */ (function () {
-    function LightRenderGroup(light, transform) {
-        this.colorIntensity = light.color.copy().scale(light.intensity);
-        this.type = light.type;
-        this.intensity = light.intensity;
-        this.point = light.point.copy().transform(transform);
-        this.origin = _point__WEBPACK_IMPORTED_MODULE_0__["POINT_ZERO"].transform(transform);
-        this.normal = light.normal.copy().transform(transform).subtract(this.origin).normalize();
-    }
-    return LightRenderGroup;
-}());
-
-
-/***/ }),
-
 /***/ "./src/scene.ts":
 /*!**********************!*\
   !*** ./src/scene.ts ***!
@@ -1470,31 +1252,31 @@ var LightRenderGroup = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Scene", function() { return Scene; });
-/* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./model */ "./src/model.ts");
-/* harmony import */ var _camera__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./camera */ "./src/camera.ts");
-/* harmony import */ var _render_rendermodel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./render/rendermodel */ "./src/render/rendermodel.ts");
-/* harmony import */ var _shaders__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./shaders */ "./src/shaders.ts");
-/* harmony import */ var _canvas__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./canvas */ "./src/canvas.ts");
+/* harmony import */ var _camera__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./camera */ "./src/camera.ts");
+/* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./model */ "./src/model.ts");
+/* harmony import */ var _shaders__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./shaders */ "./src/shaders.ts");
+/* harmony import */ var _canvas__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./canvas */ "./src/canvas.ts");
 // //// Scene
 
-
+// TODO resolve between RenderGroup and Group
+// import { RenderGroup } from './render/rendermodel'
 
 
 
 /** A `Scene` is the main object for a view of a scene. */
 var Scene = /** @class */ (function () {
     function Scene(domElementID, options) {
-        this.world = new _model__WEBPACK_IMPORTED_MODULE_0__["Group"]();
+        this.world = new _model__WEBPACK_IMPORTED_MODULE_1__["Group"]();
         // The `Camera`, which defines the projection transformation. The default
         // projection is perspective.
-        this.camera = new _camera__WEBPACK_IMPORTED_MODULE_1__["Camera"]();
+        this.camera = new _camera__WEBPACK_IMPORTED_MODULE_0__["Camera"]();
         // The `Viewport`, which defines the projection from shape-space to
         // projection-space then to screen-space. The default viewport is on a
         // space from (0,0,0) to (1,1,1). To map more naturally to pixels, create a
         // viewport with the same width/height as the DOM element.
-        this.viewport = new _camera__WEBPACK_IMPORTED_MODULE_1__["Viewport"]().origin(1, 1);
+        this.viewport = new _camera__WEBPACK_IMPORTED_MODULE_0__["Viewport"]().origin(1, 1);
         // The scene's shader determines which lighting model is used.
-        this.shader = new _shaders__WEBPACK_IMPORTED_MODULE_3__["Shaders"]();
+        this.shader = new _shaders__WEBPACK_IMPORTED_MODULE_2__["Shaders"]();
         // The `cullBackfaces` boolean can be used to turn off backface-culling
         // for the whole scene. Beware, turning this off can slow down a scene's
         // rendering by a factor of 2. You can also turn off backface-culling for
@@ -1512,7 +1294,7 @@ var Scene = /** @class */ (function () {
         // no eviction policy. To flush the cache, call `.flushCache()`
         this.cache = true;
         this._renderGroupCache = {};
-        this.canvas = new _canvas__WEBPACK_IMPORTED_MODULE_4__["Canvas"](domElementID);
+        this.canvas = new _canvas__WEBPACK_IMPORTED_MODULE_3__["Canvas"](domElementID);
         this.options = {
             cache: true,
             answer: 42
@@ -1637,14 +1419,14 @@ var Scene = /** @class */ (function () {
     /** Get or create the rendermodel for the given surface.
         If `this.cache` is true, we cache these models to reduce object creation and recomputation. */
     Scene.prototype._renderSurface = function (surface, transform, projection, viewport) {
-        if (!this.options.cache)
-            return new _render_rendermodel__WEBPACK_IMPORTED_MODULE_2__["RenderGroup"](surface, transform, projection, viewport);
-        var renderGroup = this._renderGroupCache[surface.id];
-        if (!renderGroup) //was existential operator
-            renderGroup = this._renderGroupCache[surface.id] = new _render_rendermodel__WEBPACK_IMPORTED_MODULE_2__["RenderGroup"](surface, transform, projection, viewport);
-        else
-            renderGroup.update(transform, projection, viewport);
-        return renderGroup;
+        // if (!this.options.cache)
+        //     return new RenderGroup(surface, transform, projection, viewport);
+        // let renderGroup = this._renderGroupCache[surface.id]
+        // if (!renderGroup)  //was existential operator
+        //     renderGroup = this._renderGroupCache[surface.id] = new Group(surface, transform, projection, viewport)
+        // else
+        //     renderGroup.update(transform, projection, viewport)
+        // return renderGroup
     };
     /** Removes all elements from the cache. This may be necessary if you add and
      remove many shapes from the scene's models since this cache has no eviction policy. */
@@ -1848,7 +1630,7 @@ var Shaders = /** @class */ (function () {
 /*!**********************************!*\
   !*** ./src/shapes/primitives.ts ***!
   \**********************************/
-/*! exports provided: Triangle, Primitive, NullShape, Cube, Pyramid */
+/*! exports provided: Triangle, Primitive, NullShape, Cube, Pyramid, Icosahedron */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1858,11 +1640,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NullShape", function() { return NullShape; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cube", function() { return Cube; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Pyramid", function() { return Pyramid; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Icosahedron", function() { return Icosahedron; });
 /* harmony import */ var _point__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../point */ "./src/point.ts");
 /* harmony import */ var _surface__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../surface */ "./src/surface.ts");
 //// Shapes
 // //////// Shape primitives and shape-making methods
 // ------------------
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 
  // TODO: rename Shape to Surface, Surface to Triangle
 // Map to points in the surfaces of a tetrahedron
@@ -1879,15 +1675,60 @@ var TETRA_MAP = [
     [0, 1, 3],
     [1, 2, 3],
 ];
-// Map to points in the surfaces of a cube
+// // Map to points in the surfaces of a cube
+// const CUBE_COORDINATE_MAP = [
+//     [0, 1, 3, 2], // left
+//     [5, 4, 6, 7], // right
+//     [1, 0, 4, 5], // bottom
+//     [2, 3, 7, 6], // top
+//     [3, 1, 5, 7], // front
+//     [0, 2, 6, 4], // back
+// ]
+// TODO: Shapes should be part of the Shape() class  - box:Shape = new Shape().box()
+/** static methods to create `Shape` */
+var Triangle = /** @class */ (function () {
+    function Triangle() {
+    }
+    return Triangle;
+}());
+
+var Primitive = /** @class */ (function () {
+    function Primitive() {
+        this.triangles = [];
+    }
+    return Primitive;
+}());
+
+/** Sometimes we just want an empty `Group` that we can add children to */
+function NullShape() {
+    var points = [Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0)];
+    return new _surface__WEBPACK_IMPORTED_MODULE_1__["Shape"]('nullshape', mapPointsToSurfaces(points, []));
+}
+var cubePoints = [Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, -1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, -1, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, 1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, 1, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, -1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, -1, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 1, 1)];
+// Map to points in the surfaces of a cube, two triangles to a side
 var CUBE_COORDINATE_MAP = [
-    [0, 1, 3, 2],
-    [5, 4, 6, 7],
-    [1, 0, 4, 5],
-    [2, 3, 7, 6],
-    [3, 1, 5, 7],
-    [0, 2, 6, 4],
+    [0, 1, 3],
+    [0, 3, 2],
+    [5, 4, 6],
+    [5, 6, 7],
+    [1, 0, 4],
+    [1, 4, 5],
+    [2, 3, 7],
+    [2, 7, 6],
+    [3, 1, 5],
+    [3, 5, 7],
+    [0, 2, 6],
+    [0, 6, 4],
 ];
+var Cube = /** @class */ (function (_super) {
+    __extends(Cube, _super);
+    function Cube(options) {
+        return _super.call(this, 'cube', mapPointsToSurfaces(cubePoints, CUBE_COORDINATE_MAP)) || this;
+    }
+    return Cube;
+}(_surface__WEBPACK_IMPORTED_MODULE_1__["Shape"]));
+
+var pyramidPoints = [Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 0, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0.5, 1, 0.5)];
 // Map to points in the surfaces of a rectangular pyramid
 var PYRAMID_COORDINATE_MAP = [
     [1, 0, 2, 3],
@@ -1896,25 +1737,14 @@ var PYRAMID_COORDINATE_MAP = [
     [3, 2, 4],
     [1, 3, 4],
 ];
-// Altitude of eqiulateral triangle for computing triangular patch size
-var EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(3.0) / 2.0;
-// Points array of an icosahedron
-var ICOS_X = 0.525731112119133606;
-var ICOS_Z = 0.850650808352039932;
-var ICOSAHEDRON_POINTS = [
-    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-ICOS_X, 0.0, -ICOS_Z),
-    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(ICOS_X, 0.0, -ICOS_Z),
-    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-ICOS_X, 0.0, ICOS_Z),
-    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(ICOS_X, 0.0, ICOS_Z),
-    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0.0, ICOS_Z, -ICOS_X),
-    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0.0, ICOS_Z, ICOS_X),
-    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0.0, -ICOS_Z, -ICOS_X),
-    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0.0, -ICOS_Z, ICOS_X),
-    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(ICOS_Z, ICOS_X, 0.0),
-    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-ICOS_Z, ICOS_X, 0.0),
-    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(ICOS_Z, -ICOS_X, 0.0),
-    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-ICOS_Z, -ICOS_X, 0.0),
-];
+var Pyramid = /** @class */ (function (_super) {
+    __extends(Pyramid, _super);
+    function Pyramid(options) {
+        return _super.call(this, 'pyramid', mapPointsToSurfaces(pyramidPoints, PYRAMID_COORDINATE_MAP)) || this;
+    }
+    return Pyramid;
+}(_surface__WEBPACK_IMPORTED_MODULE_1__["Shape"]));
+
 // Map to points in the surfaces of an icosahedron
 var ICOSAHEDRON_COORDINATE_MAP = [
     [0, 4, 1],
@@ -1938,30 +1768,33 @@ var ICOSAHEDRON_COORDINATE_MAP = [
     [9, 2, 5],
     [7, 2, 11],
 ];
-// TODO: Shapes should be part of the Shape() class  - box:Shape = new Shape().box()
-/** static methods to create `Shape` */
-var Triangle = /** @class */ (function () {
-    function Triangle() {
+// Altitude of eqiulateral triangle for computing triangular patch size
+var EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(3.0) / 2.0;
+// Points array of an icosahedron
+var ICOS_X = 0.525731112119133606;
+var ICOS_Z = 0.850650808352039932;
+var ICOSAHEDRON_POINTS = [
+    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-ICOS_X, 0.0, -ICOS_Z),
+    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(ICOS_X, 0.0, -ICOS_Z),
+    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-ICOS_X, 0.0, ICOS_Z),
+    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(ICOS_X, 0.0, ICOS_Z),
+    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0.0, ICOS_Z, -ICOS_X),
+    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0.0, ICOS_Z, ICOS_X),
+    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0.0, -ICOS_Z, -ICOS_X),
+    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0.0, -ICOS_Z, ICOS_X),
+    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(ICOS_Z, ICOS_X, 0.0),
+    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-ICOS_Z, ICOS_X, 0.0),
+    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(ICOS_Z, -ICOS_X, 0.0),
+    Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-ICOS_Z, -ICOS_X, 0.0),
+];
+var Icosahedron = /** @class */ (function (_super) {
+    __extends(Icosahedron, _super);
+    function Icosahedron(options) {
+        return _super.call(this, 'icosahedron', mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP)) || this;
     }
-    return Triangle;
-}());
+    return Icosahedron;
+}(_surface__WEBPACK_IMPORTED_MODULE_1__["Shape"]));
 
-var Primitive = /** @class */ (function () {
-    function Primitive() {
-        this.triangles = [];
-    }
-    return Primitive;
-}());
-
-/** Sometimes we just want an empty `Group` that we can add children to */
-function NullShape() {
-    var points = [Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0)];
-    return new _surface__WEBPACK_IMPORTED_MODULE_1__["Shape"]('nullshape', mapPointsToSurfaces(points, []));
-}
-function Cube(options) {
-    var points = [Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, -1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, -1, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, 1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, 1, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, -1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, -1, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 1, 1)];
-    return new _surface__WEBPACK_IMPORTED_MODULE_1__["Shape"]('cube', mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
-}
 //   unitcube() {
 //   let points = [P(0, 0, 0), P(0, 0, 1), P(0, 1, 0), P(0, 1, 1), P(1, 0, 0), P(1, 0, 1), P(1, 1, 0), P(1, 1, 1)];
 //   return new Shape('unitcube', this.mapPointsToSurfaces( points, CUBE_COORDINATE_MAP ));
@@ -1976,10 +1809,6 @@ function Cube(options) {
 //       return new Shape('rect', Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
 //     };
 //   })(this),
-function Pyramid(options) {
-    var points = [Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 0, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0.5, 1, 0.5)];
-    return new _surface__WEBPACK_IMPORTED_MODULE_1__["Shape"]('pyramid', mapPointsToSurfaces(points, PYRAMID_COORDINATE_MAP));
-}
 //   tetrahedron: (function (_this) {
 //     return function () {
 //       var points;
@@ -1987,9 +1816,6 @@ function Pyramid(options) {
 //       return new Shape('tetrahedron', Shapes.mapPointsToSurfaces(points, TETRAHEDRON_COORDINATE_MAP));
 //     };
 //   })(this),
-//   icosahedron: function () {
-//     return new Shape('icosahedron', Shapes.mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP));
-//   },
 //   sphere: function (subdivisions) {
 //     var i, j, ref, triangles;
 //     if (subdivisions == null) {
@@ -2272,6 +2098,7 @@ var Shape = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.type = type;
         _this.surfaces = surfaces;
+        _this.m = Object(_transformable__WEBPACK_IMPORTED_MODULE_2__["M"])(_transformable__WEBPACK_IMPORTED_MODULE_2__["IDENTITY"]);
         return _this;
     }
     /** Apply the supplied fill `Material` to each surface */
@@ -2295,12 +2122,13 @@ var Shape = /** @class */ (function (_super) {
 /*!******************************!*\
   !*** ./src/transformable.ts ***!
   \******************************/
-/*! exports provided: M, Transformable, Matrix */
+/*! exports provided: M, IDENTITY, Transformable, Matrix */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "M", function() { return M; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IDENTITY", function() { return IDENTITY; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Transformable", function() { return Transformable; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Matrix", function() { return Matrix; });
 // `Transformable` base class extended by `Shape` and `Group`.

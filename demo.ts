@@ -2,8 +2,9 @@
 import { Scene, Group, Shape, Viewport, P } from "./src/Seen2";
 // this will be somewhere else....
 import { CanvasRenderContext } from "./src/render/canvas";
+import { Canvas } from "./src/canvas";
 //import {P} from "./src/point"
-import { Cube, Primitive, Pyramid } from './src/shapes/primitives'
+import { Cube, Primitive, Pyramid, Icosahedron } from './src/shapes/primitives'
 
 
 
@@ -11,7 +12,7 @@ console.log('I am ALIVE')
 let width = 900
 let height = 500
 
-let ctx = new CanvasRenderContext('seen-canvas');
+let ctx = new Canvas('seen-canvas');
 
 // ////////////////// threeJS syntax  /////////////////
 // var scene = new Scene();
@@ -31,24 +32,26 @@ let ctx = new CanvasRenderContext('seen-canvas');
 // function animate() {
 // 	requestAnimationFrame( animate );
 // 	renderer.render( scene, camera );
-// }
+// 
 // animate();
 
 
 
 // ////////////////// SEEN_TS  syntax  /////////////////
 let scene = new Scene('seen-canvas');   // includes the camera, renderer is always CANVAS
-let pyramid = Pyramid({ color: 0x00ff00 })   // defaults to basic material
-scene.add(pyramid);
+let pyramid = new Pyramid({ color: 0x00ff00 })   // defaults to basic material
+let cube = new Cube({ color: 0x0000ff })
+let ico = new Icosahedron ({ color: 0x0000ff })
+scene.add(ico);
 
-// scene.camera.position.z = 5;   // actually a default, but doesn't hurt
-scene.render()
 
-// function animate() {
-// 	requestAnimationFrame( animate );
-// 	renderer.render( scene, camera );
-// }
-// animate();
+let animate = ()=>{
+    ico.m.rotx(.1)
+	scene.render()
+}
+
+scene.canvas.animationObservable.addObserver('tick', animate) 
+
 
 
 

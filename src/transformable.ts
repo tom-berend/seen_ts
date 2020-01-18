@@ -32,7 +32,7 @@ export function M(m: number[]) {
 // step, you can compute the global interpolated value for that time step and
 // apply that value directly to a matrix (once it is reset).
 
-const IDENTITY =
+export const IDENTITY =
     [1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
