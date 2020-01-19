@@ -18,7 +18,8 @@
  * whose copyright notice follows below.
  *
  *  - The names of the functions were changed (eg: vec3 -> V3).
- *  - A 'modified' flag added to V3 (consider using 'observable' instead)
+ *  - A 'modified' flag added to V3 
+ *  - Added a V4.dot() scaler method
  *  - The default M4 matrix is Identity, not Zero.
  *  - Combined into a single file to eliminate circular dependencies
  *  - Code was converted to newer TypeScript
@@ -1049,6 +1050,10 @@ export class V4 {
         if (!dest) { dest = this }
 
         return matrix.multiplyVec4(this, dest)
+    }
+
+    public dot(dest:V4) : number{
+        return (this.x * dest.x + this.y *dest.y + this.z * dest.z ) // ignore w
     }
 }
 

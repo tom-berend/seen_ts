@@ -1,5 +1,4 @@
-import { V2 } from './vectorMath'
-import {P,Point} from './point'
+import { V2, V4 } from './vectorMath'
 import { Observable } from './paon'
 
 ///////////////////////////////////////////////////////////////////////
@@ -191,12 +190,10 @@ export class Canvas {
     }
 
     /** Create a polygon path for a CANVAS rendering */
-    path(points: Point[]) {
+    path(points: V4[]) {
         this.ctx.beginPath()
 
         
-
-
         for (let i = 0, j = 0, len = points.length; j < len; i = ++j) {
             let p = points[i];
 
@@ -220,7 +217,7 @@ export class Canvas {
         return this
     }
 
-    circle(center: Point, radius: number) {
+    circle(center: V4, radius: number) {
         this.ctx.beginPath()
         this.ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI, true)
         return this

@@ -6,11 +6,11 @@
 // 
 
 import { Color } from './color'
-import { Point, P } from './point'
+// import { Point, P } from './point'
 import { Util } from './util'
 import { Material } from './materials'
 import { Transformable, } from './transformable'
-import {M4 } from './vectorMath'
+import {M4, V4 } from './vectorMath'
 import { StrokeProperties, FillProperties } from './canvas'
 
 // A `Surface` is a defined as a planar object in 3D space. These paths don't
@@ -23,8 +23,8 @@ export class Surface extends Transformable {
 
     surfaceType: string // TODO change to ENUM 'triangle', 'rectangle', etc
 
-    points: Point[]  // means different things for different surfaces
-    transformedPoints: Point[]  // scaled, translated, rotated, etc
+    points: V4[]   // means different things for different surfaces
+    transformedPoints: V4[]  // scaled, translated, rotated, etc
 
     // When 'false' this will override backface culling, which is useful if your
     // material is transparent. See comment in `Scene`.
@@ -40,7 +40,7 @@ export class Surface extends Transformable {
     id: string;
 
 
-    constructor(stype: string, p1: Point, p2: Point, p3?: Point, p4?: Point) {
+    constructor(stype: string, p1: V4, p2: V4, p3: V4, p4?: V4) {
         super()
         this.points = [p1, p2, p3]
 
@@ -55,8 +55,8 @@ export class Surface extends Transformable {
 
     /** shift this surface, recalculate normals, etc */
     transform(m: M4) {
-        this.transformedPoints = this.points.map((point): Point => {
-            return (point.transform(m))
+        this.transformedPoints = this.points.map((point): V4 => {
+            return (point.multiplyMat4(m))
         })
     }
 

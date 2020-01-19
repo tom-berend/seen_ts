@@ -2,11 +2,11 @@
 // //////// Shape primitives and shape-making methods
 // ------------------
 
-import { Point, P } from '../point'
+import { P } from '../point'
 import { Surface } from '../surface'  // TODO: rename Shape to Surface, Surface to Triangle
 import {Shape } from '../shape'
 import { Material } from '../materials'
-
+import {V4} from '../vectorMath'
 
 
 // Map to points in the surfaces of a tetrahedron
@@ -43,7 +43,7 @@ const TETRA_MAP = [
 /** static methods to create `Shape` */
 
 export class Triangle {
-    public points: Point[]
+    public points: V4[]
     //    public normal: Quaternion;
 }
 
@@ -61,6 +61,19 @@ export function NullShape() {
 interface ShapeOptions {
     color?: Number
 }
+
+// a single right-angle triangle on the xy axis lines
+const testTrianglePoints = [P(0, 0, 0), P(1, 0, 0), P(0, 1, 0)];
+// Map to points in the surfaces of a cube, two triangles to a side
+const testTriangle_coordinate_map = [
+    [0, 1, 2], // that's all folks
+]
+export class TestTriangle extends Shape {
+    constructor(options?: ShapeOptions) {
+        super('testTriangle', mapPointsToSurfaces(testTrianglePoints, testTriangle_coordinate_map))
+    }
+}
+
 
 
 const cubePoints = [P(-1, -1, -1), P(-1, -1, 1), P(-1, 1, -1), P(-1, 1, 1), P(1, -1, -1), P(1, -1, 1), P(1, 1, -1), P(1, 1, 1)];
@@ -359,7 +372,7 @@ export class Icosahedron extends Shape {
 /** points[] are the vertexes of the shape (indexed from zero), 
  * coordinateMap[] are sets of vertex indexes that form exterior triangles or quads 
  * we return an array of `Surface` objects (triangles) ready to transform  */
-function mapPointsToSurfaces(points: Point[], coordinateMap: any[]): Surface[] {
+function mapPointsToSurfaces(points: V4[], coordinateMap: any[]): Surface[] {
     // TODO: convert all exterior quads to triangles  (eg: two triangles per side for a cube)
     let s: Surface[] = [];
     points.forEach(point => {

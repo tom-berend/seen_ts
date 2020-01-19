@@ -4,7 +4,7 @@ import { Scene, Group, Shape, Viewport, P } from "./src/Seen2";
 import { CanvasRenderContext } from "./src/render/canvas";
 import { Canvas } from "./src/canvas";
 //import {P} from "./src/point"
-import { Cube, Primitive, Pyramid, Icosahedron } from './src/shapes/primitives'
+import { Cube, Primitive, Pyramid, Icosahedron, TestTriangle } from './src/shapes/primitives'
 import { V3 } from "./src/vectorMath";
 
 
@@ -41,24 +41,34 @@ let scene = new Scene('seen-canvas');   // includes the camera, renderer is alwa
 let pyramid = new Pyramid({ color: 0x00ff00 })   // defaults to basic material
 let cube = new Cube({ color: 0x0000ff })
 let ico = new Icosahedron({ color: 0x0000ff })
-scene.add(ico);
+let ico2 = new Icosahedron({ color: 0x0000ff })
+let tt = new TestTriangle()
 
-ico.rotation = new V3([.1, .1, .1])
-console.log(ico.rotation)
-ico.rotation.x += .2
+scene.add (ico)
+
+// scene.add(ico)
+// scene.add(ico2)
+
+// ico.rotation = new V3([.1, .1, .1])
+// console.log(ico.rotation)
+// ico.rotation.x += .2
+
+// console.log('ico matrix',ico.m)
+// console.log('ico matrix after',ico.m)
 
 // ico.scale = new V3 ([10,10,10])
 // ico.scale.x += .2
 
-// ico.position = new V3([10,10,10])
-// ico.position.x += 2
+// ico2.position = new V3([10,10,10])
+// console.log('ico2 position', ico2.position)
+
+
 // scene.render()
 
 let animate = () => {
-    ico.rotation.x += .001
-    ico.rotation.y += .001
+    ico.position.x += .0001
     scene.render()
-}
+ }
 
 scene.canvas.animationObservable.addObserver('tick', animate)
 

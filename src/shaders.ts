@@ -1,11 +1,12 @@
 import { Light } from "./light";
+import {V4} from './vectorMath'
 
 // TODO see what needs to change from RenderGroup to Group
 // import { RenderGroup } from "./render/rendermodel";
 import {Group}  from './model'
 
 import { Material } from "./materials";
-import { Point, POINT_Z } from './point'
+import { POINT_Z } from './point'
 import { Color } from "./color";
 
 // //// Shaders
@@ -16,7 +17,7 @@ const EYE_NORMAL = POINT_Z
 // These shading functions compute the shading for a surface. To reduce code
 // duplication, we aggregate them in a utils object.
 class ShaderUtils {
-    static applyDiffuse(c: Color, light: Light, lightNormal: Point, surfaceNormal: Point, material: Material) {
+    static applyDiffuse(c: Color, light: Light, lightNormal: V4, surfaceNormal: V4, material: Material) {
         let dot = lightNormal.dot(surfaceNormal)
 
         if (dot > 0) {
@@ -26,18 +27,20 @@ class ShaderUtils {
     }
 
 
-    static applyDiffuseAndSpecular(c: Color, light: Light, lightNormal: Point, surfaceNormal: Point, material: Material) {
+    static applyDiffuseAndSpecular(c: Color, light: Light, lightNormal: V4, surfaceNormal: V4, material: Material) {
         let dot = lightNormal.dot(surfaceNormal)
 
         if (dot > 0) {
             // Apply diffuse phong shading
             c.addChannels(light.colorIntensity.copy().scale(dot))
 
-            // Compute and apply specular phong shading
-            let reflectionNormal = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal)
-            let specularIntensity = Math.pow(0.5 + reflectionNormal.dot(EYE_NORMAL), material.specularExponent)
-            let specularColor = material.specularColor.copy().scale(specularIntensity * light.intensity / 255.0)
-            c.addChannels(specularColor)
+            // TODO  Error('dot is a number, not a V4 ?!?')
+            throw new Error('dot is a number, not a V4 ?!?')
+            // // Compute and apply specular phong shading
+            // let reflectionNormal = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal)
+            // let specularIntensity = Math.pow(0.5 + reflectionNormal.dot(EYE_NORMAL), material.specularExponent)
+            // let specularColor = material.specularColor.copy().scale(specularIntensity * light.intensity / 255.0)
+            // c.addChannels(specularColor)
         }
     }
 

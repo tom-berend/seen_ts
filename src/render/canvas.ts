@@ -1,7 +1,8 @@
 // //// HTML5 Canvas Context
 // ------------------
 
-import {P,Point} from '../point'
+import {P} from '../point'
+import {V4} from '../vectorMath'
 
 
 interface StrokeProperties {
@@ -81,7 +82,7 @@ export class CanvasRenderContext /*extends RenderContext*/ {
     }
 
     /** Create a polygon path for a CANVAS rendering */
-    path(points: Point[]) {
+    path(points: V4[]) {
         this.ctx.beginPath()
 
       
@@ -91,10 +92,10 @@ export class CanvasRenderContext /*extends RenderContext*/ {
         // tom's kluge for now /////////////////////
         // scale points by 5, and move them to 50,50
         if (i === 0) {
-            this.ctx.moveTo(p.x*5+50, p.y*5+50);
+            this.ctx.moveTo(p.x+50, p.y+50);
             console.log('moveTo',p.x,p.y)
         } else {
-            this.ctx.lineTo(p.x*5+50, p.y*5+50);
+            this.ctx.lineTo(p.+50, p.y+50);
             console.log('lineTo',p.x,p.y)
         }
     /////////////////////////////
@@ -116,7 +117,7 @@ export class CanvasRenderContext /*extends RenderContext*/ {
         return this
     }
 
-    circle(center: Point, radius: number) {
+    circle(center: V4, radius: number) {
         this.ctx.beginPath()
         this.ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI, true)
         return this

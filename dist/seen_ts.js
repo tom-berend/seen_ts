@@ -98,11 +98,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _src_Seen2__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./src/Seen2 */ "./src/Seen2.ts");
 /* harmony import */ var _src_canvas__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./src/canvas */ "./src/canvas.ts");
 /* harmony import */ var _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./src/shapes/primitives */ "./src/shapes/primitives.ts");
-/* harmony import */ var _src_vectorMath__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./src/vectorMath */ "./src/vectorMath.ts");
 
 
 //import {P} from "./src/point"
-
 
 var width = 900;
 var height = 500;
@@ -128,18 +126,23 @@ var scene = new _src_Seen2__WEBPACK_IMPORTED_MODULE_0__["Scene"]('seen-canvas');
 var pyramid = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Pyramid"]({ color: 0x00ff00 }); // defaults to basic material
 var cube = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Cube"]({ color: 0x0000ff });
 var ico = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Icosahedron"]({ color: 0x0000ff });
+var ico2 = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Icosahedron"]({ color: 0x0000ff });
+var tt = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["TestTriangle"]();
 scene.add(ico);
-ico.rotation = new _src_vectorMath__WEBPACK_IMPORTED_MODULE_3__["V3"]([.1, .1, .1]);
-console.log(ico.rotation);
-ico.rotation.x += .2;
+// scene.add(ico)
+// scene.add(ico2)
+// ico.rotation = new V3([.1, .1, .1])
+// console.log(ico.rotation)
+// ico.rotation.x += .2
+// console.log('ico matrix',ico.m)
+// console.log('ico matrix after',ico.m)
 // ico.scale = new V3 ([10,10,10])
 // ico.scale.x += .2
-// ico.position = new V3([10,10,10])
-// ico.position.x += 2
+// ico2.position = new V3([10,10,10])
+// console.log('ico2 position', ico2.position)
 // scene.render()
 var animate = function () {
-    ico.rotation.x += .001;
-    ico.rotation.y += .001;
+    ico.position.x += .0001;
     scene.render();
 };
 scene.canvas.animationObservable.addObserver('tick', animate);
@@ -790,8 +793,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Lights", function() { return Lights; });
 /* harmony import */ var _transformable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./transformable */ "./src/transformable.ts");
 /* harmony import */ var _point__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./point */ "./src/point.ts");
-/* harmony import */ var _color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./color */ "./src/color.ts");
-/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./util */ "./src/util.ts");
+/* harmony import */ var _vectorMath__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./vectorMath */ "./src/vectorMath.ts");
+/* harmony import */ var _color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./color */ "./src/color.ts");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./util */ "./src/util.ts");
 // //// Lights
 // ------------------
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -811,19 +815,20 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
 // This model object holds the attributes and transformation of a light source.
 var Light = /** @class */ (function (_super) {
     __extends(Light, _super);
     function Light(type, options) {
         var _this = _super.call(this) || this;
-        _this.point = new _point__WEBPACK_IMPORTED_MODULE_1__["Point"]();
-        _this.color = new _color__WEBPACK_IMPORTED_MODULE_2__["Color"]().white();
+        _this.point = new _vectorMath__WEBPACK_IMPORTED_MODULE_2__["V4"]();
+        _this.color = new _color__WEBPACK_IMPORTED_MODULE_3__["Color"]().white();
         _this.type = 'point'; // directional, ambient
         _this.intensity = 0.01;
         _this.normal = Object(_point__WEBPACK_IMPORTED_MODULE_1__["P"])(1, -1, -1).normalize();
         _this.enabled = true;
-        _this.id = _util__WEBPACK_IMPORTED_MODULE_3__["Util"].uniqueId('L');
-        _util__WEBPACK_IMPORTED_MODULE_3__["Util"].defaults(_this, options, _this.defaults);
+        _this.id = _util__WEBPACK_IMPORTED_MODULE_4__["Util"].uniqueId('L');
+        _util__WEBPACK_IMPORTED_MODULE_4__["Util"].defaults(_this, options, _this.defaults);
         return _this;
     }
     Light.prototype.render = function () {
@@ -1095,17 +1100,18 @@ var Observable = /** @class */ (function () {
 /*!**********************!*\
   !*** ./src/point.ts ***!
   \**********************/
-/*! exports provided: P, Point, POINT_ZERO, POINT_X, POINT_Y, POINT_Z */
+/*! exports provided: P, POINT_ZERO, POINT_X, POINT_Y, POINT_Z */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "P", function() { return P; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Point", function() { return Point; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "POINT_ZERO", function() { return POINT_ZERO; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "POINT_X", function() { return POINT_X; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "POINT_Y", function() { return POINT_Y; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "POINT_Z", function() { return POINT_Z; });
+/* harmony import */ var _vectorMath__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./vectorMath */ "./src/vectorMath.ts");
+
 // The `Point` object contains x,y,z, and w coordinates. `Point`s support
 // various arithmetic operations with other `Points`, scalars, or `Matrices`.
 //
@@ -1114,138 +1120,136 @@ __webpack_require__.r(__webpack_exports__);
 /**  Convenience method for creating a new `Point` object*/
 function P(x, y, z, w) {
     if (w === void 0) { w = 1; }
-    return (new Point(x, y, z, w));
+    return (new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["V4"]([x, y, z, w]));
 }
-var Point = /** @class */ (function () {
-    function Point(x, y, z, w) {
-        if (x === void 0) { x = 0; }
-        if (y === void 0) { y = 0; }
-        if (z === void 0) { z = 0; }
-        if (w === void 0) { w = 1; }
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.w = w;
-    }
-    /** useful for looking at a point with console.log()  */
-    Point.prototype.show = function () {
-        return ("P(" + this.x + ", " + this.y + ", " + this.z + ") ");
-    };
-    /** Creates and returns a new `Point` with the same values as this object. */
-    Point.prototype.copy = function () {
-        return P(this.x, this.y, this.z, this.w);
-    };
-    /** Copies the values of the supplied `Point` into this object. */
-    Point.prototype.set = function (p) {
-        this.x = p.x;
-        this.y = p.y;
-        this.z = p.z;
-        this.w = p.w;
-        return this;
-    };
-    // Performs parameter-wise addition with the supplied `Point`. Excludes `this.w`.
-    Point.prototype.add = function (q) {
-        this.x += q.x;
-        this.y += q.y;
-        this.z += q.z;
-        return this;
-    };
-    // Performs parameter-wise subtraction with the supplied `Point`. Excludes `this.w`.
-    Point.prototype.subtract = function (q) {
-        this.x -= q.x;
-        this.y -= q.y;
-        this.z -= q.z;
-        return this;
-    };
-    // Apply a translation.  Excludes `this.w`.
-    Point.prototype.translate = function (x, y, z) {
-        this.x += x;
-        this.y += y;
-        this.z += z;
-        return this;
-    };
-    // Multiplies each parameters by the supplied scalar value. Excludes `this.w`.
-    Point.prototype.multiply = function (n) {
-        this.x *= n;
-        this.y *= n;
-        this.z *= n;
-        return this;
-    };
-    // Divides each parameters by the supplied scalar value. Excludes `this.w`.
-    Point.prototype.divide = function (n) {
-        this.x /= n;
-        this.y /= n;
-        this.z /= n;
-        return this;
-    };
-    // Rounds each coordinate to the nearest integer. Excludes `this.w`.
-    Point.prototype.round = function () {
-        this.x = Math.round(this.x);
-        this.y = Math.round(this.y);
-        this.z = Math.round(this.z);
-        return this;
-    };
-    // Divides this `Point` by its magnitude. If the point is (0,0,0) we return (0,0,1).
-    Point.prototype.normalize = function () {
-        var n = this.magnitude();
-        if (n == 0) // Strict zero comparison -- may be worth using an epsilon
-            this.set(POINT_Z);
-        else
-            this.divide(n);
-        return this;
-    };
-    /** Returns a new point that is perpendicular to this point */
-    Point.prototype.perpendicular = function () {
-        var n = this.copy().cross(POINT_Z);
-        var mag = n.magnitude();
-        if (mag !== 0)
-            return n.divide(mag);
-        // can't find perpendicular of z axis, so use x axis
-        return this.copy().cross(POINT_X).normalize();
-    };
-    // Apply a transformation from the supplied `Matrix`.
-    Point.prototype.transform = function (matrix) {
-        var r = POINT_POOL;
-        r.x = this.x * matrix.at(0) + this.y * matrix.at(1) + this.z * matrix.at(2) + this.w * matrix.at(3);
-        r.y = this.x * matrix.at(4) + this.y * matrix.at(5) + this.z * matrix.at(6) + this.w * matrix.at(7);
-        r.z = this.x * matrix.at(8) + this.y * matrix.at(9) + this.z * matrix.at(10) + this.w * matrix.at(11);
-        r.w = this.x * matrix.at(12) + this.y * matrix.at(13) + this.z * matrix.at(14) + this.w * matrix.at(15);
-        this.set(r);
-        return (this);
-    };
-    // Returns this `Point`s magnitude squared. Excludes `this.w`.
-    Point.prototype.magnitudeSquared = function () {
-        return this.dot(this);
-    };
-    // Returns this `Point`s magnitude. Excludes `this.w`.
-    Point.prototype.magnitude = function () {
-        return Math.sqrt(this.magnitudeSquared());
-    };
-    // Computes the dot product with the supplied `Point`.
-    Point.prototype.dot = function (q) {
-        return this.x * q.x + this.y * q.y + this.z * q.z;
-    };
-    /** Computes the cross product with the supplied `Point`. */
-    Point.prototype.cross = function (q) {
-        var r = POINT_POOL;
-        r.x = this.y * q.z - this.z * q.y;
-        r.y = this.z * q.x - this.x * q.z;
-        r.z = this.x * q.y - this.y * q.x;
-        this.set(r);
-        return this;
-    };
-    return Point;
-}());
-
-// seen.Points = {
-//   X    : -> seen.P(1, 0, 0)
-//   Y    : -> seen.P(0, 1, 0)
-//   Z    : -> seen.P(0, 0, 1)
-//   ZERO : -> seen.P(0, 0, 0)
+// export class Point {
+//     x: number
+//     y: number
+//     z: number
+//     w: number
+//     constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 1) {
+//         this.x = x
+//         this.y = y
+//         this.z = z
+//         this.w = w
+//     }
+//     /** useful for looking at a point with console.log()  */
+//     show(): string {
+//         return (`P(${this.x}, ${this.y}, ${this.z}) `)
+//     }
+//     /** Creates and returns a new `Point` with the same values as this object. */
+//     copy() {
+//         return P(this.x, this.y, this.z, this.w)
+//     }
+//     /** Copies the values of the supplied `Point` into this object. */
+//     set(p: Point) {
+//         this.x = p.x
+//         this.y = p.y
+//         this.z = p.z
+//         this.w = p.w
+//         return this
+//     }
+//     // Performs parameter-wise addition with the supplied `Point`. Excludes `this.w`.
+//     add(q: Point) {
+//         this.x += q.x
+//         this.y += q.y
+//         this.z += q.z
+//         return this
+//     }
+//     // Performs parameter-wise subtraction with the supplied `Point`. Excludes `this.w`.
+//     subtract(q: Point) {
+//         this.x -= q.x
+//         this.y -= q.y
+//         this.z -= q.z
+//         return this
+//     }
+//     // Apply a translation.  Excludes `this.w`.
+//     translate(x: number, y: number, z: number) {
+//         this.x += x
+//         this.y += y
+//         this.z += z
+//         return this
+//     }
+//     // Multiplies each parameters by the supplied scalar value. Excludes `this.w`.
+//     multiply(n: number) {
+//         this.x *= n
+//         this.y *= n
+//         this.z *= n
+//         return this
+//     }
+//     // Divides each parameters by the supplied scalar value. Excludes `this.w`.
+//     divide(n: number) {
+//         this.x /= n
+//         this.y /= n
+//         this.z /= n
+//         return this
+//     }
+//     // Rounds each coordinate to the nearest integer. Excludes `this.w`.
+//     round() {
+//         this.x = Math.round(this.x)
+//         this.y = Math.round(this.y)
+//         this.z = Math.round(this.z)
+//         return this
+//     }
+//     // Divides this `Point` by its magnitude. If the point is (0,0,0) we return (0,0,1).
+//     normalize() {
+//         let n = this.magnitude()
+//         if (n == 0) // Strict zero comparison -- may be worth using an epsilon
+//             this.set(POINT_Z)
+//         else
+//             this.divide(n)
+//         return this
+//     }
+//     /** Returns a new point that is perpendicular to this point */
+//     perpendicular() {
+//         let n = this.copy().cross(POINT_Z)
+//         let mag = n.magnitude()
+//         if (mag !== 0)
+//             return n.divide(mag)
+//         // can't find perpendicular of z axis, so use x axis
+//         return this.copy().cross(POINT_X).normalize()
+//     }
+//     // Apply a transformation from the supplied `Matrix`.
+//     transform(matrix: M4): Point {  // TODO: fix up when Matrix is defined
+//         let r = POINT_POOL
+//         r.x = this.x * matrix.at(0) + this.y * matrix.at(1) + this.z * matrix.at(2) + this.w * matrix.at(3)
+//         r.y = this.x * matrix.at(4) + this.y * matrix.at(5) + this.z * matrix.at(6) + this.w * matrix.at(7)
+//         r.z = this.x * matrix.at(8) + this.y * matrix.at(9) + this.z * matrix.at(10) + this.w * matrix.at(11)
+//         r.w = this.x * matrix.at(12) + this.y * matrix.at(13) + this.z * matrix.at(14) + this.w * matrix.at(15)
+//         this.set(r)
+//         return (this)
+//     }
+//     // Returns this `Point`s magnitude squared. Excludes `this.w`.
+//     magnitudeSquared() {
+//         return this.dot(this)
+//     }
+//     // Returns this `Point`s magnitude. Excludes `this.w`.
+//     magnitude() {
+//         return Math.sqrt(this.magnitudeSquared())
+//     }
+//     // Computes the dot product with the supplied `Point`.
+//     dot(q: Point) {
+//         return this.x * q.x + this.y * q.y + this.z * q.z
+//     }
+//     /** Computes the cross product with the supplied `Point`. */
+//     cross(q: Point) {
+//         let r = POINT_POOL
+//         r.x = this.y * q.z - this.z * q.y
+//         r.y = this.z * q.x - this.x * q.z
+//         r.z = this.x * q.y - this.y * q.x
+//         this.set(r)
+//         return this
+//     }
 // }
-// A pool object which prevents us from having to create new `Point` objects
-// for various calculations, which vastly improves performance.
-var POINT_POOL = P(0, 0, 0, 0);
+// // seen.Points = {
+// //   X    : -> seen.P(1, 0, 0)
+// //   Y    : -> seen.P(0, 1, 0)
+// //   Z    : -> seen.P(0, 0, 1)
+// //   ZERO : -> seen.P(0, 0, 0)
+// // }
+// // A pool object which prevents us from having to create new `Point` objects
+// // for various calculations, which vastly improves performance.
+// var POINT_POOL = P(0, 0, 0, 0)
 // A few useful `Point` objects. Be sure that you don't invoke destructive
 // methods on these objects.
 var POINT_ZERO = P(0, 0, 0);
@@ -1319,43 +1323,35 @@ var Scene = /** @class */ (function () {
     Scene.prototype.add = function (child) {
         this.world.add(child);
     };
-    /** creates a surfacelist with updated transformed points*/
-    Scene.prototype.processAllSurfaces = function (group) {
-        var surfaceList = [];
-        group.shapes.forEach(function (shape) {
-            shape.recalculateMatrix();
-            shape.surfaces.forEach(function (surface) {
-                // apply the shape's m to that surface
-                surface.transform(shape.m);
-                // surface.transformedPoints.map((p) => console.log('transformed',p.show()))
-                surfaceList.push(surface);
-            });
-        });
-        return (surfaceList);
-    };
-    // TODO actually cull
-    Scene.prototype.cullSurfaces = function (surfaceList, camera) {
-        return (surfaceList);
-    };
     // The primary method that produces the render models, which are then used
     // by the `RenderContext` to paint the scene.
     Scene.prototype.render = function () {
-        // recalculate the matrix for the entire shape
         var _this = this;
-        // get all surfaces
-        var allSurfaces = this.processAllSurfaces(this.world);
-        // console.log('Allsurfaces', allSurfaces)
-        // cull the ones pointing the wrong way
-        var culledSurfaces;
-        if (this.cullBackfaces) {
-            culledSurfaces = this.cullSurfaces(allSurfaces, this.camera);
-        }
-        else {
-            culledSurfaces = allSurfaces;
-        }
+        // the surfaces we eventually will have to draw
+        var surfaceList = [];
+        // will be recursive, but start at the top
+        var group = this.world;
+        // examine each shape in  this group
+        group.shapes.forEach(function (shape) {
+            shape.recalculateMatrix(); // one matrix for each shape
+            shape.surfaces.forEach(function (surface) {
+                // apply the shape's m to that surface
+                surface.points.map(function (p) { return showPoint('points', p); });
+                surface.transform(shape.m);
+                surface.transformedPoints.map(function (p) { return showPoint('transformedpoints', p); });
+                surfaceList.push(surface);
+            });
+        });
+        // // cull the ones pointing the wrong way
+        // let culledSurfaces: Surface[]
+        // if (this.cullBackfaces) {
+        //     culledSurfaces = this.cullSurfaces(allSurfaces, this.camera)
+        // } else {
+        //     culledSurfaces = allSurfaces;
+        // }
         // console.log('culledSurfaces', culledSurfaces)
         this.canvas.clearCanvas();
-        culledSurfaces.forEach(function (surface) {
+        surfaceList.forEach(function (surface) {
             //surface.points.map((p) => console.log(p.show()))
             _this.canvas.draw(surface.strokeMaterial);
             _this.canvas.path(surface.transformedPoints);
@@ -1458,6 +1454,9 @@ var Scene = /** @class */ (function () {
     return Scene;
 }());
 
+function showPoint(msg, p) {
+    console.log(msg + " (" + p.x + "," + p.y + "," + p.z + "," + p.w + ")");
+}
 
 
 /***/ }),
@@ -1511,11 +1510,13 @@ var ShaderUtils = /** @class */ (function () {
         if (dot > 0) {
             // Apply diffuse phong shading
             c.addChannels(light.colorIntensity.copy().scale(dot));
-            // Compute and apply specular phong shading
-            var reflectionNormal = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal);
-            var specularIntensity = Math.pow(0.5 + reflectionNormal.dot(EYE_NORMAL), material.specularExponent);
-            var specularColor = material.specularColor.copy().scale(specularIntensity * light.intensity / 255.0);
-            c.addChannels(specularColor);
+            // TODO  Error('dot is a number, not a V4 ?!?')
+            throw new Error('dot is a number, not a V4 ?!?');
+            // // Compute and apply specular phong shading
+            // let reflectionNormal = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal)
+            // let specularIntensity = Math.pow(0.5 + reflectionNormal.dot(EYE_NORMAL), material.specularExponent)
+            // let specularColor = material.specularColor.copy().scale(specularIntensity * light.intensity / 255.0)
+            // c.addChannels(specularColor)
         }
     };
     ShaderUtils.applyAmbient = function (c, light) {
@@ -1705,7 +1706,7 @@ var Shape = /** @class */ (function (_super) {
 /*!**********************************!*\
   !*** ./src/shapes/primitives.ts ***!
   \**********************************/
-/*! exports provided: Triangle, Primitive, NullShape, Cube, Pyramid, Icosahedron */
+/*! exports provided: Triangle, Primitive, NullShape, TestTriangle, Cube, Pyramid, Icosahedron */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1713,6 +1714,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Triangle", function() { return Triangle; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Primitive", function() { return Primitive; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NullShape", function() { return NullShape; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TestTriangle", function() { return TestTriangle; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cube", function() { return Cube; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Pyramid", function() { return Pyramid; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Icosahedron", function() { return Icosahedron; });
@@ -1781,6 +1783,20 @@ function NullShape() {
     var points = [Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0)];
     return new _shape__WEBPACK_IMPORTED_MODULE_2__["Shape"]('nullshape', mapPointsToSurfaces(points, []));
 }
+// a single right-angle triangle on the xy axis lines
+var testTrianglePoints = [Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 1, 0)];
+// Map to points in the surfaces of a cube, two triangles to a side
+var testTriangle_coordinate_map = [
+    [0, 1, 2],
+];
+var TestTriangle = /** @class */ (function (_super) {
+    __extends(TestTriangle, _super);
+    function TestTriangle(options) {
+        return _super.call(this, 'testTriangle', mapPointsToSurfaces(testTrianglePoints, testTriangle_coordinate_map)) || this;
+    }
+    return TestTriangle;
+}(_shape__WEBPACK_IMPORTED_MODULE_2__["Shape"]));
+
 var cubePoints = [Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, -1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, -1, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, 1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, 1, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, -1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, -1, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 1, 1)];
 // Map to points in the surfaces of a cube, two triangles to a side
 var CUBE_COORDINATE_MAP = [
@@ -2126,6 +2142,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+// import { Point, P } from './point'
 
 
 
@@ -2157,7 +2174,7 @@ var Surface = /** @class */ (function (_super) {
     /** shift this surface, recalculate normals, etc */
     Surface.prototype.transform = function (m) {
         this.transformedPoints = this.points.map(function (point) {
-            return (point.transform(m));
+            return (point.multiplyMat4(m));
         });
     };
     Surface.prototype.fill = function (fill) {
@@ -2233,13 +2250,33 @@ var Transformable = /** @class */ (function () {
         this._position = new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["V3"]([1, 1, 1]);
     }
     Object.defineProperty(Transformable.prototype, "rotation", {
+        ///////////////////////
+        // define get and set for rotation, scale, position
         get: function () {
             return this._rotation;
         },
         set: function (r) {
-            console.log('SET', r);
             this._rotation = r;
-            this.recalculateMatrix();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transformable.prototype, "scale", {
+        get: function () {
+            return this._scale;
+        },
+        set: function (r) {
+            this._scale = r;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transformable.prototype, "position", {
+        get: function () {
+            return this._position;
+        },
+        set: function (r) {
+            this._position = r;
         },
         enumerable: true,
         configurable: true
@@ -2256,146 +2293,6 @@ var Transformable = /** @class */ (function () {
     return Transformable;
 }());
 
-/* export */ var Matrix = /** @class */ (function () {
-    function Matrix() {
-        this.m = new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["M4"]();
-        this.ARRAY_POOL = Array.from(IDENTITY);
-        this.baked = Array.from(IDENTITY);
-        //     /** Accepts a 16-value `Array`, defaults to the identity matrix.*/
-        //     constructor(m?: number[]) {
-        //         if (m)
-        //             this.m = m;
-        //     }
-        //     ///////////////////////////////////////////////
-        //     // here is the method that does all the work !!
-        //     ///////////////////////////////////////////////
-        //     // Apply a transformation`
-        //     transform(m: M4) {
-        //         this.multiply(m)
-        //         return this
-        //     }
-        //     ///////////////////////////////////////////////
-        //     // rest of the class is just matrix arithmetic
-        //     ///////////////////////////////////////////////
-        //     // Returns a new matrix instances with a copy of the value array
-        //     copy() {
-        //         return new Matrix(Array.from(this.m))
-        //     }
-        //     // Multiply by the 16-value `Array` argument. This method uses the
-        //     // `ARRAY_POOL`, which prevents us from having to re-initialize a new
-        //     // temporary matrix every time. This drastically improves performance.
-        //     multiply(m: Matrix): Matrix {
-        //         if (!Array.isArray(m))  // will fail anyhow, but want a stack trace
-        //             console.trace('transformable multiply', m)
-        //         let c = this.ARRAY_POOL  // just a reference pointer
-        //         for (let j = 0; j < 4; j++) {
-        //             for (let i = 0; i < 16; i += 4) {
-        //                 c[i + j] =
-        //                     m.m[i] * this.m[j] +
-        //                     m.m[i + 1] * this.m[4 + j] +
-        //                     m.m[i + 2] * this.m[8 + j] +
-        //                     m.m[i + 3] * this.m[12 + j]
-        //             }
-        //         }
-        //         this.ARRAY_POOL = this.m  // just a reference pointer
-        //         this.m = c
-        //         return this
-        //     }
-        //     // Resets the matrix to the baked-in (default: identity).
-        //     reset(): Matrix {
-        //         this.m = Array.from(this.baked) // shallow copy
-        //         return this
-        //     }
-        //     // Sets the array that this matrix will return to when calling `.reset()`.
-        //     // With no arguments, it uses the current matrix state.
-        //     bake(m: number[]) {
-        //         if (m)
-        //             this.baked = m
-        //         else
-        //             this.baked = Array.from(this.m)
-        //         return this
-        //     }
-        //     //   // Multiply by the `Matrix` argument.
-        //     //   multiply(b: matrix) {
-        //     //       return this.matrix(b.m)
-        //     //   }
-        //     //   // Tranposes this matrix
-        //     //   transpose() {
-        //     //       let c = this.ARRAY_POOL;
-        //     //       let i, k, len, ti;
-        //     //       for (i = k = 0, len = TRANSPOSE_INDICES.length; k < len; i = k++) {
-        //     //           ti = TRANSPOSE_INDICES[i];
-        //     //           c[i] = this.m[ti];
-        //     //       }
-        //     //       ARRAY_POOL = this.m;
-        //     //       this.m = c;
-        //     //       return this;
-        //     //   }
-        //     // Apply a rotation about the X axis. `Theta` is measured in Radians
-        //     rotx(theta: number): Matrix {
-        //         let ct = Math.cos(theta)
-        //         let st = Math.sin(theta)
-        //         let rm = [1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1]
-        //         return M(rm)
-        //     }
-        //     // Apply a rotation about the Y axis. `Theta` is measured in Radians
-        //     roty(theta: number): Matrix {
-        //         let ct = Math.cos(theta)
-        //         let st = Math.sin(theta)
-        //         let rm = [ct, 0, st, 0, 0, 1, 0, 0, -st, 0, ct, 0, 0, 0, 0, 1]
-        //         return M(rm)
-        //     }
-        //     // Apply a rotation about the Z axis. `Theta` is measured in Radians
-        //     rotz(theta: number): Matrix {
-        //         let ct = Math.cos(theta)
-        //         let st = Math.sin(theta)
-        //         let rm = [ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
-        //         return M(rm)
-        //     }
-        //     // Apply a translation. All arguments default to `0`
-        //     translate(x: number = 0, y: number = 0, z: number = 0): Matrix {
-        //         let rm = [1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1]
-        //         return M(rm)
-        //     }
-        //     // Apply a scale. If not all arguments are supplied, each dimension (x,y,z)
-        //     // is copied from the previous arugment. Therefore, `_scale()` is equivalent
-        //     // to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
-        //     scale(sx: number = 1, sy?: number, sz?: number): M4 {
-        //         if (!sy)
-        //             sy = sx
-        //         if (!sz)
-        //             sz = sy
-        //         let rm = [sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, sz, 0, 0, 0, 0, 1]
-        //         return M(rm)
-        //     }
-        //     // // Returns `true` iff the supplied `Arrays` are the same size and contain the same values.
-        //     // isEqual(other: M4) {
-        //     //     var i, j, len, val;
-        //     //     // if (this.matrix.length !== other.length) {
-        //     //     //    return false;
-        //     //     // }
-        //     //     for (i = 0, len = 16; i < len; i++) {
-        //     //         if (this.m.at(i) !== other.at(i) {
-        //     //             return false;
-        //     //         }
-        //     //     }
-        //     //     return true;
-        //     // }
-    }
-    return Matrix;
-}());
-//   identity() {
-//       return (new Transformable())
-//   }
-//   flipx() {
-//       return (this.identity().scale(-1, 1, 1))
-//   }
-//   flipy() {
-//       return (this.identity().scale(1, -1, 1))
-//   }
-//   flipz() {
-//       return (this.identity().scale(1, 1, -1))
-//   }
 
 
 /***/ }),
@@ -2491,7 +2388,8 @@ __webpack_require__.r(__webpack_exports__);
  * whose copyright notice follows below.
  *
  *  - The names of the functions were changed (eg: vec3 -> V3).
- *  - A 'modified' flag added to V3 (consider using 'observable' instead)
+ *  - A 'modified' flag added to V3
+ *  - Added a V4.dot() scaler method
  *  - The default M4 matrix is Identity, not Zero.
  *  - Combined into a single file to eliminate circular dependencies
  *  - Code was converted to newer TypeScript
@@ -3422,6 +3320,9 @@ var V4 = /** @class */ (function () {
             dest = this;
         }
         return matrix.multiplyVec4(this, dest);
+    };
+    V4.prototype.dot = function (dest) {
+        return (this.x * dest.x + this.y * dest.y + this.z * dest.z); // ignore w
     };
     V4.zero = new V4([0, 0, 0, 1]);
     V4.one = new V4([1, 1, 1, 1]);

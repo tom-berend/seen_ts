@@ -2,19 +2,20 @@
 // ------------------
 
 import {Transformable} from './transformable'
-import { P, Point } from './point'
+import { P } from './point'
+import {V4} from './vectorMath'
 import { Color } from './color'
 import { Util } from './util'
 
 
 // This model object holds the attributes and transformation of a light source.
 export class Light extends Transformable{
-  public point  : Point = new Point() 
+  public point  : V4 = new V4() 
   public color  :Color = new Color().white() 
   public type: string = 'point'  // directional, ambient
   public intensity : number = 0.01
   public colorIntensity:Color
-  public normal:Point = P(1, -1, -1).normalize()
+  public normal:V4 = P(1, -1, -1).normalize()
   public enabled   : boolean = true
   public id = Util.uniqueId('L')
   public defaults:any

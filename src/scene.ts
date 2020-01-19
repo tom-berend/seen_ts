@@ -2,7 +2,7 @@
 
 import { Camera, Viewport } from './camera'
 import { Transformable } from './transformable'
-import { M4 } from './vectorMath'
+import { M4, V4 } from './vectorMath'
 
 // TODO resolve between RenderGroup and Group
 // import { RenderGroup } from './render/rendermodel'
@@ -83,52 +83,46 @@ export class Scene {
         this.world.add(child)
     }
 
-    /** creates a surfacelist with updated transformed points*/
-    processAllSurfaces(group: Group): Surface[] {
-        let surfaceList: Surface[] = []
-        group.shapes.forEach((shape) => {
-            shape.recalculateMatrix()
-            shape.surfaces.forEach((surface) => {
-                // apply the shape's m to that surface
-                surface.transform(shape.m)
-                // surface.transformedPoints.map((p) => console.log('transformed',p.show()))
-                
-
-                surfaceList.push(surface)
-            })
-        })
-
-        return (surfaceList)
-    }
-
-    // TODO actually cull
-    cullSurfaces(surfaceList: Surface[], camera: Camera): Surface[] {
-        return (surfaceList)
-    }
 
 
     // The primary method that produces the render models, which are then used
     // by the `RenderContext` to paint the scene.
     render() {
-        // recalculate the matrix for the entire shape
+        // the surfaces we eventually will have to draw
+        let surfaceList: Surface[] = []
 
-        // get all surfaces
-        let allSurfaces = this.processAllSurfaces(this.world)
-        // console.log('Allsurfaces', allSurfaces)
+        // will be recursive, but start at the top
+        let group = this.world
 
-        // cull the ones pointing the wrong way
-        let culledSurfaces: Surface[]
-        if (this.cullBackfaces) {
-            culledSurfaces = this.cullSurfaces(allSurfaces, this.camera)
-        } else {
-            culledSurfaces = allSurfaces;
-        }
+        // examine each shape in  this group
+        group.shapes.forEach((shape) => {
+
+            shape.recalculateMatrix()  // one matrix for each shape
+
+            shape.surfaces.forEach((surface) => {
+                // apply the shape's m to that surface
+                surface.points.map((p) => showPoint('points', p))
+                surface.transform(shape.m)
+                surface.transformedPoints.map((p) => showPoint('transformedpoints', p))
+
+                surfaceList.push(surface)
+            })
+        })
+
+
+        // // cull the ones pointing the wrong way
+        // let culledSurfaces: Surface[]
+        // if (this.cullBackfaces) {
+        //     culledSurfaces = this.cullSurfaces(allSurfaces, this.camera)
+        // } else {
+        //     culledSurfaces = allSurfaces;
+        // }
 
         // console.log('culledSurfaces', culledSurfaces)
 
 
         this.canvas.clearCanvas()
-        culledSurfaces.forEach((surface) => {
+        surfaceList.forEach((surface) => {
             //surface.points.map((p) => console.log(p.show()))
             this.canvas.draw(surface.strokeMaterial)
             this.canvas.path(surface.transformedPoints)
@@ -248,4 +242,9 @@ export class Scene {
     flushCache() {
         this._renderGroupCache = {}
     }
+}
+
+
+function showPoint(msg:String, p: V4) {
+    console.log(`${msg} (${p.x},${p.y},${p.z},${p.w})`)
 }

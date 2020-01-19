@@ -1,4 +1,5 @@
-import { P, Point } from './point'
+import { P } from './point'
+import {V4} from './vectorMath'
 
 // //// Affine
 // //////// Fake projections with affine transforms
@@ -45,7 +46,7 @@ const INITIAL_STATE_MATRIX = [
 //
 // To use the affine transform, use the indices like so (note that we flip y):
 //     x[0], x[3], -x[1], -x[4], x[2], x[5]
-function solveForAffineTransform(points: Point[]) {
+function solveForAffineTransform(points: V4[]) {
     let A = INITIAL_STATE_MATRIX
 
     let b = [
