@@ -18,13 +18,14 @@
  * whose copyright notice follows below.
  *
  *  - The names of the functions were changed (eg: vec3 -> V3).
- *  - combined into a single file to eliminate circular dependencies
- *  - The code was converted to newer TypeScript
+ *  - A 'modified' flag added to V3 (consider using 'observable' instead)
+ *  - The default M4 matrix is Identity, not Zero.
+ *  - Combined into a single file to eliminate circular dependencies
+ *  - Code was converted to newer TypeScript
  *  - Several small type errors were fixed (TypeScript found them)
  *  - A few inconsequential additions like 'Quat.zero'
  *
  */
-
 
 
 /*
@@ -359,25 +360,30 @@ export class V3 {
 
     set x(value: number) {
         this.values[0] = value
+        this.modified = true
     }
 
     set y(value: number) {
         this.values[1] = value
+        this.modified = true
     }
 
     set z(value: number) {
         this.values[2] = value
+        this.modified = true
     }
 
     set xy(values: [number, number]) {
         this.values[0] = values[0]
         this.values[1] = values[1]
+        this.modified = true
     }
 
     set xyz(values: [number, number, number]) {
         this.values[0] = values[0]
         this.values[1] = values[1]
         this.values[2] = values[2]
+        this.modified = true
     }
 
     public static readonly zero = new V3([0, 0, 0])
@@ -510,6 +516,7 @@ export class V3 {
     }
 
     private values = new Float32Array(3)
+    public modified = false
 
     constructor(values?: [number, number, number]) {
         if (values !== undefined) {
@@ -1925,6 +1932,8 @@ export class M4 {
     constructor(values?: number[]) {
         if (values !== undefined) {
             this.init(values)
+        }else{
+            this.setIdentity()
         }
     }
 

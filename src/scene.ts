@@ -1,15 +1,17 @@
 // //// Scene
 
 import { Camera, Viewport } from './camera'
-import { Matrix, Transformable } from './transformable'
+import { Transformable } from './transformable'
+import { M4 } from './vectorMath'
 
 // TODO resolve between RenderGroup and Group
 // import { RenderGroup } from './render/rendermodel'
-import {Group} from './model'
+import { Group } from './model'
 
 import { Shaders } from './shaders'
 import { Canvas } from './canvas'
-import { Shape, Surface } from './surface'
+import { Surface } from './surface'
+import { Shape } from './shape'
 import { Light } from './light'
 
 interface SceneOptions {
@@ -74,17 +76,24 @@ export class Scene {
         }
         Object.assign(this.options, options);
     }
- 
+
 
     /** Add a `Shape`, `Surface`, Light`, and other `Group` */
     add(child: Shape | Surface | Group | Light) {
         this.world.add(child)
     }
 
-    findAllSurfaces(group: Group): Surface[] {
+    /** creates a surfacelist with updated transformed points*/
+    processAllSurfaces(group: Group): Surface[] {
         let surfaceList: Surface[] = []
         group.shapes.forEach((shape) => {
+            shape.recalculateMatrix()
             shape.surfaces.forEach((surface) => {
+                // apply the shape's m to that surface
+                surface.transform(shape.m)
+                // surface.transformedPoints.map((p) => console.log('transformed',p.show()))
+                
+
                 surfaceList.push(surface)
             })
         })
@@ -101,8 +110,11 @@ export class Scene {
     // The primary method that produces the render models, which are then used
     // by the `RenderContext` to paint the scene.
     render() {
+        // recalculate the matrix for the entire shape
+
         // get all surfaces
-        let allSurfaces = this.findAllSurfaces(this.world)
+        let allSurfaces = this.processAllSurfaces(this.world)
+        // console.log('Allsurfaces', allSurfaces)
 
         // cull the ones pointing the wrong way
         let culledSurfaces: Surface[]
@@ -112,22 +124,22 @@ export class Scene {
             culledSurfaces = allSurfaces;
         }
 
-        console.log('SurfaceList', culledSurfaces)
+        // console.log('culledSurfaces', culledSurfaces)
 
 
+        this.canvas.clearCanvas()
         culledSurfaces.forEach((surface) => {
-            surface.points.map((p) => console.log(p.show()))
-
+            //surface.points.map((p) => console.log(p.show()))
             this.canvas.draw(surface.strokeMaterial)
-            this.canvas.path(surface.points)
-            
+            this.canvas.path(surface.transformedPoints)
+
         })
 
         return
         //////////////////////////////////////////////////////
         //////////////////////////////////////////////////////
         //////////////////////////////////////////////////////
-32
+        32
 
         //   renderGroup.fill = (ref1 = surface.fillMaterial) != null ? ref1.render(lights, _this.shader, renderGroup.transformed) : void 0;
         //   renderGroup.stroke = (ref2 = surface.strokeMaterial) != null ? ref2.render(lights, _this.shader, renderGroup.transformed) : void 0;
@@ -218,7 +230,7 @@ export class Scene {
 
     /** Get or create the rendermodel for the given surface.
         If `this.cache` is true, we cache these models to reduce object creation and recomputation. */
-    _renderSurface(surface: Surface, transform: Matrix, projection: Matrix, viewport: Viewport) {
+    _renderSurface(surface: Surface, transform: M4, projection: M4, viewport: Viewport) {
         // if (!this.options.cache)
         //     return new RenderGroup(surface, transform, projection, viewport);
 

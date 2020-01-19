@@ -1,4 +1,5 @@
-import { Matrix,Transformable } from "../transformable";
+import { Transformable } from "../transformable";
+import {M4} from "../vectorMath"
 import { Viewport, Projection } from "../camera";
 import {Surface} from '../surface'
 import {Point,P,POINT_ZERO } from '../point'
@@ -35,7 +36,7 @@ export class RenderModel{
    barycenter : Point
    normal     : Point
 
-  constructor (surface:Surface, transform:Matrix, projection:Matrix, viewport:Viewport) {
+  constructor (surface:Surface, transform:M4, projection:M4, viewport:Viewport) {
     this.surface = surface;
     this.points      = this.surface.points
     // this.transformed = this._initRenderData()
@@ -45,10 +46,10 @@ export class RenderModel{
 
   update (transform:Transformable, projection:Transformable, viewport:Viewport) {
     if (!this.surface.dirty
-      && transform.isEqual(this.transformed)
-      && projection.isEqual(this.projected)
-      && viewport.prescale.isEqual(this.viewport.prescale)){
-        // do nothing
+      && transform.m.equals(this.transformed.m)
+      && projection.m.equals(this.projected.m)
+      && viewport.prescale.equals(this.viewport.prescale)){
+        // do nothing 
     }else{
       this.transform  = transform
       this.projection = projection
@@ -134,7 +135,7 @@ class LightRenderModel{
   normal: Point
    
 
-  constructor (light: Light, transform:Matrix) {
+  constructor (light: Light, transform:M4) {
     this.colorIntensity = light.color.copy().scale(light.intensity)
     this.type           = light.type
     this.intensity      = light.intensity

@@ -3,7 +3,8 @@
 // ------------------
 
 import { Point, P } from '../point'
-import { Shape, Surface } from '../surface'  // TODO: rename Shape to Surface, Surface to Triangle
+import { Surface } from '../surface'  // TODO: rename Shape to Surface, Surface to Triangle
+import {Shape } from '../shape'
 import { Material } from '../materials'
 
 

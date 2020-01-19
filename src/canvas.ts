@@ -179,7 +179,7 @@ export class Canvas {
         // Copy over SVG CSS attributes
         if (style.fillStyle)
             this.ctx.fillStyle = style.fillStyle
-            console.log('fillStyle',style.fillStyle)
+            // console.log('fillStyle',style.fillStyle)
 
         // if (style['text-anchor'])
         //     this.ctx.textAlign = style['text-anchor']
@@ -205,10 +205,10 @@ export class Canvas {
 
             if (i === 0) {
                 this.ctx.moveTo(p.x*50+50, p.y*50+50);
-                console.log('moveTo',p.x,p.y)
+                // console.log('moveTo',p.x,p.y)
             } else {
                 this.ctx.lineTo(p.x*50+50, p.y*50+50);
-                console.log('lineTo',p.x,p.y)
+                // console.log('lineTo',p.x,p.y)
             }
         }
         this.ctx.closePath()

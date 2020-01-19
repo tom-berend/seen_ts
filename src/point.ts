@@ -1,4 +1,4 @@
-import { Matrix } from "./transformable";
+import { M4 } from "./vectorMath";
 
 // The `Point` object contains x,y,z, and w coordinates. `Point`s support
 // various arithmetic operations with other `Points`, scalars, or `Matrices`.
@@ -10,7 +10,7 @@ import { Matrix } from "./transformable";
 
 
 /**  Convenience method for creating a new `Point` object*/
-export function P(x: number, y: number, z: number, w: number = 1):Point {
+export function P(x: number, y: number, z: number, w: number = 1): Point {
     return (new Point(x, y, z, w))
 }
 
@@ -29,9 +29,9 @@ export class Point {
     }
 
     /** useful for looking at a point with console.log()  */
-    show():string{
+    show(): string {
         return (`P(${this.x}, ${this.y}, ${this.z}) `)
-    } 
+    }
 
     /** Creates and returns a new `Point` with the same values as this object. */
     copy() {
@@ -117,15 +117,16 @@ export class Point {
     }
 
     // Apply a transformation from the supplied `Matrix`.
-    transform(matrix: Matrix) :Point{  // TODO: fix up when Matrix is defined
+    transform(matrix: M4): Point {  // TODO: fix up when Matrix is defined
+        
         let r = POINT_POOL
-        r.x = this.x * matrix.m[0] + this.y * matrix.m[1] + this.z * matrix.m[2] + this.w * matrix.m[3]
-        r.y = this.x * matrix.m[4] + this.y * matrix.m[5] + this.z * matrix.m[6] + this.w * matrix.m[7]
-        r.z = this.x * matrix.m[8] + this.y * matrix.m[9] + this.z * matrix.m[10] + this.w * matrix.m[11]
-        r.w = this.x * matrix.m[12] + this.y * matrix.m[13] + this.z * matrix.m[14] + this.w * matrix.m[15]
+        r.x = this.x * matrix.at(0) + this.y * matrix.at(1) + this.z * matrix.at(2) + this.w * matrix.at(3)
+        r.y = this.x * matrix.at(4) + this.y * matrix.at(5) + this.z * matrix.at(6) + this.w * matrix.at(7)
+        r.z = this.x * matrix.at(8) + this.y * matrix.at(9) + this.z * matrix.at(10) + this.w * matrix.at(11)
+        r.w = this.x * matrix.at(12) + this.y * matrix.at(13) + this.z * matrix.at(14) + this.w * matrix.at(15)
 
         this.set(r)
-        return(this)
+        return (this)
     }
 
     // Returns this `Point`s magnitude squared. Excludes `this.w`.

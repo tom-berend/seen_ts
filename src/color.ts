@@ -1,7 +1,7 @@
 // //// Colors
 // ------------------
 
-import {Shape} from './surface'
+import {Shape} from './shape'
 
 
 /** `Color` objects store RGB and Alpha values from 0 to 255. Default is gray. */

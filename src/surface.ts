@@ -9,7 +9,8 @@ import { Color } from './color'
 import { Point, P } from './point'
 import { Util } from './util'
 import { Material } from './materials'
-import { Transformable, Matrix, M, IDENTITY } from './transformable'
+import { Transformable, } from './transformable'
+import {M4 } from './vectorMath'
 import { StrokeProperties, FillProperties } from './canvas'
 
 // A `Surface` is a defined as a planar object in 3D space. These paths don't
@@ -23,6 +24,7 @@ export class Surface extends Transformable {
     surfaceType: string // TODO change to ENUM 'triangle', 'rectangle', etc
 
     points: Point[]  // means different things for different surfaces
+    transformedPoints: Point[]  // scaled, translated, rotated, etc
 
     // When 'false' this will override backface culling, which is useful if your
     // material is transparent. See comment in `Scene`.
@@ -49,9 +51,16 @@ export class Surface extends Transformable {
 
         this.fillMaterial = new Material('gray')
         this.strokeMaterial = new Material('blue')
-
-
     }
+
+    /** shift this surface, recalculate normals, etc */
+    transform(m: M4) {
+        this.transformedPoints = this.points.map((point): Point => {
+            return (point.transform(m))
+        })
+    }
+
+
     fill(fill: any) {   // TODO: type?
         this.fillMaterial = new Material('gray').create(fill)
         return this
@@ -65,31 +74,3 @@ export class Surface extends Transformable {
 
 
 
-// A `Shape` contains a collection of surface. They may create a closed 3D
-// shape, but not necessarily. For example, a cube is a closed shape, but a
-// patch is not.
-export class Shape extends Transformable {
-
-    public type: string;
-    public surfaces: Surface[];
-    public m: Matrix 
-
-    constructor(type: string, surfaces: Surface[]) {
-        super()
-        this.type = type;
-        this.surfaces = surfaces
-        this.m = M(IDENTITY)
-    }
-
-    /** Apply the supplied fill `Material` to each surface */
-    fill(fill: Material) {
-        //    this.eachSurface (s) => { s.fill(fill)}
-        return this
-    }
-
-    /** Apply the supplied stroke `Material` to each surface */
-    stroke(stroke: Material) {
-        //    this.eachSurface (s) -> s.stroke(stroke)
-        return this
-    }
-}

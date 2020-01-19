@@ -98,11 +98,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _src_Seen2__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./src/Seen2 */ "./src/Seen2.ts");
 /* harmony import */ var _src_canvas__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./src/canvas */ "./src/canvas.ts");
 /* harmony import */ var _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./src/shapes/primitives */ "./src/shapes/primitives.ts");
+/* harmony import */ var _src_vectorMath__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./src/vectorMath */ "./src/vectorMath.ts");
 
 
 //import {P} from "./src/point"
 
-console.log('I am ALIVE');
+
 var width = 900;
 var height = 500;
 var ctx = new _src_canvas__WEBPACK_IMPORTED_MODULE_1__["Canvas"]('seen-canvas');
@@ -128,8 +129,17 @@ var pyramid = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Pyramid"]
 var cube = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Cube"]({ color: 0x0000ff });
 var ico = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Icosahedron"]({ color: 0x0000ff });
 scene.add(ico);
+ico.rotation = new _src_vectorMath__WEBPACK_IMPORTED_MODULE_3__["V3"]([.1, .1, .1]);
+console.log(ico.rotation);
+ico.rotation.x += .2;
+// ico.scale = new V3 ([10,10,10])
+// ico.scale.x += .2
+// ico.position = new V3([10,10,10])
+// ico.position.x += 2
+// scene.render()
 var animate = function () {
-    ico.m.rotx(.1);
+    ico.rotation.x += .001;
+    ico.rotation.y += .001;
     scene.render();
 };
 scene.canvas.animationObservable.addObserver('tick', animate);
@@ -193,8 +203,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _camera__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./camera */ "./src/camera.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Viewport", function() { return _camera__WEBPACK_IMPORTED_MODULE_3__["Viewport"]; });
 
-/* harmony import */ var _surface__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./surface */ "./src/surface.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Shape", function() { return _surface__WEBPACK_IMPORTED_MODULE_4__["Shape"]; });
+/* harmony import */ var _shape__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./shape */ "./src/shape.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Shape", function() { return _shape__WEBPACK_IMPORTED_MODULE_4__["Shape"]; });
 
 /* harmony import */ var _point__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./point */ "./src/point.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "P", function() { return _point__WEBPACK_IMPORTED_MODULE_5__["P"]; });
@@ -227,6 +237,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Camera", function() { return Camera; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PixelCamera", function() { return PixelCamera; });
 /* harmony import */ var _transformable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./transformable */ "./src/transformable.ts");
+/* harmony import */ var _vectorMath__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./vectorMath */ "./src/vectorMath.ts");
 // //// Camera
 // //////// Projections, Viewports, and Cameras
 // ------------------
@@ -243,6 +254,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 // These projection methods return a 3D to 2D `Matrix` transformation.
 // Each projection assumes the camera is located at (0,0,0).
@@ -332,12 +344,12 @@ var Viewport = /** @class */ (function () {
         if (height === void 0) { height = 500; }
         if (x === void 0) { x = 0; }
         if (y === void 0) { y = 0; }
-        this.prescale = new _transformable__WEBPACK_IMPORTED_MODULE_0__["Matrix"]()
-            .translate(-x, -y, -height)
-            .scale(1 / width, 1 / height, 1 / height);
-        this.postscale = new _transformable__WEBPACK_IMPORTED_MODULE_0__["Matrix"]()
-            .scale(width, -height, height)
-            .translate(x + width / 2, y + height / 2, height);
+        this.prescale = new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["M4"]()
+            .translate(new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([-x, -y, -height]))
+            .scale(new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([1 / width, 1 / height, 1 / height]));
+        this.postscale = new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["M4"]()
+            .scale(new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([width, -height, height]))
+            .translate(new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([x + width / 2, y + height / 2, height]));
     };
     /** Create a view port where the scene's origin is aligned with the origin ([0, 0]) of the view */
     Viewport.prototype.origin = function (width, height, x, y) {
@@ -347,12 +359,12 @@ var Viewport = /** @class */ (function () {
         if (y === void 0) { y = 0; }
         this.prescale = new _transformable__WEBPACK_IMPORTED_MODULE_0__["Transformable"]()
             .m
-            .translate(-x, -y, -1)
-            .scale(1 / width, 1 / height, 1 / height);
+            .translate(new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([-x, -y, -1]))
+            .scale(new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([1 / width, 1 / height, 1 / height]));
         this.postscale = new _transformable__WEBPACK_IMPORTED_MODULE_0__["Transformable"]()
             .m
-            .scale(width, -height, height)
-            .translate(x, y);
+            .scale(new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([width, -height, height]))
+            .translate(new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([x, y, 1]));
         return this;
     };
     return Viewport;
@@ -515,7 +527,7 @@ var Canvas = /** @class */ (function () {
         // Copy over SVG CSS attributes
         if (style.fillStyle)
             this.ctx.fillStyle = style.fillStyle;
-        console.log('fillStyle', style.fillStyle);
+        // console.log('fillStyle',style.fillStyle)
         // if (style['text-anchor'])
         //     this.ctx.textAlign = style['text-anchor']
         // if (style['fill-opacity'])
@@ -532,11 +544,11 @@ var Canvas = /** @class */ (function () {
             // scale points by 10, and move them to 50,50
             if (i === 0) {
                 this.ctx.moveTo(p.x * 50 + 50, p.y * 50 + 50);
-                console.log('moveTo', p.x, p.y);
+                // console.log('moveTo',p.x,p.y)
             }
             else {
                 this.ctx.lineTo(p.x * 50 + 50, p.y * 50 + 50);
-                console.log('lineTo', p.x, p.y);
+                // console.log('lineTo',p.x,p.y)
             }
         }
         this.ctx.closePath();
@@ -919,6 +931,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _transformable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./transformable */ "./src/transformable.ts");
 /* harmony import */ var _light__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./light */ "./src/light.ts");
 /* harmony import */ var _surface__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./surface */ "./src/surface.ts");
+/* harmony import */ var _shape__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./shape */ "./src/shape.ts");
 // //// Groups
 // ------------------
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -934,6 +947,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 
@@ -981,7 +995,7 @@ var Group = /** @class */ (function (_super) {
             this.groups.push(child);
         else if (child instanceof _surface__WEBPACK_IMPORTED_MODULE_2__["Surface"])
             this.surfaces.push(child);
-        else if (child instanceof _surface__WEBPACK_IMPORTED_MODULE_2__["Shape"])
+        else if (child instanceof _shape__WEBPACK_IMPORTED_MODULE_3__["Shape"])
             this.shapes.push(child);
         else // shouldn't get here
             throw new Error('Tried to add something strange');
@@ -1192,10 +1206,10 @@ var Point = /** @class */ (function () {
     // Apply a transformation from the supplied `Matrix`.
     Point.prototype.transform = function (matrix) {
         var r = POINT_POOL;
-        r.x = this.x * matrix.m[0] + this.y * matrix.m[1] + this.z * matrix.m[2] + this.w * matrix.m[3];
-        r.y = this.x * matrix.m[4] + this.y * matrix.m[5] + this.z * matrix.m[6] + this.w * matrix.m[7];
-        r.z = this.x * matrix.m[8] + this.y * matrix.m[9] + this.z * matrix.m[10] + this.w * matrix.m[11];
-        r.w = this.x * matrix.m[12] + this.y * matrix.m[13] + this.z * matrix.m[14] + this.w * matrix.m[15];
+        r.x = this.x * matrix.at(0) + this.y * matrix.at(1) + this.z * matrix.at(2) + this.w * matrix.at(3);
+        r.y = this.x * matrix.at(4) + this.y * matrix.at(5) + this.z * matrix.at(6) + this.w * matrix.at(7);
+        r.z = this.x * matrix.at(8) + this.y * matrix.at(9) + this.z * matrix.at(10) + this.w * matrix.at(11);
+        r.w = this.x * matrix.at(12) + this.y * matrix.at(13) + this.z * matrix.at(14) + this.w * matrix.at(15);
         this.set(r);
         return (this);
     };
@@ -1305,10 +1319,15 @@ var Scene = /** @class */ (function () {
     Scene.prototype.add = function (child) {
         this.world.add(child);
     };
-    Scene.prototype.findAllSurfaces = function (group) {
+    /** creates a surfacelist with updated transformed points*/
+    Scene.prototype.processAllSurfaces = function (group) {
         var surfaceList = [];
         group.shapes.forEach(function (shape) {
+            shape.recalculateMatrix();
             shape.surfaces.forEach(function (surface) {
+                // apply the shape's m to that surface
+                surface.transform(shape.m);
+                // surface.transformedPoints.map((p) => console.log('transformed',p.show()))
                 surfaceList.push(surface);
             });
         });
@@ -1321,9 +1340,11 @@ var Scene = /** @class */ (function () {
     // The primary method that produces the render models, which are then used
     // by the `RenderContext` to paint the scene.
     Scene.prototype.render = function () {
+        // recalculate the matrix for the entire shape
         var _this = this;
         // get all surfaces
-        var allSurfaces = this.findAllSurfaces(this.world);
+        var allSurfaces = this.processAllSurfaces(this.world);
+        // console.log('Allsurfaces', allSurfaces)
         // cull the ones pointing the wrong way
         var culledSurfaces;
         if (this.cullBackfaces) {
@@ -1332,11 +1353,12 @@ var Scene = /** @class */ (function () {
         else {
             culledSurfaces = allSurfaces;
         }
-        console.log('SurfaceList', culledSurfaces);
+        // console.log('culledSurfaces', culledSurfaces)
+        this.canvas.clearCanvas();
         culledSurfaces.forEach(function (surface) {
-            surface.points.map(function (p) { return console.log(p.show()); });
+            //surface.points.map((p) => console.log(p.show()))
             _this.canvas.draw(surface.strokeMaterial);
-            _this.canvas.path(surface.points);
+            _this.canvas.path(surface.transformedPoints);
         });
         return;
         //////////////////////////////////////////////////////
@@ -1626,6 +1648,59 @@ var Shaders = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "./src/shape.ts":
+/*!**********************!*\
+  !*** ./src/shape.ts ***!
+  \**********************/
+/*! exports provided: Shape */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Shape", function() { return Shape; });
+/* harmony import */ var _transformable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./transformable */ "./src/transformable.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+// A `Shape` contains a collection of surface. They may create a closed 3D
+// shape, but not necessarily. For example, a cube is a closed shape, but a
+// patch is not.
+var Shape = /** @class */ (function (_super) {
+    __extends(Shape, _super);
+    function Shape(type, surfaces) {
+        var _this = _super.call(this) || this;
+        _this.type = type;
+        _this.surfaces = surfaces;
+        return _this;
+    }
+    /** Apply the supplied fill `Material` to each surface */
+    Shape.prototype.fill = function (fill) {
+        //    this.eachSurface (s) => { s.fill(fill)}
+        return this;
+    };
+    /** Apply the supplied stroke `Material` to each surface */
+    Shape.prototype.stroke = function (stroke) {
+        //    this.eachSurface (s) -> s.stroke(stroke)
+        return this;
+    };
+    return Shape;
+}(_transformable__WEBPACK_IMPORTED_MODULE_0__["Transformable"]));
+
+
+
+/***/ }),
+
 /***/ "./src/shapes/primitives.ts":
 /*!**********************************!*\
   !*** ./src/shapes/primitives.ts ***!
@@ -1643,6 +1718,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Icosahedron", function() { return Icosahedron; });
 /* harmony import */ var _point__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../point */ "./src/point.ts");
 /* harmony import */ var _surface__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../surface */ "./src/surface.ts");
+/* harmony import */ var _shape__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../shape */ "./src/shape.ts");
 //// Shapes
 // //////// Shape primitives and shape-making methods
 // ------------------
@@ -1661,6 +1737,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 })();
 
  // TODO: rename Shape to Surface, Surface to Triangle
+
 // Map to points in the surfaces of a tetrahedron
 var TETRAHEDRON_COORDINATE_MAP = [
     [0, 2, 1],
@@ -1702,7 +1779,7 @@ var Primitive = /** @class */ (function () {
 /** Sometimes we just want an empty `Group` that we can add children to */
 function NullShape() {
     var points = [Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0)];
-    return new _surface__WEBPACK_IMPORTED_MODULE_1__["Shape"]('nullshape', mapPointsToSurfaces(points, []));
+    return new _shape__WEBPACK_IMPORTED_MODULE_2__["Shape"]('nullshape', mapPointsToSurfaces(points, []));
 }
 var cubePoints = [Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, -1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, -1, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, 1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(-1, 1, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, -1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, -1, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 1, -1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 1, 1)];
 // Map to points in the surfaces of a cube, two triangles to a side
@@ -1726,7 +1803,7 @@ var Cube = /** @class */ (function (_super) {
         return _super.call(this, 'cube', mapPointsToSurfaces(cubePoints, CUBE_COORDINATE_MAP)) || this;
     }
     return Cube;
-}(_surface__WEBPACK_IMPORTED_MODULE_1__["Shape"]));
+}(_shape__WEBPACK_IMPORTED_MODULE_2__["Shape"]));
 
 var pyramidPoints = [Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0, 0, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 0, 0), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(1, 0, 1), Object(_point__WEBPACK_IMPORTED_MODULE_0__["P"])(0.5, 1, 0.5)];
 // Map to points in the surfaces of a rectangular pyramid
@@ -1743,7 +1820,7 @@ var Pyramid = /** @class */ (function (_super) {
         return _super.call(this, 'pyramid', mapPointsToSurfaces(pyramidPoints, PYRAMID_COORDINATE_MAP)) || this;
     }
     return Pyramid;
-}(_surface__WEBPACK_IMPORTED_MODULE_1__["Shape"]));
+}(_shape__WEBPACK_IMPORTED_MODULE_2__["Shape"]));
 
 // Map to points in the surfaces of an icosahedron
 var ICOSAHEDRON_COORDINATE_MAP = [
@@ -1793,7 +1870,7 @@ var Icosahedron = /** @class */ (function (_super) {
         return _super.call(this, 'icosahedron', mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP)) || this;
     }
     return Icosahedron;
-}(_surface__WEBPACK_IMPORTED_MODULE_1__["Shape"]));
+}(_shape__WEBPACK_IMPORTED_MODULE_2__["Shape"]));
 
 //   unitcube() {
 //   let points = [P(0, 0, 0), P(0, 0, 1), P(0, 1, 0), P(0, 1, 1), P(1, 0, 0), P(1, 0, 1), P(1, 1, 0), P(1, 1, 1)];
@@ -2025,13 +2102,12 @@ function mapPointsToSurfaces(points, coordinateMap) {
 /*!************************!*\
   !*** ./src/surface.ts ***!
   \************************/
-/*! exports provided: Surface, Shape */
+/*! exports provided: Surface */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Surface", function() { return Surface; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Shape", function() { return Shape; });
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./util */ "./src/util.ts");
 /* harmony import */ var _materials__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./materials */ "./src/materials.ts");
 /* harmony import */ var _transformable__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./transformable */ "./src/transformable.ts");
@@ -2078,6 +2154,12 @@ var Surface = /** @class */ (function (_super) {
         _this.strokeMaterial = new _materials__WEBPACK_IMPORTED_MODULE_1__["Material"]('blue');
         return _this;
     }
+    /** shift this surface, recalculate normals, etc */
+    Surface.prototype.transform = function (m) {
+        this.transformedPoints = this.points.map(function (point) {
+            return (point.transform(m));
+        });
+    };
     Surface.prototype.fill = function (fill) {
         this.fillMaterial = new _materials__WEBPACK_IMPORTED_MODULE_1__["Material"]('gray').create(fill);
         return this;
@@ -2089,31 +2171,6 @@ var Surface = /** @class */ (function (_super) {
     return Surface;
 }(_transformable__WEBPACK_IMPORTED_MODULE_2__["Transformable"]));
 
-// A `Shape` contains a collection of surface. They may create a closed 3D
-// shape, but not necessarily. For example, a cube is a closed shape, but a
-// patch is not.
-var Shape = /** @class */ (function (_super) {
-    __extends(Shape, _super);
-    function Shape(type, surfaces) {
-        var _this = _super.call(this) || this;
-        _this.type = type;
-        _this.surfaces = surfaces;
-        _this.m = Object(_transformable__WEBPACK_IMPORTED_MODULE_2__["M"])(_transformable__WEBPACK_IMPORTED_MODULE_2__["IDENTITY"]);
-        return _this;
-    }
-    /** Apply the supplied fill `Material` to each surface */
-    Shape.prototype.fill = function (fill) {
-        //    this.eachSurface (s) => { s.fill(fill)}
-        return this;
-    };
-    /** Apply the supplied stroke `Material` to each surface */
-    Shape.prototype.stroke = function (stroke) {
-        //    this.eachSurface (s) -> s.stroke(stroke)
-        return this;
-    };
-    return Shape;
-}(_transformable__WEBPACK_IMPORTED_MODULE_2__["Transformable"]));
-
 
 
 /***/ }),
@@ -2122,7 +2179,7 @@ var Shape = /** @class */ (function (_super) {
 /*!******************************!*\
   !*** ./src/transformable.ts ***!
   \******************************/
-/*! exports provided: M, IDENTITY, Transformable, Matrix */
+/*! exports provided: M, IDENTITY, Transformable */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2130,7 +2187,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "M", function() { return M; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IDENTITY", function() { return IDENTITY; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Transformable", function() { return Transformable; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Matrix", function() { return Matrix; });
+/* harmony import */ var _vectorMath__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./vectorMath */ "./src/vectorMath.ts");
+
 // `Transformable` base class extended by `Shape` and `Group`.
 //
 // It stores transformations in the scene. These include:
@@ -2143,7 +2201,7 @@ __webpack_require__.r(__webpack_exports__);
 // A convenience method for constructing Matrix objects.
 function M(m) {
     console.assert(m.length === 16, 'array for M() was not length 16');
-    return (new Matrix(m));
+    return (new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["M4"](m));
 }
 // Most of the matrix methods are destructive, so be sure to use `.copy()`
 // when you want to preserve an object's value.
@@ -2169,145 +2227,163 @@ var IDENTITY = [1, 0, 0, 0,
 // sense since they can't be scaled.
 var Transformable = /** @class */ (function () {
     function Transformable() {
-        this.m = new Matrix(IDENTITY); // shallow copy
+        this.m = new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["M4"](IDENTITY); // shallow copy
+        this._rotation = new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["V3"]([1, 1, 1]); // really three angles
+        this._scale = new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["V3"]([1, 1, 1]);
+        this._position = new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["V3"]([1, 1, 1]);
     }
-    Transformable.prototype.isEqual = function (other) {
-        return this.m.isEqual(other.m);
+    Object.defineProperty(Transformable.prototype, "rotation", {
+        get: function () {
+            return this._rotation;
+        },
+        set: function (r) {
+            console.log('SET', r);
+            this._rotation = r;
+            this.recalculateMatrix();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Transformable.prototype.recalculateMatrix = function () {
+        this.m = new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["M4"]()
+            .scale(this._scale)
+            .translate(this._position)
+            .rotate(this._rotation.x, new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["V3"]([1, 0, 0]))
+            .rotate(this._rotation.y, new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["V3"]([0, 1, 0]))
+            .rotate(this._rotation.z, new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["V3"]([0, 0, 1]));
+        // console.log('recalculate', this.m)
     };
     return Transformable;
 }());
 
-var Matrix = /** @class */ (function () {
-    /** Accepts a 16-value `Array`, defaults to the identity matrix.*/
-    function Matrix(m) {
-        this.m = Array.from(IDENTITY);
+/* export */ var Matrix = /** @class */ (function () {
+    function Matrix() {
+        this.m = new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["M4"]();
         this.ARRAY_POOL = Array.from(IDENTITY);
         this.baked = Array.from(IDENTITY);
-        if (m)
-            this.m = m;
+        //     /** Accepts a 16-value `Array`, defaults to the identity matrix.*/
+        //     constructor(m?: number[]) {
+        //         if (m)
+        //             this.m = m;
+        //     }
+        //     ///////////////////////////////////////////////
+        //     // here is the method that does all the work !!
+        //     ///////////////////////////////////////////////
+        //     // Apply a transformation`
+        //     transform(m: M4) {
+        //         this.multiply(m)
+        //         return this
+        //     }
+        //     ///////////////////////////////////////////////
+        //     // rest of the class is just matrix arithmetic
+        //     ///////////////////////////////////////////////
+        //     // Returns a new matrix instances with a copy of the value array
+        //     copy() {
+        //         return new Matrix(Array.from(this.m))
+        //     }
+        //     // Multiply by the 16-value `Array` argument. This method uses the
+        //     // `ARRAY_POOL`, which prevents us from having to re-initialize a new
+        //     // temporary matrix every time. This drastically improves performance.
+        //     multiply(m: Matrix): Matrix {
+        //         if (!Array.isArray(m))  // will fail anyhow, but want a stack trace
+        //             console.trace('transformable multiply', m)
+        //         let c = this.ARRAY_POOL  // just a reference pointer
+        //         for (let j = 0; j < 4; j++) {
+        //             for (let i = 0; i < 16; i += 4) {
+        //                 c[i + j] =
+        //                     m.m[i] * this.m[j] +
+        //                     m.m[i + 1] * this.m[4 + j] +
+        //                     m.m[i + 2] * this.m[8 + j] +
+        //                     m.m[i + 3] * this.m[12 + j]
+        //             }
+        //         }
+        //         this.ARRAY_POOL = this.m  // just a reference pointer
+        //         this.m = c
+        //         return this
+        //     }
+        //     // Resets the matrix to the baked-in (default: identity).
+        //     reset(): Matrix {
+        //         this.m = Array.from(this.baked) // shallow copy
+        //         return this
+        //     }
+        //     // Sets the array that this matrix will return to when calling `.reset()`.
+        //     // With no arguments, it uses the current matrix state.
+        //     bake(m: number[]) {
+        //         if (m)
+        //             this.baked = m
+        //         else
+        //             this.baked = Array.from(this.m)
+        //         return this
+        //     }
+        //     //   // Multiply by the `Matrix` argument.
+        //     //   multiply(b: matrix) {
+        //     //       return this.matrix(b.m)
+        //     //   }
+        //     //   // Tranposes this matrix
+        //     //   transpose() {
+        //     //       let c = this.ARRAY_POOL;
+        //     //       let i, k, len, ti;
+        //     //       for (i = k = 0, len = TRANSPOSE_INDICES.length; k < len; i = k++) {
+        //     //           ti = TRANSPOSE_INDICES[i];
+        //     //           c[i] = this.m[ti];
+        //     //       }
+        //     //       ARRAY_POOL = this.m;
+        //     //       this.m = c;
+        //     //       return this;
+        //     //   }
+        //     // Apply a rotation about the X axis. `Theta` is measured in Radians
+        //     rotx(theta: number): Matrix {
+        //         let ct = Math.cos(theta)
+        //         let st = Math.sin(theta)
+        //         let rm = [1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1]
+        //         return M(rm)
+        //     }
+        //     // Apply a rotation about the Y axis. `Theta` is measured in Radians
+        //     roty(theta: number): Matrix {
+        //         let ct = Math.cos(theta)
+        //         let st = Math.sin(theta)
+        //         let rm = [ct, 0, st, 0, 0, 1, 0, 0, -st, 0, ct, 0, 0, 0, 0, 1]
+        //         return M(rm)
+        //     }
+        //     // Apply a rotation about the Z axis. `Theta` is measured in Radians
+        //     rotz(theta: number): Matrix {
+        //         let ct = Math.cos(theta)
+        //         let st = Math.sin(theta)
+        //         let rm = [ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+        //         return M(rm)
+        //     }
+        //     // Apply a translation. All arguments default to `0`
+        //     translate(x: number = 0, y: number = 0, z: number = 0): Matrix {
+        //         let rm = [1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1]
+        //         return M(rm)
+        //     }
+        //     // Apply a scale. If not all arguments are supplied, each dimension (x,y,z)
+        //     // is copied from the previous arugment. Therefore, `_scale()` is equivalent
+        //     // to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
+        //     scale(sx: number = 1, sy?: number, sz?: number): M4 {
+        //         if (!sy)
+        //             sy = sx
+        //         if (!sz)
+        //             sz = sy
+        //         let rm = [sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, sz, 0, 0, 0, 0, 1]
+        //         return M(rm)
+        //     }
+        //     // // Returns `true` iff the supplied `Arrays` are the same size and contain the same values.
+        //     // isEqual(other: M4) {
+        //     //     var i, j, len, val;
+        //     //     // if (this.matrix.length !== other.length) {
+        //     //     //    return false;
+        //     //     // }
+        //     //     for (i = 0, len = 16; i < len; i++) {
+        //     //         if (this.m.at(i) !== other.at(i) {
+        //     //             return false;
+        //     //         }
+        //     //     }
+        //     //     return true;
+        //     // }
     }
-    ///////////////////////////////////////////////
-    // here is the method that does all the work !!
-    ///////////////////////////////////////////////
-    // Apply a transformation`
-    Matrix.prototype.transform = function (m) {
-        this.multiply(m);
-        return this;
-    };
-    ///////////////////////////////////////////////
-    // rest of the class is just matrix arithmetic
-    ///////////////////////////////////////////////
-    // Returns a new matrix instances with a copy of the value array
-    Matrix.prototype.copy = function () {
-        return new Matrix(Array.from(this.m));
-    };
-    // Multiply by the 16-value `Array` argument. This method uses the
-    // `ARRAY_POOL`, which prevents us from having to re-initialize a new
-    // temporary matrix every time. This drastically improves performance.
-    Matrix.prototype.multiply = function (m) {
-        if (!Array.isArray(m)) // will fail anyhow, but want a stack trace
-            console.trace('transformable multiply', m);
-        var c = this.ARRAY_POOL; // just a reference pointer
-        for (var j = 0; j < 4; j++) {
-            for (var i = 0; i < 16; i += 4) {
-                c[i + j] =
-                    m.m[i] * this.m[j] +
-                        m.m[i + 1] * this.m[4 + j] +
-                        m.m[i + 2] * this.m[8 + j] +
-                        m.m[i + 3] * this.m[12 + j];
-            }
-        }
-        this.ARRAY_POOL = this.m; // just a reference pointer
-        this.m = c;
-        return this;
-    };
-    // Resets the matrix to the baked-in (default: identity).
-    Matrix.prototype.reset = function () {
-        this.m = Array.from(this.baked); // shallow copy
-        return this;
-    };
-    // Sets the array that this matrix will return to when calling `.reset()`.
-    // With no arguments, it uses the current matrix state.
-    Matrix.prototype.bake = function (m) {
-        if (m)
-            this.baked = m;
-        else
-            this.baked = Array.from(this.m);
-        return this;
-    };
-    //   // Multiply by the `Matrix` argument.
-    //   multiply(b: matrix) {
-    //       return this.matrix(b.m)
-    //   }
-    //   // Tranposes this matrix
-    //   transpose() {
-    //       let c = this.ARRAY_POOL;
-    //       let i, k, len, ti;
-    //       for (i = k = 0, len = TRANSPOSE_INDICES.length; k < len; i = k++) {
-    //           ti = TRANSPOSE_INDICES[i];
-    //           c[i] = this.m[ti];
-    //       }
-    //       ARRAY_POOL = this.m;
-    //       this.m = c;
-    //       return this;
-    //   }
-    // Apply a rotation about the X axis. `Theta` is measured in Radians
-    Matrix.prototype.rotx = function (theta) {
-        var ct = Math.cos(theta);
-        var st = Math.sin(theta);
-        var rm = [1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1];
-        return M(rm);
-    };
-    // Apply a rotation about the Y axis. `Theta` is measured in Radians
-    Matrix.prototype.roty = function (theta) {
-        var ct = Math.cos(theta);
-        var st = Math.sin(theta);
-        var rm = [ct, 0, st, 0, 0, 1, 0, 0, -st, 0, ct, 0, 0, 0, 0, 1];
-        return M(rm);
-    };
-    // Apply a rotation about the Z axis. `Theta` is measured in Radians
-    Matrix.prototype.rotz = function (theta) {
-        var ct = Math.cos(theta);
-        var st = Math.sin(theta);
-        var rm = [ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-        return M(rm);
-    };
-    // Apply a translation. All arguments default to `0`
-    Matrix.prototype.translate = function (x, y, z) {
-        if (x === void 0) { x = 0; }
-        if (y === void 0) { y = 0; }
-        if (z === void 0) { z = 0; }
-        var rm = [1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1];
-        return M(rm);
-    };
-    // Apply a scale. If not all arguments are supplied, each dimension (x,y,z)
-    // is copied from the previous arugment. Therefore, `_scale()` is equivalent
-    // to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
-    Matrix.prototype.scale = function (sx, sy, sz) {
-        if (sx === void 0) { sx = 1; }
-        if (!sy)
-            sy = sx;
-        if (!sz)
-            sz = sy;
-        var rm = [sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, sz, 0, 0, 0, 0, 1];
-        return M(rm);
-    };
-    // Returns `true` iff the supplied `Arrays` are the same size and contain the same values.
-    Matrix.prototype.isEqual = function (other) {
-        var i, j, len, val;
-        // if (this.matrix.length !== other.length) {
-        //    return false;
-        // }
-        for (i = 0, len = 16; i < len; i++) {
-            if (this.m[i] !== other.m[i]) {
-                return false;
-            }
-        }
-        return true;
-    };
     return Matrix;
 }());
-
 //   identity() {
 //       return (new Transformable())
 //   }
@@ -2415,8 +2491,10 @@ __webpack_require__.r(__webpack_exports__);
  * whose copyright notice follows below.
  *
  *  - The names of the functions were changed (eg: vec3 -> V3).
- *  - combined into a single file to eliminate circular dependencies
- *  - The code was converted to newer TypeScript
+ *  - A 'modified' flag added to V3 (consider using 'observable' instead)
+ *  - The default M4 matrix is Identity, not Zero.
+ *  - Combined into a single file to eliminate circular dependencies
+ *  - Code was converted to newer TypeScript
  *  - Several small type errors were fixed (TypeScript found them)
  *  - A few inconsequential additions like 'Quat.zero'
  *
@@ -2681,6 +2759,7 @@ var V2 = /** @class */ (function () {
 var V3 = /** @class */ (function () {
     function V3(values) {
         this.values = new Float32Array(3);
+        this.modified = false;
         if (values !== undefined) {
             this.xyz = values;
         }
@@ -2691,6 +2770,7 @@ var V3 = /** @class */ (function () {
         },
         set: function (value) {
             this.values[0] = value;
+            this.modified = true;
         },
         enumerable: true,
         configurable: true
@@ -2701,6 +2781,7 @@ var V3 = /** @class */ (function () {
         },
         set: function (value) {
             this.values[1] = value;
+            this.modified = true;
         },
         enumerable: true,
         configurable: true
@@ -2711,6 +2792,7 @@ var V3 = /** @class */ (function () {
         },
         set: function (value) {
             this.values[2] = value;
+            this.modified = true;
         },
         enumerable: true,
         configurable: true
@@ -2725,6 +2807,7 @@ var V3 = /** @class */ (function () {
         set: function (values) {
             this.values[0] = values[0];
             this.values[1] = values[1];
+            this.modified = true;
         },
         enumerable: true,
         configurable: true
@@ -2741,6 +2824,7 @@ var V3 = /** @class */ (function () {
             this.values[0] = values[0];
             this.values[1] = values[1];
             this.values[2] = values[2];
+            this.modified = true;
         },
         enumerable: true,
         configurable: true
@@ -3911,6 +3995,9 @@ var M4 = /** @class */ (function () {
         this.values = new Float32Array(16);
         if (values !== undefined) {
             this.init(values);
+        }
+        else {
+            this.setIdentity();
         }
     }
     M4.frustum = function (left, right, bottom, top, near, far) {

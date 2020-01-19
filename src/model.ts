@@ -3,7 +3,8 @@
 
 import { Transformable } from './transformable';
 import { Light } from './light'
-import { Surface, Shape } from './surface'
+import { Surface } from './surface'
+import {Shape} from './shape'
 import {Point} from './point'
 
 

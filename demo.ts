@@ -5,10 +5,9 @@ import { CanvasRenderContext } from "./src/render/canvas";
 import { Canvas } from "./src/canvas";
 //import {P} from "./src/point"
 import { Cube, Primitive, Pyramid, Icosahedron } from './src/shapes/primitives'
+import { V3 } from "./src/vectorMath";
 
 
-
-console.log('I am ALIVE')
 let width = 900
 let height = 500
 
@@ -41,16 +40,27 @@ let ctx = new Canvas('seen-canvas');
 let scene = new Scene('seen-canvas');   // includes the camera, renderer is always CANVAS
 let pyramid = new Pyramid({ color: 0x00ff00 })   // defaults to basic material
 let cube = new Cube({ color: 0x0000ff })
-let ico = new Icosahedron ({ color: 0x0000ff })
+let ico = new Icosahedron({ color: 0x0000ff })
 scene.add(ico);
 
+ico.rotation = new V3([.1, .1, .1])
+console.log(ico.rotation)
+ico.rotation.x += .2
 
-let animate = ()=>{
-    ico.m.rotx(.1)
-	scene.render()
+// ico.scale = new V3 ([10,10,10])
+// ico.scale.x += .2
+
+// ico.position = new V3([10,10,10])
+// ico.position.x += 2
+// scene.render()
+
+let animate = () => {
+    ico.rotation.x += .001
+    ico.rotation.y += .001
+    scene.render()
 }
 
-scene.canvas.animationObservable.addObserver('tick', animate) 
+scene.canvas.animationObservable.addObserver('tick', animate)
 
 
 
