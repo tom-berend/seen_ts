@@ -38,15 +38,17 @@ let ctx = new Canvas('seen-canvas');
 
 // ////////////////// SEEN_TS  syntax  /////////////////
 let scene = new Scene('seen-canvas');   // includes the camera, renderer is always CANVAS
-let pyramid = new Pyramid({ color: 0x00ff00 })   // defaults to basic material
-let cube = new Cube({ color: 0x0000ff })
+// let pyramid = new Pyramid({ color: 0x00ff00 })   // defaults to basic material
+// let cube = new Cube({ color: 0x0000ff })
 let ico = new Icosahedron({ color: 0x0000ff })
-let ico2 = new Icosahedron({ color: 0x0000ff })
+// let ico2 = new Icosahedron({ color: 0x0000ff })
 let tt = new TestTriangle()
 
-scene.add (ico)
+// scene.add (tt)
 
-// scene.add(ico)
+ scene.add(ico)
+ ico.scale = new V3([50,50,50])
+
 // scene.add(ico2)
 
 // ico.rotation = new V3([.1, .1, .1])
@@ -66,7 +68,10 @@ scene.add (ico)
 // scene.render()
 
 let animate = () => {
-    ico.position.x += .0001
+    ico.position.x += .01
+    ico.rotation.x += .01
+    // ico.rotation.y += .01
+    // // //ico.scale.x += .01
     scene.render()
  }
 

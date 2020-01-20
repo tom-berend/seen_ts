@@ -98,9 +98,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _src_Seen2__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./src/Seen2 */ "./src/Seen2.ts");
 /* harmony import */ var _src_canvas__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./src/canvas */ "./src/canvas.ts");
 /* harmony import */ var _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./src/shapes/primitives */ "./src/shapes/primitives.ts");
+/* harmony import */ var _src_vectorMath__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./src/vectorMath */ "./src/vectorMath.ts");
 
 
 //import {P} from "./src/point"
+
 
 var width = 900;
 var height = 500;
@@ -123,13 +125,14 @@ var ctx = new _src_canvas__WEBPACK_IMPORTED_MODULE_1__["Canvas"]('seen-canvas');
 // animate();
 // ////////////////// SEEN_TS  syntax  /////////////////
 var scene = new _src_Seen2__WEBPACK_IMPORTED_MODULE_0__["Scene"]('seen-canvas'); // includes the camera, renderer is always CANVAS
-var pyramid = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Pyramid"]({ color: 0x00ff00 }); // defaults to basic material
-var cube = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Cube"]({ color: 0x0000ff });
+// let pyramid = new Pyramid({ color: 0x00ff00 })   // defaults to basic material
+// let cube = new Cube({ color: 0x0000ff })
 var ico = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Icosahedron"]({ color: 0x0000ff });
-var ico2 = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Icosahedron"]({ color: 0x0000ff });
+// let ico2 = new Icosahedron({ color: 0x0000ff })
 var tt = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["TestTriangle"]();
+// scene.add (tt)
 scene.add(ico);
-// scene.add(ico)
+ico.scale = new _src_vectorMath__WEBPACK_IMPORTED_MODULE_3__["V3"]([50, 50, 50]);
 // scene.add(ico2)
 // ico.rotation = new V3([.1, .1, .1])
 // console.log(ico.rotation)
@@ -142,7 +145,10 @@ scene.add(ico);
 // console.log('ico2 position', ico2.position)
 // scene.render()
 var animate = function () {
-    ico.position.x += .0001;
+    ico.position.x += .01;
+    ico.rotation.x += .01;
+    // ico.rotation.y += .01
+    // // //ico.scale.x += .01
     scene.render();
 };
 scene.canvas.animationObservable.addObserver('tick', animate);
@@ -547,18 +553,23 @@ var Canvas = /** @class */ (function () {
             // scale points by 10, and move them to 50,50
             if (i === 0) {
                 this.ctx.moveTo(p.x * 50 + 50, p.y * 50 + 50);
-                // console.log('moveTo',p.x,p.y)
+                console.log('moveTo', p.x * 50 + 50, p.y * 50 + 50);
             }
             else {
                 this.ctx.lineTo(p.x * 50 + 50, p.y * 50 + 50);
-                // console.log('lineTo',p.x,p.y)
+                console.log('lineTo', p.x * 50 + 50, p.y * 50 + 50);
             }
         }
         this.ctx.closePath();
         return this;
     };
-    Canvas.prototype.rect = function (width, height) {
-        this.ctx.rect(0, 0, width, height);
+    Canvas.prototype.fillRect = function (x, y, width, height) {
+        console.log('fillRect', x * 50 + 50, y * 50 + 50, width, height);
+        this.ctx.fillRect(x * 50 + 50, y * 50 + 50, width, height);
+        return this;
+    };
+    Canvas.prototype.fillStyle = function (colour) {
+        this.ctx.fillStyle = colour;
         return this;
     };
     Canvas.prototype.circle = function (center, radius) {
@@ -1327,34 +1338,22 @@ var Scene = /** @class */ (function () {
     // by the `RenderContext` to paint the scene.
     Scene.prototype.render = function () {
         var _this = this;
-        // the surfaces we eventually will have to draw
-        var surfaceList = [];
+        // first find ALL the surfaces we eventually will have to draw
+        var visibleSurfaceList = [];
         // will be recursive, but start at the top
         var group = this.world;
         // examine each shape in  this group
         group.shapes.forEach(function (shape) {
-            shape.recalculateMatrix(); // one matrix for each shape
-            shape.surfaces.forEach(function (surface) {
-                // apply the shape's m to that surface
-                surface.points.map(function (p) { return showPoint('points', p); });
-                surface.transform(shape.m);
-                surface.transformedPoints.map(function (p) { return showPoint('transformedpoints', p); });
-                surfaceList.push(surface);
-            });
+            shape.recalculateSurfaces(); // update ever surface position
+            // what is 'visible' depends on the position of the camera
+            // next line uses tricky 'push spread' to append
+            visibleSurfaceList.push.apply(// update ever surface position
+            visibleSurfaceList, shape.visibleSurfaces(_this.camera));
         });
-        // // cull the ones pointing the wrong way
-        // let culledSurfaces: Surface[]
-        // if (this.cullBackfaces) {
-        //     culledSurfaces = this.cullSurfaces(allSurfaces, this.camera)
-        // } else {
-        //     culledSurfaces = allSurfaces;
-        // }
-        // console.log('culledSurfaces', culledSurfaces)
         this.canvas.clearCanvas();
-        surfaceList.forEach(function (surface) {
+        visibleSurfaceList.forEach(function (surface) {
+            surface.render(_this.canvas);
             //surface.points.map((p) => console.log(p.show()))
-            _this.canvas.draw(surface.strokeMaterial);
-            _this.canvas.path(surface.transformedPoints);
         });
         return;
         //////////////////////////////////////////////////////
@@ -1454,9 +1453,6 @@ var Scene = /** @class */ (function () {
     return Scene;
 }());
 
-function showPoint(msg, p) {
-    console.log(msg + " (" + p.x + "," + p.y + "," + p.z + "," + p.w + ")");
-}
 
 
 /***/ }),
@@ -1685,6 +1681,25 @@ var Shape = /** @class */ (function (_super) {
         _this.surfaces = surfaces;
         return _this;
     }
+    Shape.prototype.recalculateSurfaces = function () {
+        var _this = this;
+        var surfaceList = [];
+        this.recalculateMatrix(); // this shape is a 'transformable' with one matrix
+        this.surfaces.forEach(function (surface) {
+            // apply the shape's m to that surface
+            // surface.points.map((p) => showPoint('points', p))
+            surface.transform(_this.m);
+            // surface.transformedPoints.map((p) => showPoint('transformedpoints', p))
+        });
+    };
+    Shape.prototype.visibleSurfaces = function (camera) {
+        var surfaceList = [];
+        this.surfaces.forEach(function (surface) {
+            // some filter here...
+            surfaceList.push(surface);
+        });
+        return (surfaceList);
+    };
     /** Apply the supplied fill `Material` to each surface */
     Shape.prototype.fill = function (fill) {
         //    this.eachSurface (s) => { s.fill(fill)}
@@ -1698,6 +1713,9 @@ var Shape = /** @class */ (function (_super) {
     return Shape;
 }(_transformable__WEBPACK_IMPORTED_MODULE_0__["Transformable"]));
 
+function showPoint(msg, p) {
+    console.log(msg + " (" + p.x + "," + p.y + "," + p.z + "," + p.w + ")");
+}
 
 
 /***/ }),
@@ -2127,6 +2145,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./util */ "./src/util.ts");
 /* harmony import */ var _materials__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./materials */ "./src/materials.ts");
 /* harmony import */ var _transformable__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./transformable */ "./src/transformable.ts");
+/* harmony import */ var _vectorMath__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./vectorMath */ "./src/vectorMath.ts");
 // //// Surfaces and Shapes
 // ------------------
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -2146,6 +2165,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
 // A `Surface` is a defined as a planar object in 3D space. These paths don't
 // necessarily need to be convex, but they should be non-degenerate. This
 // library does not support shapes with holes.
@@ -2154,6 +2174,10 @@ var Surface = /** @class */ (function (_super) {
     __extends(Surface, _super);
     function Surface(stype, p1, p2, p3, p4) {
         var _this = _super.call(this) || this;
+        // the centroid (sometimes called 'barycenter') is the 
+        // geometric center of all points in the triangle.  
+        _this.centroid = new _vectorMath__WEBPACK_IMPORTED_MODULE_3__["V4"]();
+        _this.transformedCentroid = new _vectorMath__WEBPACK_IMPORTED_MODULE_3__["V4"]();
         // When 'false' this will override backface culling, which is useful if your
         // material is transparent. See comment in `Scene`.
         _this.cullBackfaces = true;
@@ -2167,15 +2191,43 @@ var Surface = /** @class */ (function (_super) {
         // with the `renderGroup` cache.
         _this.id = 's' + _util__WEBPACK_IMPORTED_MODULE_0__["Util"].uniqueId();
         //this.painter = painter
+        // calculate the centroid, but do NOT normalize it
+        _this.centroid.x = (_this.points[0].x + _this.points[1].x + _this.points[2].x) / 3;
+        _this.centroid.y = (_this.points[0].y + _this.points[1].y + _this.points[2].y) / 3;
+        _this.centroid.z = (_this.points[0].z + _this.points[1].z + _this.points[2].z) / 3;
         _this.fillMaterial = new _materials__WEBPACK_IMPORTED_MODULE_1__["Material"]('gray');
         _this.strokeMaterial = new _materials__WEBPACK_IMPORTED_MODULE_1__["Material"]('blue');
         return _this;
     }
-    /** shift this surface, recalculate normals, etc */
+    /** shift this surface using m, recalculate normals, etc */
     Surface.prototype.transform = function (m) {
         this.transformedPoints = this.points.map(function (point) {
-            return (point.multiplyMat4(m));
+            return (point.copy().multiplyMat4(m));
         });
+        // calculate the centroid, but do NOT normalize it
+        this.transformedCentroid.x = (this.transformedPoints[0].x + this.transformedPoints[1].x + this.transformedPoints[2].x) / 3;
+        this.transformedCentroid.y = (this.transformedPoints[0].y + this.transformedPoints[1].y + this.transformedPoints[2].y) / 3;
+        this.transformedCentroid.z = (this.transformedPoints[0].z + this.transformedPoints[1].z + this.transformedPoints[2].z) / 3;
+        // this.transformedCentroid = this.centroid.copy().multiplyMat4(m)
+        console.log('centroid', this.centroid, this.transformedCentroid);
+    };
+    Surface.prototype.render = function (canvas) {
+        // draw the triangle outline in blue
+        canvas.ctx.beginPath(); // Start a new path.
+        canvas.ctx.lineWidth = 1;
+        canvas.ctx.strokeStyle = "blue"; // This path is green.
+        canvas.ctx.moveTo(this.transformedPoints[0].x, this.transformedPoints[0].y);
+        canvas.ctx.lineTo(this.transformedPoints[1].x, this.transformedPoints[1].y);
+        canvas.ctx.lineTo(this.transformedPoints[2].x, this.transformedPoints[2].y);
+        canvas.ctx.closePath();
+        canvas.ctx.stroke();
+        canvas.ctx.fillStyle = 'green';
+        canvas.ctx.fillRect(this.transformedCentroid.x, this.transformedCentroid.y, 5, 5); // fill in the pixel at (10,10)
+        // canvas.draw(this.strokeMaterial)
+        // canvas.ctx.lineWidth = 3
+        // canvas.ctx.strokeStyle = "gray"
+        // canvas.path(this.transformedPoints)
+        // canvas.ctx.closePath()
     };
     Surface.prototype.fill = function (fill) {
         this.fillMaterial = new _materials__WEBPACK_IMPORTED_MODULE_1__["Material"]('gray').create(fill);

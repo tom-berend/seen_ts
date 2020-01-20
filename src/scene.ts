@@ -88,45 +88,23 @@ export class Scene {
     // The primary method that produces the render models, which are then used
     // by the `RenderContext` to paint the scene.
     render() {
-        // the surfaces we eventually will have to draw
-        let surfaceList: Surface[] = []
-
+        // first find ALL the surfaces we eventually will have to draw
+         let visibleSurfaceList: Surface[] = []
         // will be recursive, but start at the top
         let group = this.world
-
         // examine each shape in  this group
         group.shapes.forEach((shape) => {
-
-            shape.recalculateMatrix()  // one matrix for each shape
-
-            shape.surfaces.forEach((surface) => {
-                // apply the shape's m to that surface
-                surface.points.map((p) => showPoint('points', p))
-                surface.transform(shape.m)
-                surface.transformedPoints.map((p) => showPoint('transformedpoints', p))
-
-                surfaceList.push(surface)
-            })
+            shape.recalculateSurfaces()  // update ever surface position
+            // what is 'visible' depends on the position of the camera
+            // next line uses tricky 'push spread' to append
+            visibleSurfaceList.push(...shape.visibleSurfaces(this.camera))
         })
 
 
-        // // cull the ones pointing the wrong way
-        // let culledSurfaces: Surface[]
-        // if (this.cullBackfaces) {
-        //     culledSurfaces = this.cullSurfaces(allSurfaces, this.camera)
-        // } else {
-        //     culledSurfaces = allSurfaces;
-        // }
-
-        // console.log('culledSurfaces', culledSurfaces)
-
-
         this.canvas.clearCanvas()
-        surfaceList.forEach((surface) => {
+        visibleSurfaceList.forEach((surface) => {
+            surface.render(this.canvas)
             //surface.points.map((p) => console.log(p.show()))
-            this.canvas.draw(surface.strokeMaterial)
-            this.canvas.path(surface.transformedPoints)
-
         })
 
         return
@@ -245,6 +223,3 @@ export class Scene {
 }
 
 
-function showPoint(msg:String, p: V4) {
-    console.log(`${msg} (${p.x},${p.y},${p.z},${p.w})`)
-}

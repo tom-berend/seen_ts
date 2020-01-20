@@ -202,20 +202,26 @@ export class Canvas {
 
             if (i === 0) {
                 this.ctx.moveTo(p.x*50+50, p.y*50+50);
-                // console.log('moveTo',p.x,p.y)
+                console.log('moveTo',p.x*50+50, p.y*50+50)
             } else {
                 this.ctx.lineTo(p.x*50+50, p.y*50+50);
-                // console.log('lineTo',p.x,p.y)
+                console.log('lineTo',p.x*50+50, p.y*50+50)
             }
         }
         this.ctx.closePath()
         return this
     }
 
-    rect(width: number, height: number) {
-        this.ctx.rect(0, 0, width, height)
+    fillRect(x:number, y:number, width: number, height: number) {
+        console.log('fillRect',x*50+50, y*50+50, width, height)
+        this.ctx.fillRect(x*50+50, y*50+50, width, height)
         return this
     }
+    fillStyle(colour:string) {
+        this.ctx.fillStyle = colour
+        return this
+    }
+
 
     circle(center: V4, radius: number) {
         this.ctx.beginPath()
