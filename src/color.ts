@@ -1,7 +1,7 @@
 // //// Colors
 // ------------------
 
-import {Shape} from './shape'
+import { Shape } from './shape'
 
 
 /** `Color` objects store RGB and Alpha values from 0 to 255. Default is gray. */
@@ -11,18 +11,20 @@ export class Color {
     public b: number
     public a: number
 
-    CSS_RGBA_STRING_REGEX:RegExp
+    CSS_RGBA_STRING_REGEX: RegExp
 
+    /** eg: '//888888' */
     constructor(hexString?: string) {
         if (hexString) {
-            return this.hex(hexString)
-        }else{
-         
+            this.hex(hexString)
+        } else {
+
             // consider supporting 140 names from https://htmlcolorcodes.com/
 
-        // default is gray    
-        return (this.hex('//888888'))
+            // default is gray    
+            this.hex('//888888')
         }
+        return this
     }
 
     /** Returns a new `Color` object with the same rgb and alpha values as the current object */
@@ -122,11 +124,14 @@ export class Color {
 
     // Creates a new `Color` using the supplied hex string of the form "//RRGGBB".
     hex(hex: string) {
-        if (hex.charAt(0) == '//')
-            hex = hex.substring(1)
+        if (hex.substring(0, 2) === '//')
+            hex = hex.substring(2)
+
         this.r = parseInt(hex.substring(0, 2), 16)
         this.b = parseInt(hex.substring(2, 4), 16)
         this.g = parseInt(hex.substring(4, 6), 16)
+        this.a = 255
+        // console.log(`hex(${hex}) is r:${this.r},b:${this.b},g:${this.g}`)
         return this
     }
 
@@ -138,36 +143,36 @@ export class Color {
         r = g = b = 0
         if (s == 0)      // When saturation is 0, the color is "achromatic" or "grayscale".
             r = g = b = l
-        else{
+        else {
 
 
-        let q = (l < 0.5 ? l * (1 + s) : l + s - l * s)
-        let p = 2 * l - q
+            let q = (l < 0.5 ? l * (1 + s) : l + s - l * s)
+            let p = 2 * l - q
 
-        r = this.hue2rgb(p, q, h + 1 / 3)
-        g = this.hue2rgb(p, q, h)
-        b = this.hue2rgb(p, q, h - 1 / 3)
+            r = this.hue2rgb(p, q, h + 1 / 3)
+            g = this.hue2rgb(p, q, h)
+            b = this.hue2rgb(p, q, h - 1 / 3)
         }
         return this.rgb(r * 255, g * 255, b * 255, a * 255)
     }
 
     hue2rgb(p: number, q: number, t: number) {
-      if (t < 0) {
-          t += 1;
-      } else if (t > 1) {
-          t -= 1;
-      }
+        if (t < 0) {
+            t += 1;
+        } else if (t > 1) {
+            t -= 1;
+        }
 
-      if (t < 1 / 6) {
-          return p + (q - p) * 6 * t;
-      } else if (t < 1 / 2) {
-          return q;
-      } else if (t < 2 / 3) {
-          return p + (q - p) * (2 / 3 - t) * 6;
-      } else {
-          return p;
-      }
-  }
+        if (t < 1 / 6) {
+            return p + (q - p) * 6 * t;
+        } else if (t < 1 / 2) {
+            return q;
+        } else if (t < 2 / 3) {
+            return p + (q - p) * (2 / 3 - t) * 6;
+        } else {
+            return p;
+        }
+    }
 
     // /** Generates a new random color for each surface of the supplied `Shape`. */
     // randomSurfaces(shape: Shape, sat: number = 0.5, lit: number = 0.4) {
@@ -194,7 +199,7 @@ export class Color {
     //     shape.fill (new Material (this.hsl(Math.random()), sat, lit)
 
     // A few `Color`s are supplied for convenience.
-   black() { return this.hex('//000000') }
+    black() { return this.hex('//000000') }
     white() { return this.hex('//FFFFFF') }
     gray() { return this.hex('//888888') }
     // }

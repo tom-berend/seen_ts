@@ -95,7 +95,7 @@ export class CanvasRenderContext /*extends RenderContext*/ {
             this.ctx.moveTo(p.x+50, p.y+50);
             console.log('moveTo',p.x,p.y)
         } else {
-            this.ctx.lineTo(p.+50, p.y+50);
+            this.ctx.lineTo(p.x+50, p.y+50);
             console.log('lineTo',p.x,p.y)
         }
     /////////////////////////////

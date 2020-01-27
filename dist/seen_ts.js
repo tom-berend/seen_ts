@@ -99,9 +99,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _src_canvas__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./src/canvas */ "./src/canvas.ts");
 /* harmony import */ var _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./src/shapes/primitives */ "./src/shapes/primitives.ts");
 /* harmony import */ var _src_vectorMath__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./src/vectorMath */ "./src/vectorMath.ts");
+/* harmony import */ var _src_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./src/color */ "./src/color.ts");
 
 
 //import {P} from "./src/point"
+
 
 
 var width = 900;
@@ -144,14 +146,24 @@ ico.scale = new _src_vectorMath__WEBPACK_IMPORTED_MODULE_3__["V3"]([50, 50, 50])
 // ico2.position = new V3([10,10,10])
 // console.log('ico2 position', ico2.position)
 // scene.render()
+var x = 10;
+var y = 10;
 var animate = function () {
     ico.position.x += .01;
     ico.rotation.x += .01;
     // ico.rotation.y += .01
     // // //ico.scale.x += .01
-    scene.render();
+    //    scene.render()
+    canvasPixelTest();
+    scene.canvas.updateDisplay();
 };
 scene.canvas.animationObservable.addObserver('tick', animate);
+function canvasPixelTest() {
+    scene.canvas.setPixelColor(x++, y, new _src_color__WEBPACK_IMPORTED_MODULE_4__["Color"]('//FF0000'));
+    scene.canvas.setPixelColor(x++, y, new _src_color__WEBPACK_IMPORTED_MODULE_4__["Color"]('//00FF00'));
+    scene.canvas.setPixelColor(x++, y, new _src_color__WEBPACK_IMPORTED_MODULE_4__["Color"]('//0000FF'));
+    scene.canvas.setPixelRBG(x++, y + 10, 0, 255, 0);
+}
 // // create a cube
 // let shape = Cube()
 // console.log('shape',shape)
@@ -445,14 +457,15 @@ var Canvas = /** @class */ (function () {
         this.x = 0;
         this.canvas = document.getElementById(canvasTag);
         this.ctx = this.canvas.getContext('2d');
+        this.width = this.canvas.width;
+        this.height = this.canvas.height;
+        this.clearDisplay(); // clear the canvas to transparent black
         //    // find out more about the canvas...
         // let containerX = document.getElementById('container').offsetLeft
         // let containerY = document.getElementById('container').offsetTop
         // console.log(`container offset x=${containerX},y=${containerY}`)
         // some devices might scale, so scaleX/Y will not be close to 1
         var rect = this.canvas.getBoundingClientRect(); // position of canvas
-        this.width = this.canvas.width;
-        this.height = this.canvas.height;
         var scaleX = this.width / rect.width; // relationship bitmap vs. element for X
         var scaleY = this.height / rect.height;
         // console.log(`scale x=${scaleX},y=${scaleY}`)
@@ -596,6 +609,68 @@ var Canvas = /** @class */ (function () {
             return 'center';
         return anchor;
     };
+    ///////////////////////////////////////////////////////
+    //////// next functions write pixels to canvas 
+    ///////////////////////////////////////////////////////
+    Canvas.prototype.setPixelColor = function (x, y, color) {
+        var index = (y * this.width + x) * 4; // note  * 4  because four bytes per
+        // console.log('color',color.r, color.b, color.g)
+        this.data8[index] = color.r; // red
+        this.data8[++index] = color.g; // green
+        this.data8[++index] = color.b; // blue
+        this.data8[++index] = color.a; // alpha
+    };
+    Canvas.prototype.setPixelRBG = function (x, y, R, B, G, A) {
+        if (A === void 0) { A = 0xFF; }
+        var index = (y * this.width + x) * 4; // note  *4  because four bytes per
+        // console.log('rgb',R, B, G)
+        this.data8[index] = R; // red
+        this.data8[++index] = G; // green
+        this.data8[++index] = B; // blue
+        this.data8[++index] = A; // alpha
+    };
+    Canvas.prototype.clearDisplay = function () {
+        this.imageData = this.ctx.createImageData(this.width, this.height); // reset to empty
+        this.data8 = new Uint8ClampedArray(this.imageData.data.length);
+    };
+    Canvas.prototype.updateDisplay = function () {
+        // update the screen from the 8-bit buffer
+        this.imageData.data.set(this.data8);
+        this.ctx.putImageData(this.imageData, 0, 0);
+        // note that the buffer has not been cleared
+    };
+    Canvas.prototype.demoImageData = function (color) {
+        this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
+        // let data = imageData.data;
+        // for (var y = 0; y < this.height; ++y) {
+        //     for (var x = 0; x < this.width; ++x) {
+        //         var index = (y * this.width + x) * 4  // NOTE - * 4
+        //         var value = x * y & 0xff;
+        //         data[index] = value;      // red
+        //         data[++index] = value;    // green
+        //         data[++index] = value;    // blue
+        //         data[++index] = 255;      // alpha
+        //     }
+        // }
+        // this.ctx.putImageData(imageData, 0, 0);
+        // let buf = new ArrayBuffer(imageData.data.length);
+        // let buf8 = new Uint8ClampedArray(buf);
+        // let data = new Uint32Array(buf);
+        // for (let y = 0; y < this.height; ++y) {
+        //     for (let x = 0; x < this.width; ++x) {
+        //         let value = x * y & color
+        //         // write to the 32-bit buffer
+        //         data[y * this.width + x] =
+        //              (255 << 24) |    // alpha  - 255 is fully opaque
+        //          //   (value << 16) |    // blue
+        //          //   (value << 8) |    // green
+        //             value             // red
+        //     }
+        // }
+        // // update the screen from the 8-bit buffer
+        // imageData.data.set(buf8);
+        // this.ctx.putImageData(imageData, 0, 0);
+    };
     return Canvas;
 }());
 
@@ -617,15 +692,17 @@ __webpack_require__.r(__webpack_exports__);
 // ------------------
 /** `Color` objects store RGB and Alpha values from 0 to 255. Default is gray. */
 var Color = /** @class */ (function () {
+    /** eg: '//888888' */
     function Color(hexString) {
         if (hexString) {
-            return this.hex(hexString);
+            this.hex(hexString);
         }
         else {
             // consider supporting 140 names from https://htmlcolorcodes.com/
             // default is gray    
-            return (this.hex('//888888'));
+            this.hex('//888888');
         }
+        return this;
     }
     /** Returns a new `Color` object with the same rgb and alpha values as the current object */
     Color.prototype.copy = function () {
@@ -718,11 +795,13 @@ var Color = /** @class */ (function () {
     };
     // Creates a new `Color` using the supplied hex string of the form "//RRGGBB".
     Color.prototype.hex = function (hex) {
-        if (hex.charAt(0) == '//')
-            hex = hex.substring(1);
+        if (hex.substring(0, 2) === '//')
+            hex = hex.substring(2);
         this.r = parseInt(hex.substring(0, 2), 16);
         this.b = parseInt(hex.substring(2, 4), 16);
         this.g = parseInt(hex.substring(4, 6), 16);
+        this.a = 255;
+        // console.log(`hex(${hex}) is r:${this.r},b:${this.b},g:${this.g}`)
         return this;
     };
     /** Creates a new `Color` using the supplied hue, saturation, and lightness (HSL) values.

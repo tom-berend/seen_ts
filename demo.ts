@@ -1,17 +1,17 @@
 
 import { Scene, Group, Shape, Viewport, P } from "./src/Seen2";
-// this will be somewhere else....
-import { CanvasRenderContext } from "./src/render/canvas";
 import { Canvas } from "./src/canvas";
 //import {P} from "./src/point"
 import { Cube, Primitive, Pyramid, Icosahedron, TestTriangle } from './src/shapes/primitives'
 import { V3 } from "./src/vectorMath";
-
+import {Color} from "./src/color"
 
 let width = 900
 let height = 500
 
 let ctx = new Canvas('seen-canvas');
+
+
 
 // ////////////////// threeJS syntax  /////////////////
 // var scene = new Scene();
@@ -46,8 +46,8 @@ let tt = new TestTriangle()
 
 // scene.add (tt)
 
- scene.add(ico)
- ico.scale = new V3([50,50,50])
+scene.add(ico)
+ico.scale = new V3([50, 50, 50])
 
 // scene.add(ico2)
 
@@ -67,17 +67,30 @@ let tt = new TestTriangle()
 
 // scene.render()
 
+let x = 10
+let y = 10
+
 let animate = () => {
     ico.position.x += .01
     ico.rotation.x += .01
     // ico.rotation.y += .01
     // // //ico.scale.x += .01
-    scene.render()
- }
+    //    scene.render()
+
+    canvasPixelTest()
+    scene.canvas.updateDisplay()    
+}
 
 scene.canvas.animationObservable.addObserver('tick', animate)
 
 
+function canvasPixelTest(){
+    scene.canvas.setPixelColor(x++,y,new Color('//FF0000'))
+    scene.canvas.setPixelColor(x++,y,new Color('//00FF00'))
+    scene.canvas.setPixelColor(x++,y,new Color('//0000FF'))
+    
+     scene.canvas.setPixelRBG(x++,y+10,0,255,0)
+}
 
 
 
