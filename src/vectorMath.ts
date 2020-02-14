@@ -18,9 +18,11 @@
  * whose copyright notice follows below.
  *
  *  - The names of the functions were changed (eg: vec3 -> V3).
- *  - A 'modified' flag added to V3 
  *  - Added a V4.dot() scaler method
+ *  - Added a V3.reflection() method
  *  - The default M4 matrix is Identity, not Zero.
+ *  - V3.dot(a,b) became a.dot(b)
+ *  - V3.cross(a,b) became a.cross(b)
  *  - Combined into a single file to eliminate circular dependencies
  *  - Code was converted to newer TypeScript
  *  - Several small type errors were fixed (TypeScript found them)
@@ -54,7 +56,7 @@
  *    distribution.
  */
 
-const epsilon = 0.00001
+export const epsilon = 0.00001
 
 export class V2 {
     // a v2 is an array [x , y]
@@ -361,30 +363,25 @@ export class V3 {
 
     set x(value: number) {
         this.values[0] = value
-        this.modified = true
     }
 
     set y(value: number) {
         this.values[1] = value
-        this.modified = true
     }
 
     set z(value: number) {
         this.values[2] = value
-        this.modified = true
     }
 
     set xy(values: [number, number]) {
         this.values[0] = values[0]
         this.values[1] = values[1]
-        this.modified = true
     }
 
     set xyz(values: [number, number, number]) {
         this.values[0] = values[0]
         this.values[1] = values[1]
         this.values[2] = values[2]
-        this.modified = true
     }
 
     public static readonly zero = new V3([0, 0, 0])
@@ -393,36 +390,6 @@ export class V3 {
     public static readonly up = new V3([0, 1, 0])
     public static readonly right = new V3([1, 0, 0])
     public static readonly forward = new V3([0, 0, 1])
-
-    public static cross(vector: V3, vector2: V3, dest?: V3): V3 {
-        if (!dest) { dest = new V3() }
-
-        const x = vector.x
-        const y = vector.y
-        const z = vector.z
-
-        const x2 = vector2.x
-        const y2 = vector2.y
-        const z2 = vector2.z
-
-        dest.x = y * z2 - z * y2
-        dest.y = z * x2 - x * z2
-        dest.z = x * y2 - y * x2
-
-        return dest
-    }
-
-    public static dot(vector: V3, vector2: V3): number {
-        const x = vector.x
-        const y = vector.y
-        const z = vector.z
-
-        const x2 = vector2.x
-        const y2 = vector2.y
-        const z2 = vector2.z
-
-        return (x * x2 + y * y2 + z * z2)
-    }
 
     public static distance(vector: V3, vector2: V3): number {
         const x = vector2.x - vector.x
@@ -476,6 +443,28 @@ export class V3 {
         return dest
     }
 
+        // Given a vector `d`, which is a point in space, and a `normal`, which is
+    // the angle the point hits a surface, returna  new vector that is reflect
+    // off of that surface
+    // static reflectThrough(a: Vector, normal: Vector) {
+    //     var d = Vector.scale(normal, Vector.dotProduct(a, normal));
+    //     return Vector.subtract(Vector.scale(d, 2), a);
+    // }
+    // https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
+    //  r=d−2(d⋅n)n  (n must be normalized)
+    public reflection(n: V3 ): V3{
+        if(  Math.abs((n.x * n.x) + (n.y * n.y) + (n.z * n.z) - 1) > .005){
+            console.assert(false,'reflection is not normalized')
+            throw ''
+        }
+        let d = n.copy().scale(this.dot(n))
+        let result = d.scale(2).subtract(this)
+        // console.log('n',this.xyz,n.xyz)
+        // console.log('reflect',result.xyz)
+        return result
+    }
+
+
     public static sum(vector: V3, vector2: V3, dest?: V3): V3 {
         if (!dest) { dest = new V3() }
 
@@ -517,12 +506,27 @@ export class V3 {
     }
 
     private values = new Float32Array(3)
-    public modified = false
-
+    private _x:number
+    private _y:number
+    private _z:number
+    
     constructor(values?: [number, number, number]) {
         if (values !== undefined) {
             this.xyz = values
         }
+    }
+
+    public show(msg:string){
+        console.log(`${msg} [${this.values[0]},${this.values[1]},${this.values[2]}]`) 
+    }
+
+    // converts a euler angle to a direction vector
+    public eulerToVector(): V3 {
+        let x = Math.sin(this.values[0])
+        let y = Math.sin(this.values[1]) * Math.cos(this.values[0])
+        let z = Math.cos(this.values[1]) * Math.cos(this.values[0])
+        // note:  we do NOT need Z for this calculation
+        return (new V3([x, y, z]))
     }
 
     public at(index: number): number {
@@ -553,6 +557,26 @@ export class V3 {
         dest.z = -this.z
 
         return dest
+    }
+
+    public cross(vector2: V3): V3 {
+        const x2 = vector2.x
+        const y2 = vector2.y
+        const z2 = vector2.z
+
+        let x = this.y * z2 - this.z * y2
+        let y = this.z * x2 - this.x * z2
+        let z = this.x * y2 - this.y * x2
+
+        return new V3([x,y,z])
+    }
+
+    public dot(vector: V3): number {
+        const x = vector.x
+        const y = vector.y
+        const z = vector.z
+
+        return (x * this.x + y * this.y + z * this.z)
     }
 
     public equals(vector: V3, threshold = epsilon): boolean {
@@ -1822,8 +1846,8 @@ export class M4 {
 
         const z = V3.difference(position, target).normalize()
 
-        const x = V3.cross(up, z).normalize()
-        const y = V3.cross(z, x).normalize()
+        const x = up.cross(z).normalize()
+        const y = z.cross(x).normalize()
 
         return new M4([
             x.x,
@@ -1841,9 +1865,9 @@ export class M4 {
             z.z,
             0,
 
-            -V3.dot(x, position),
-            -V3.dot(y, position),
-            -V3.dot(z, position),
+            -x.dot(position),
+            -y.dot(position),
+            -z.dot(position),
             1,
         ])
     }

@@ -100,15 +100,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./src/shapes/primitives */ "./src/shapes/primitives.ts");
 /* harmony import */ var _src_vectorMath__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./src/vectorMath */ "./src/vectorMath.ts");
 /* harmony import */ var _src_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./src/color */ "./src/color.ts");
+/* harmony import */ var _src_literateraytrace__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./src/literateraytrace */ "./src/literateraytrace.ts");
 
 
 //import {P} from "./src/point"
 
 
 
+
 var width = 900;
 var height = 500;
 var ctx = new _src_canvas__WEBPACK_IMPORTED_MODULE_1__["Canvas"]('seen-canvas');
+Object(_src_literateraytrace__WEBPACK_IMPORTED_MODULE_5__["Literary"])();
 // ////////////////// threeJS syntax  /////////////////
 // var scene = new Scene();
 // var camera = new PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -125,16 +128,25 @@ var ctx = new _src_canvas__WEBPACK_IMPORTED_MODULE_1__["Canvas"]('seen-canvas');
 // 	renderer.render( scene, camera );
 // 
 // animate();
+// // this code demonstrates how to create an array of 'undefined' 
+// let three = [...Array(3)]
+// console.log('three', three)
+// three.forEach(a => console.log('forEach',a))
+// console.log(three.map(a=>'map'))
+// throw ''
 // ////////////////// SEEN_TS  syntax  /////////////////
 var scene = new _src_Seen2__WEBPACK_IMPORTED_MODULE_0__["Scene"]('seen-canvas'); // includes the camera, renderer is always CANVAS
+var scene2 = new _src_Seen2__WEBPACK_IMPORTED_MODULE_0__["Scene"]('seen-canvas2'); // includes the camera, renderer is always CANVAS
 // let pyramid = new Pyramid({ color: 0x00ff00 })   // defaults to basic material
 // let cube = new Cube({ color: 0x0000ff })
-var ico = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["Icosahedron"]({ color: 0x0000ff });
+//let ico =  new Icosahedron({ color: 0x0000ff })
+var ico = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["TestTriangle"](); // new Icosahedron({ color: 0x0000ff })
 // let ico2 = new Icosahedron({ color: 0x0000ff })
-var tt = new _src_shapes_primitives__WEBPACK_IMPORTED_MODULE_2__["TestTriangle"]();
+// let tt = new TestTriangle()
 // scene.add (tt)
-scene.add(ico);
 ico.scale = new _src_vectorMath__WEBPACK_IMPORTED_MODULE_3__["V3"]([50, 50, 50]);
+scene.add(ico);
+scene2.add(ico);
 // scene.add(ico2)
 // ico.rotation = new V3([.1, .1, .1])
 // console.log(ico.rotation)
@@ -148,16 +160,27 @@ ico.scale = new _src_vectorMath__WEBPACK_IMPORTED_MODULE_3__["V3"]([50, 50, 50])
 // scene.render()
 var x = 10;
 var y = 10;
+var timer = 0;
+// scene.render()
+// throw '' 
 var animate = function () {
-    ico.position.x += .01;
-    ico.rotation.x += .01;
-    // ico.rotation.y += .01
-    // // //ico.scale.x += .01
-    //    scene.render()
-    canvasPixelTest();
-    scene.canvas.updateDisplay();
+    timer += 1;
+    if (timer % 2 == 0) {
+        ico.position.x = 10 + Math.sin(x);
+        ico.rotation.x = Math.sin(y);
+        ico.rotation.y = Math.sin(y);
+        x += .05;
+        y += .02;
+        var test = new _src_vectorMath__WEBPACK_IMPORTED_MODULE_3__["V3"]([0, 0, x]);
+        //test.show('rotation')
+        test.eulerToVector().show('vector');
+        scene.render();
+        scene2.renderPixel();
+    }
+    // canvasPixelTest()
+    // scene.canvas.updateDisplay()    
 };
-scene.canvas.animationObservable.addObserver('tick', animate);
+// scene.canvas.animationObservable.addObserver('tick', animate)
 function canvasPixelTest() {
     scene.canvas.setPixelColor(x++, y, new _src_color__WEBPACK_IMPORTED_MODULE_4__["Color"]('//FF0000'));
     scene.canvas.setPixelColor(x++, y, new _src_color__WEBPACK_IMPORTED_MODULE_4__["Color"]('//00FF00'));
@@ -415,13 +438,28 @@ var Camera = /** @class */ (function (_super) {
     return Camera;
 }(_transformable__WEBPACK_IMPORTED_MODULE_0__["Transformable"]));
 
-var PixelCamera = /** @class */ (function (_super) {
-    __extends(PixelCamera, _super);
-    function PixelCamera() {
-        return _super.call(this) || this;
+var PixelCamera = /** @class */ (function () {
+    function PixelCamera(canvas) {
+        this.orthographic = false; // default to perspective
+        this.eyePosition = new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([0, 0, 100]);
+        this.direction = new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([0, 0, 1]);
+        this.width = 2; // canvas.width
+        this.height = 2; //canvas.height
+        this.eyeDistance = 100; // more intuitive if view angle?
+        this.orthographic = false;
     }
+    PixelCamera.prototype.rayDirection = function (iPixel, jPixel) {
+        if (this.orthographic) {
+            // TODO use ip and jp to offset
+            return (this.direction);
+        }
+        else {
+            // TODO calculate pixel position and then direction vector
+            return (this.direction);
+        }
+    };
     return PixelCamera;
-}(_transformable__WEBPACK_IMPORTED_MODULE_0__["Transformable"]));
+}());
 
 
 
@@ -639,38 +677,6 @@ var Canvas = /** @class */ (function () {
         this.ctx.putImageData(this.imageData, 0, 0);
         // note that the buffer has not been cleared
     };
-    Canvas.prototype.demoImageData = function (color) {
-        this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
-        // let data = imageData.data;
-        // for (var y = 0; y < this.height; ++y) {
-        //     for (var x = 0; x < this.width; ++x) {
-        //         var index = (y * this.width + x) * 4  // NOTE - * 4
-        //         var value = x * y & 0xff;
-        //         data[index] = value;      // red
-        //         data[++index] = value;    // green
-        //         data[++index] = value;    // blue
-        //         data[++index] = 255;      // alpha
-        //     }
-        // }
-        // this.ctx.putImageData(imageData, 0, 0);
-        // let buf = new ArrayBuffer(imageData.data.length);
-        // let buf8 = new Uint8ClampedArray(buf);
-        // let data = new Uint32Array(buf);
-        // for (let y = 0; y < this.height; ++y) {
-        //     for (let x = 0; x < this.width; ++x) {
-        //         let value = x * y & color
-        //         // write to the 32-bit buffer
-        //         data[y * this.width + x] =
-        //              (255 << 24) |    // alpha  - 255 is fully opaque
-        //          //   (value << 16) |    // blue
-        //          //   (value << 8) |    // green
-        //             value             // red
-        //     }
-        // }
-        // // update the screen from the 8-bit buffer
-        // imageData.data.set(buf8);
-        // this.ctx.putImageData(imageData, 0, 0);
-    };
     return Canvas;
 }());
 
@@ -682,31 +688,41 @@ var Canvas = /** @class */ (function () {
 /*!**********************!*\
   !*** ./src/color.ts ***!
   \**********************/
-/*! exports provided: Color */
+/*! exports provided: Color, WHITE */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Color", function() { return Color; });
-// //// Colors
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WHITE", function() { return WHITE; });
+// // Colors
 // ------------------
 /** `Color` objects store RGB and Alpha values from 0 to 255. Default is gray. */
 var Color = /** @class */ (function () {
-    /** eg: '//888888' */
-    function Color(hexString) {
+    // CSS_RGBA_STRING_REGEX: RegExp
+    /** eg: '(//888888') or (0,255,255) or () */
+    function Color(hexString, g, b) {
         if (hexString) {
-            this.hex(hexString);
+            if (typeof hexString == 'number') {
+                this.r = hexString;
+                this.g = g;
+                this.b = b;
+                this.a = 255;
+            }
+            else if (typeof hexString == 'string') {
+                this.hex(hexString);
+            }
         }
         else {
             // consider supporting 140 names from https://htmlcolorcodes.com/
-            // default is gray    
-            this.hex('//888888');
+            // default is black    
+            this.hex('//000000');
         }
         return this;
     }
     /** Returns a new `Color` object with the same rgb and alpha values as the current object */
     Color.prototype.copy = function () {
-        return new Color(this.hexString());
+        return new Color(this.r, this.g, this.b);
     };
     /** Scales the rgb channels by the supplied scalar value. */
     Color.prototype.scale = function (n) {
@@ -764,25 +780,23 @@ var Color = /** @class */ (function () {
     Color.prototype.style = function () {
         return "rgba(//{this.r},//{this.g},//{this.b},//{this.a})";
     };
-    // Parses a hex string starting with an octothorpe (//) or an rgb/rgba CSS
-    // string. Note that the CSS rgba format uses a float value of 0-1.0 for
-    /** alpha, but seen uses an in from 0-255. */
-    Color.prototype.parse = function (str) {
-        if (str.charAt(0) === '#' && str.length === 7) {
-            return this.hex(str);
-        }
-        else if (str.indexOf('rgb') === 0) {
-            var m = this.CSS_RGBA_STRING_REGEX.exec(str);
-            if (m == null) {
-                return this.black();
-            }
-            var a = m[6] != null ? Math.round(parseFloat(m[6]) * 0xFF) : void 0;
-            return this.rgb(parseFloat(m[2]), parseFloat(m[3]), parseFloat(m[4]), a);
-        }
-        else {
-            return this.black();
-        }
-    };
+    // // Parses a hex string starting with an octothorpe (//) or an rgb/rgba CSS
+    // // string. Note that the CSS rgba format uses a float value of 0-1.0 for
+    // /** alpha, but seen uses an in from 0-255. */
+    // parse(str: string) {
+    //     if (str.charAt(0) === '#' && str.length === 7) {
+    //         return this.hex(str);
+    //     } else if (str.indexOf('rgb') === 0) {
+    //         let m = this.CSS_RGBA_STRING_REGEX.exec(str);
+    //         if (m == null) {
+    //             return this.black();
+    //         }
+    //         let a = m[6] != null ? Math.round(parseFloat(m[6]) * 0xFF) : void 0;
+    //         return this.rgb(parseFloat(m[2]), parseFloat(m[3]), parseFloat(m[4]), a);
+    //     } else {
+    //         return this.black();
+    //     }
+    // }
     /** Loads the  `Color` using the supplied rgb and alpha values.
     Each value must be in the range [0, 255] or, equivalently, [0x00, 0xFF]. */
     Color.prototype.rgb = function (r, g, b, a) {
@@ -866,6 +880,7 @@ var Color = /** @class */ (function () {
     return Color;
 }());
 
+var WHITE = new Color('//FFFFFF');
 
 
 /***/ }),
@@ -944,6 +959,856 @@ var Lights = /** @class */ (function () {
     return Lights;
 }());
 
+
+
+/***/ }),
+
+/***/ "./src/literateraytrace.ts":
+/*!*********************************!*\
+  !*** ./src/literateraytrace.ts ***!
+  \*********************************/
+/*! exports provided: LR_Camera, XXX_LR_Object, LR_Object, LR_Ray, xxx_LR_Ray, LR_Scene, Literary */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LR_Camera", function() { return LR_Camera; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "XXX_LR_Object", function() { return XXX_LR_Object; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LR_Object", function() { return LR_Object; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LR_Ray", function() { return LR_Ray; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "xxx_LR_Ray", function() { return xxx_LR_Ray; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LR_Scene", function() { return LR_Scene; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Literary", function() { return Literary; });
+/* harmony import */ var _color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./color */ "./src/color.ts");
+/* harmony import */ var _vectorMath__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./vectorMath */ "./src/vectorMath.ts");
+
+
+// # Raytracing
+//
+// **Raytracing** is a relatively simple way to render images of 3D objects.
+// The core is an elegant idea, that one can simulate the real-world behavior
+// of photons of light bouncing off of surfaces and colors accumulating from
+// their paths. It's not inherently fast, but the simplicity of the core lets
+// it model interesting things like reflections and depth of field in ways
+// that mirror natural processes.
+//
+// ## CS 301: Raytracing
+//
+// This happens to be a popular subject for education: implementing a raytracer
+// requires a student to understand vector math, fast code, and even recursion.
+// The reward is a pretty image - more compelling than the blasé debug output
+// that students get from most assignments.
+//
+// But it's still hard to learn: explanations are written either in the
+// language of mathematics or programming, and rarely connect all the dots.
+// Raytracer implementations tend to extremes: one
+// [fits on a business card](http://fabiensanglard.net/rayTracing_back_of_business_card/),
+// another [supports nearly every potential feature](http://www.povray.org/),
+// and most of the rest are [homework assignments](https://github.com/search?q=raytracer+cs&ref=cmdform),
+// implemented just enough to run, never enough to have comments and documentation.
+//
+// ## Literate Raytracer
+//
+// [Literate raytracer](https://github.com/tmcw/literate-raytracer) is a
+// simple implementation of raytracing in Javascript. It's [made to be
+// read as a narrative](http://macwright.org/literate-raytracer/), and intends
+// to [explain vector operations](http://macwright.org/literate-raytracer/vector.html) as well.
+//
+// # Setup
+// # Constants
+var UP = new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([0, 1, 0]);
+var c = document.getElementById('seen-canvas'), width = 640 * 0.5, height = 480 * 0.5;
+// Get a context in order to generate a proper data array. We aren't going to
+// use traditional Canvas drawing functions like `fillRect` - instead this
+// raytracer will directly compute pixel data and then put it into an image.
+c.width = width;
+c.height = height;
+c.style.cssText = 'width:' + (width * 2) + 'px;height:' + (height * 2) + 'px';
+var ctx = c.getContext('2d');
+var data = ctx.getImageData(0, 0, width, height);
+var LR_Camera = /** @class */ (function () {
+    function LR_Camera() {
+    }
+    return LR_Camera;
+}());
+
+var XXX_LR_Object = /** @class */ (function () {
+    function XXX_LR_Object(type, point, color) {
+        this.type = type;
+        this.point = point;
+        this.color = color;
+    }
+    return XXX_LR_Object;
+}());
+
+var LR_Object = /** @class */ (function () {
+    function LR_Object(type, point, color) {
+        this.type = type;
+        this.point = point;
+        this.color = color;
+    }
+    return LR_Object;
+}());
+
+var LR_Ray = /** @class */ (function () {
+    function LR_Ray(point, vector) {
+        this.point = point;
+        this.vector = vector;
+    }
+    return LR_Ray;
+}());
+
+var xxx_LR_Ray = /** @class */ (function () {
+    function xxx_LR_Ray(point, vector) {
+        this.point = v3toVector(point);
+        this.vector = v3toVector(vector);
+    }
+    return xxx_LR_Ray;
+}());
+
+// # The Scene
+var LR_Scene = /** @class */ (function () {
+    function LR_Scene() {
+        this.objects = [];
+        this.xxx_objects = [];
+        this.lights = [];
+        // ## The Camera
+        //
+        // Our camera is pretty simple: it's a point in space, where you can imagine
+        // that the camera 'sits', a `fieldOfView`, which is the angle from the right
+        // to the left side of its frame, and a `vector` which determines what
+        // angle it points in.
+        this.camera = new LR_Camera();
+        this.camera.point = new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([0, 1.8, 10]);
+        this.camera.fieldOfView = 45;
+        this.camera.vector = new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([0, 3, 0]);
+        // ## Lights
+        //
+        // Lights are defined only as points in space - surfaces that have lambert
+        // shading will be affected by any visible lights.
+        this.lights = [new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([-30, -10, 20])];
+        // ## Objects
+        //
+        // This raytracer handles sphere objects, with any color, position, radius,
+        // and surface properties.
+        var s1 = new LR_Object('sphere', new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([0, 3.5, -3]), new _color__WEBPACK_IMPORTED_MODULE_0__["Color"](155, 200, 155));
+        s1.specular = 0.2;
+        s1.lambert = 0.7;
+        s1.ambient = 0.1;
+        s1.radius = 3;
+        var xxx_s1 = new XXX_LR_Object('sphere', new Vector(0, 3.5, -3), new Vector(155, 200, 155));
+        s1.specular = 0.2;
+        s1.lambert = 0.7;
+        s1.ambient = 0.1;
+        s1.radius = 3;
+        var s2 = new LR_Object('sphere', new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([-4, 2, -1]), new _color__WEBPACK_IMPORTED_MODULE_0__["Color"](155, 155, 155));
+        s2.specular = 0.1;
+        s2.lambert = 0.0;
+        s2.ambient = 0.0;
+        s2.radius = 0.2;
+        var xxx_s2 = new XXX_LR_Object('sphere', new Vector(-4, 2, -1), new Vector(155, 155, 155));
+        s2.specular = 0.1;
+        s2.lambert = 0.0;
+        s2.ambient = 0.0;
+        s2.radius = 0.2;
+        var s3 = new LR_Object('sphere', new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([-4, 3, -1]), new _color__WEBPACK_IMPORTED_MODULE_0__["Color"](255, 255, 255));
+        s3.specular = 0.2;
+        s3.lambert = 0.7;
+        s3.ambient = 0.1;
+        s3.radius = 0.1;
+        var xxx_s3 = new XXX_LR_Object('sphere', new Vector(-4, 3, -1), new Vector(255, 255, 255));
+        s3.specular = 0.2;
+        s3.lambert = 0.7;
+        s3.ambient = 0.1;
+        s3.radius = 0.1;
+        this.objects.push(s1);
+        this.objects.push(s2);
+        this.objects.push(s3);
+        this.xxx_objects.push(xxx_s1);
+        this.xxx_objects.push(xxx_s2);
+        this.xxx_objects.push(xxx_s3);
+    }
+    return LR_Scene;
+}());
+
+// # Throwing Rays
+//
+// This is one part where we can't follow nature exactly: technically photons
+// come out of lights, bounce off of objects, and then some hit the 'eye'
+// and many don't. Simulating this - sending rays in all directions out of
+// each light and most not having any real effect - would be too inefficient.
+//
+// Luckily, the reverse is more efficient and has practically the same result -
+// instead of rays going 'from' lights to the eye, we follow rays from the eye
+// and see if they end up hitting any features and lights on their travels.
+//
+// For each pixel in the canvas, there needs to be at least one ray of light
+// that determines its color by bouncing through the scene.
+function render(scene) {
+    // first 'unpack' the scene to make it easier to reference
+    var camera = scene.camera, objects = scene.objects, lights = scene.lights;
+    // This process
+    // is a bit odd, because there's a disconnect between pixels and vectors:
+    // given the left and right, top and bottom rays, the rays we shoot are just
+    // interpolated between them in little increments.
+    //
+    // Starting with the height and width of the scene, the camera's place,
+    // direction, and field of view, we calculate factors that create
+    // `width*height` vectors for each ray
+    // Start by creating a simple vector pointing in the direction the camera is
+    // pointing - a unit vector
+    // let eyeVector = Vector.unitVector(Vector.subtract(camera.vector, camera.point)),
+    var eyeVector = camera.vector.copy().subtract(camera.point).normalize();
+    var xxx_eyeVector = Vector.unitVector(Vector.subtract(v3toVector(camera.vector), v3toVector(camera.point)));
+    // and then we'll rotate this by combining it with a version that's turned
+    // 90° right and one that's turned 90° up. Since the [cross product](http://en.wikipedia.org/wiki/Cross_product)
+    // takes two vectors and creates a third that's perpendicular to both,
+    // we use a pure 'UP' vector to turn the camera right, and that 'right'
+    // vector to turn the camera up.
+    var vpRight = eyeVector.copy().cross(UP).normalize();
+    var vpUp = vpRight.copy().cross(eyeVector).normalize();
+    var xxx_vpRight = Vector.unitVector(Vector.crossProduct(xxx_eyeVector, v3toVector(UP)));
+    var xxx_vpUp = Vector.unitVector(Vector.crossProduct(xxx_vpRight, xxx_eyeVector));
+    // The actual ending pixel dimensions of the image aren't important here -
+    // note that `width` and `height` are in pixels, but the numbers we compute
+    // here are just based on the ratio between them, `height/width`, and the
+    // `fieldOfView` of the camera.
+    var fovRadians = Math.PI * (camera.fieldOfView / 2) / 180, heightWidthRatio = height / width, halfWidth = Math.tan(fovRadians), halfHeight = heightWidthRatio * halfWidth, camerawidth = halfWidth * 2, cameraheight = halfHeight * 2, pixelWidth = camerawidth / (width - 1), pixelHeight = cameraheight / (height - 1);
+    var index;
+    var color;
+    var xxx_color;
+    var ray = new LR_Ray(camera.point, new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([0, 0, 0]));
+    var xxx_ray = new xxx_LR_Ray(camera.point, new _vectorMath__WEBPACK_IMPORTED_MODULE_1__["V3"]([0, 0, 0]));
+    for (var x = 69; x < width; x++) {
+        for (var y = 122; y < height; y++) {
+            // turn the raw pixel `x` and `y` values into values from -1 to 1
+            // and use these values to scale the facing-right and facing-up
+            // vectors so that we generate versions of the `eyeVector` that are
+            // skewed in each necessary direction.
+            var xcomp = vpRight.copy().scale((x * pixelWidth) - halfWidth);
+            var ycomp = vpUp.copy().scale((y * pixelHeight) - halfHeight);
+            var xxx_xcomp = Vector.scale(xxx_vpRight, (x * pixelWidth) - halfWidth), xxx_ycomp = Vector.scale(xxx_vpUp, (y * pixelHeight) - halfHeight);
+            ray.vector = eyeVector.copy().add(xcomp).add(ycomp).normalize();
+            xxx_ray.vector = Vector.unitVector(Vector.add3(xxx_eyeVector, xxx_xcomp, xxx_ycomp));
+            // use the vector generated to raytrace the scene, returning a color
+            // as a `{x, y, z}` vector of RGB values
+            color = trace(ray, scene, 0);
+            xxx_color = xxx_trace(xxx_ray, scene, 0);
+            // index = (x * 4) + (y * width * 4),
+            //     data.data[index + 0] = color.r;
+            // data.data[index + 1] = color.g;
+            // data.data[index + 2] = color.b;
+            // data.data[index + 3] = 255;
+            index = (x * 4) + (y * width * 4),
+                data.data[index + 0] = xxx_color.xV;
+            data.data[index + 1] = xxx_color.yV;
+            data.data[index + 2] = xxx_color.zV;
+            data.data[index + 3] = 255;
+            // index = (x * 4) + (y * width * 4),
+            //     data.data[index + 0] = color.r;
+            // data.data[index + 1] = color.g;
+            // data.data[index + 2] = color.b;
+            // data.data[index + 3] = color.a;
+            if (!(color.r === xxx_color.xV && color.g === xxx_color.yV && color.g === xxx_color.zV)) {
+                console.log("mismatch ", x, y, color, xxx_color);
+                ctx.putImageData(data, 0, 0);
+                throw '';
+            }
+        }
+    }
+    // Now that each ray has returned and populated the `data` array with
+    // correctly lit colors, fill the canvas with the generated data.
+    ctx.putImageData(data, 0, 0);
+}
+// # Trace
+//
+// Given a ray, shoot it until it hits an object and return that object's color,
+// or `WHITE` if no object is found. This is the main function that's
+// called in order to draw the image, and it recurses into itself if rays
+// reflect off of objects and acquire more color.
+function trace(ray, scene, depth) {
+    var distObject = intersectScene(ray, scene);
+    // If we don't hit anything, fill this pixel with the background color -
+    // in this case, white.
+    if (distObject.distance === Infinity) {
+        return _color__WEBPACK_IMPORTED_MODULE_0__["WHITE"];
+    }
+    // The `pointAtTime` is another way of saying the 'intersection point'
+    // of this ray into this object. We compute this by simply taking
+    // the direction of the ray and making it as long as the distance
+    // returned by the intersection check.
+    var pointAtTime = ray.point.copy().add(ray.vector.scale(distObject.distance));
+    // console.log ('pointAt', ray.point.xyz)
+    // return surface(ray, scene, distObject.object, pointAtTime, sphereNormal(distObject.object, pointAtTime), depth);
+    var normal = sphereNormal(distObject.object, pointAtTime);
+    // # Surface
+    //
+    // ![](http://farm3.staticflickr.com/2851/10524788334_f2e3903b36_b.jpg)
+    //
+    // If `trace()` determines that a ray intersected with an object, `surface`
+    // decides what color it acquires from the interaction.
+    // function surface(ray: LR_Ray, scene: LR_Scene, object: LR_Object, pointAtTime: Vector, normal: Vector, depth: number): Color {
+    var b = distObject.object.color.copy(), c = new _color__WEBPACK_IMPORTED_MODULE_0__["Color"](), lambertAmount = 0;
+    // **[Lambert shading](http://en.wikipedia.org/wiki/Lambertian_reflectance)**
+    // is our pretty shading, which shows gradations from the most lit point on
+    // the object to the least.
+    if (distObject.object.lambert) {
+        for (var i = 0; i < scene.lights.length; i++) {
+            var lightPoint = scene.lights[i];
+            // First: can we see the light? If not, this is a shadowy area
+            // and it gets no light from the lambert shading process.
+            if (!isLightVisible(pointAtTime, scene, lightPoint))
+                continue;
+            // Otherwise, calculate the lambertian reflectance, which
+            // essentially is a 'diffuse' lighting system - direct light
+            // is bright, and from there, less direct light is gradually,
+            // beautifully, less light.
+            var contribution = lightPoint.copy().subtract(pointAtTime).normalize().dot(normal);
+            // sometimes this formula can return negatives, so we check:
+            // we only want positive values for lighting.
+            // TODO: this can also return NAN.  why??
+            if (contribution > 0)
+                lambertAmount += contribution;
+        }
+        // lambert should never 'blow out' the lighting of an object,
+        // even if the ray bounces between a lot of things and hits lights
+        lambertAmount = Math.min(1, lambertAmount);
+    }
+    // **[Specular](https://en.wikipedia.org/wiki/Specular_reflection)** is a fancy word for 'reflective': rays that hit objects
+    // with specular surfaces bounce off and acquire the colors of other objects
+    // they bounce into.
+    if (distObject.object.specular) {
+        // This is basically the same thing as what we did in `render()`, just
+        // instead of looking from the viewpoint of the camera, we're looking
+        // from a point on the surface of a shiny object, seeing what it sees
+        // and making that part of a reflection.
+        var reflectedRay = {
+            point: pointAtTime,
+            vector: ray.vector.copy().reflection(normal)
+        };
+        // Big number, but tests ok
+        // vtest('reflectedRay', reflectedRay.vector, Vector.reflectThrough(v3toVector(ray.vector), v3toVector(normal)))
+        // This is a recursive method: if we hit something that's reflective,
+        // then the call to `surface()` at the bottom will return here and try
+        // to find what the ray reflected into. Since this could easily go
+        // on forever, first check that we haven't gone more than three bounces
+        // into a reflection.
+        if (depth < 3) {
+            // console.log('reflected', reflectedRay)
+            var reflectedColor = trace(reflectedRay, scene, ++depth);
+            //  console.log('reflected', reflectedColor)
+            c.addChannels(reflectedColor.scale(distObject.object.specular));
+        }
+        //console.log('specular c', c)
+    }
+    // **Ambient** colors shine bright regardless of whether there's a light visible -
+    // a circle with a totally ambient blue color will always just be a flat blue
+    // circle.
+    c.addChannels(b.scale(lambertAmount * distObject.object.lambert));
+    c.addChannels(b.scale(distObject.object.ambient));
+    return c;
+}
+// # Detecting collisions against all objects
+//
+// Given a ray, let's figure out whether it hits anything, and if so,
+// what's the closest thing it hits.
+function intersectScene(ray, scene) {
+    // The base case is that it hits nothing, and travels for `Infinity`
+    var closest = { distance: Infinity, object: null };
+    // But for each object, we check whether it has any intersection,
+    // and compare that intersection - is it closer than `Infinity` at first,
+    // and then is it closer than other objects that have been hit?
+    for (var i = 0; i < scene.objects.length; i++) {
+        var object = scene.objects[i], dist = sphereIntersection(object, ray);
+        if (dist !== undefined && dist < closest.distance) {
+            closest = { distance: dist, object: object };
+        }
+    }
+    return closest;
+}
+// ## Detecting collisions against a sphere
+//
+// ![](graphics/sphereintersection.png)
+//
+// Spheres are one of the simplest objects for rays to interact with, since
+// the geometrical math for finding intersections and reflections with them
+// is pretty straightforward.
+function sphereIntersection(sphere, ray) {
+    var eye_to_center = sphere.point.copy().subtract(ray.point);
+    // picture a triangle with one side going straight from the camera point
+    // to the center of the sphere, another side being the vector.
+    // the final side is a right angle.
+    //
+    // This equation first figures out the length of the vector side
+    var v = eye_to_center.dot(ray.vector);
+    // then the length of the straight from the camera to the center
+    // of the sphere
+    var eoDot = eye_to_center.dot(eye_to_center);
+    // and compute a segment from the right angle of the triangle to a point
+    // on the `v` line that also intersects the circle
+    var discriminant = (sphere.radius * sphere.radius) - eoDot + (v * v);
+    // If the discriminant is negative, that means that the sphere hasn't
+    // been hit by the ray
+    if (discriminant < 0) {
+        return Infinity;
+    }
+    else {
+        // otherwise, we return the distance from the camera point to the sphere
+        // `Math.sqrt(dotProduct(a, a))` is the length of a vector, so
+        // `v - Math.sqrt(discriminant)` means the length of the the vector
+        // just from the camera to the intersection point.
+        return v - Math.sqrt(discriminant);
+    }
+}
+// A normal is, at each point on the surface of a sphere or some other object,
+// a vector that's perpendicular to the surface and radiates outward. We need
+// to know this so that we can calculate the way that a ray reflects off of
+// a sphere.
+function sphereNormal(sphere, pos) {
+    return pos.copy().subtract(sphere.point).normalize();
+}
+// // # Surface
+// //
+// // ![](http://farm3.staticflickr.com/2851/10524788334_f2e3903b36_b.jpg)
+// //
+// // If `trace()` determines that a ray intersected with an object, `surface`
+// // decides what color it acquires from the interaction.
+// function surface(ray: LR_Ray, scene: LR_Scene, object: LR_Object, pointAtTime: V3, normal: V3, depth: number): Color {
+//     let b = object.color.copy(),
+//         c = new Color(),
+//         lambertAmount = 0;
+//     // **[Lambert shading](http://en.wikipedia.org/wiki/Lambertian_reflectance)**
+//     // is our pretty shading, which shows gradations from the most lit point on
+//     // the object to the least.
+//     if (object.lambert) {
+//         for (var i = 0; i < scene.lights.length; i++) {
+//             var lightPoint = scene.lights[i];
+//             // First: can we see the light? If not, this is a shadowy area
+//             // and it gets no light from the lambert shading process.
+//             if (!isLightVisible(pointAtTime, scene, lightPoint)) continue;
+//             // Otherwise, calculate the lambertian reflectance, which
+//             // essentially is a 'diffuse' lighting system - direct light
+//             // is bright, and from there, less direct light is gradually,
+//             // beautifully, less light.
+//             // var contribution = Vector.dotProduct(Vector.unitVector(
+//             //     Vector.subtract(lightPoint, pointAtTime)), normal);
+//             let contribution = lightPoint.copy().subtract(pointAtTime).normalize().dot(normal)
+//             // sometimes this formula can return negatives, so we check:
+//             // we only want positive values for lighting.
+//             if (contribution > 0) lambertAmount += contribution;
+//         }
+//         // lambert should never 'blow out' the lighting of an object,
+//         // even if the ray bounces between a lot of things and hits lights
+//         lambertAmount = Math.min(1, lambertAmount);
+//         c.addChannels(b.scale(lambertAmount * object.lambert))
+//     }
+//     // **[Specular](https://en.wikipedia.org/wiki/Specular_reflection)** is a fancy word for 'reflective': rays that hit objects
+//     // with specular surfaces bounce off and acquire the colors of other objects
+//     // they bounce into.
+//     if (object.specular) {
+//         // This is basically the same thing as what we did in `render()`, just
+//         // instead of looking from the viewpoint of the camera, we're looking
+//         // from a point on the surface of a shiny object, seeing what it sees
+//         // and making that part of a reflection.
+//         var reflectedRay = {
+//             point: pointAtTime,
+//             vector: ray.vector.reflection(normal)
+//         };
+//         // This is a recursive method: if we hit something that's reflective,
+//         // then the call to `surface()` at the bottom will return here and try
+//         // to find what the ray reflected into. Since this could easily go
+//         // on forever, first check that we haven't gone more than three bounces
+//         // into a reflection.
+//         if (depth < 3) {
+//             let reflectedColor = trace(reflectedRay, scene, ++depth);
+//             c.addChannels(reflectedColor.scale(object.specular));
+//         }
+//     }
+//     // **Ambient** colors shine bright regardless of whether there's a light visible -
+//     // a circle with a totally ambient blue color will always just be a flat blue
+//     // circle.
+//     return c.addChannels(b.scale(object.ambient))
+// }
+// Check whether a light is visible from some point on the surface of something.
+// Note that there might be an intersection here, which is tricky - but if it's
+// tiny, it's actually an intersection with the object we're trying to decide
+// the surface of. That's why we check for `> -0.005` at the end.
+//
+// This is the part that makes objects cast shadows on each other: from here
+// we'd check to see if the area in a shadowy spot can 'see' a light, and when
+// this returns `false`, we make the area shadowy.
+function isLightVisible(pt, scene, light) {
+    var distObject = intersectScene({
+        point: pt,
+        vector: pt.copy().subtract(light).normalize()
+    }, scene);
+    return distObject.distance > -0.005;
+}
+// Here we do a little fun magic, just for the heck of it. We have three spheres
+// in the scene - `scene.objects[0]` is the big one, kind of like 'Earth'.
+//
+// The other two are little, so let's make them orbit around the big one
+// and look cool!
+// The orbits of the two planets. We use some basic trigonetry to do the orbits:
+// using `Math.sin()` and `Math.cos()`, it's simple to get a
+// [unit circle](http://en.wikipedia.org/wiki/Unit_circle)
+// for each planet. Here's [an article I wrote](http://macwright.org/2013/03/05/math-for-pictures.html)
+// for getting to know `sin` and `cos`.
+function Literary() {
+    var planet1 = 0, planet2 = 0;
+    var scene = new LR_Scene();
+    var playing = true;
+    var tick = function () {
+        // make one planet spin a little bit faster than the other, just for
+        // effect.
+        planet1 += 0.1;
+        planet2 += 0.2;
+        // set the position of each moon with some trig.
+        scene.objects[1].point.x = Math.sin(planet1) * 3.5;
+        scene.objects[1].point.z = -3 + (Math.cos(planet1) * 3.5);
+        scene.objects[2].point.x = Math.sin(planet2) * 4;
+        scene.objects[2].point.z = -3 + (Math.cos(planet2) * 4);
+        // finally, render the scene!
+        render(scene);
+        // and as soon as we're finished, render it again and move the planets
+        // again
+        if (playing)
+            setTimeout(tick, 10);
+    };
+    tick();
+}
+// Then let the user control a cute playing animation!
+// document.getElementById('play').onclick = play;
+// document.getElementById('stop').onclick = stop;
+// # Vector Operations
+//
+// These are general-purpose functions that deal with vectors - in this case,
+// three-dimensional vectors represented as objects in the form
+//
+//     { x, y, z }
+//
+// Since we're not using traditional object oriented techniques, these
+// functions take and return that sort of logic-less object, so you'll see
+// `add(a, b)` rather than `a.add(b)`.
+var Vector = /** @class */ (function () {
+    function Vector(x, y, z) {
+        this.xV = 0;
+        this.yV = 0;
+        this.zV = 0;
+        this.xV = x;
+        this.yV = y;
+        this.zV = z;
+    }
+    // ## [Cross Product](https://en.wikipedia.org/wiki/Cross_product)
+    //
+    // generates a new vector that's perpendicular to both of the vectors
+    // given.
+    Vector.crossProduct = function (a, b) {
+        return new Vector((a.yV * b.zV) - (a.zV * b.yV), (a.zV * b.xV) - (a.xV * b.zV), (a.xV * b.yV) - (a.yV * b.xV));
+    };
+    ;
+    // Enlongate or shrink a vector by a factor of `t`
+    Vector.scale = function (a, t) {
+        return new Vector(a.xV * t, a.yV * t, a.zV * t);
+    };
+    // Length, or magnitude, measured by [Euclidean norm](https://en.wikipedia.org/wiki/Euclidean_vector#Length)
+    Vector.prototype.length = function (a) {
+        return Math.sqrt(Vector.dotProduct(a, a));
+    };
+    ;
+    // ## [Unit Vector](http://en.wikipedia.org/wiki/Unit_vector)
+    //
+    // Turn any vector into a vector that has a magnitude of 1.
+    //
+    // If you consider that a [unit sphere](http://en.wikipedia.org/wiki/Unit_sphere)
+    // is a sphere with a radius of 1, a unit vector is like a vector from the
+    // center point (0, 0, 0) to any point on its surface.
+    Vector.unitVector = function (a) {
+        return this.scale(a, 1 / a.length(a)); // scale returns a new vector, so we don't have to
+    };
+    // Add two vectors to each other, by simply combining each
+    // of their components
+    Vector.add = function (a, b) {
+        return new Vector(a.xV + b.xV, a.yV + b.yV, a.zV + b.zV);
+    };
+    ;
+    // A version of `add` that adds three vectors at the same time. While
+    // it's possible to write a clever version of `Vector.add` that takes
+    // any number of arguments, it's not fast, so we're keeping it simple and
+    // just making two versions.
+    Vector.add3 = function (a, b, c) {
+        return new Vector(a.xV + b.xV + c.xV, a.yV + b.yV + c.yV, a.zV + b.zV + c.zV);
+    };
+    ;
+    // Given a vector `a`, which is a point in space, and a `normal`, which is
+    // the angle the point hits a surface, returna  new vector that is reflect
+    // off of that surface
+    Vector.reflectThrough = function (a, normal) {
+        var d = Vector.scale(normal, Vector.dotProduct(a, normal));
+        var result = Vector.subtract(Vector.scale(d, 2), a);
+        // console.log('xxx_n', a, normal)
+        // console.log('xxx_reflect', result)
+        return result;
+    };
+    // # Operations
+    //
+    // ## [Dot Product](https://en.wikipedia.org/wiki/Dot_product)
+    // is different than the rest of these since it takes two vectors but
+    // returns a single number value.
+    Vector.dotProduct = function (a, b) {
+        return (a.xV * b.xV) + (a.yV * b.yV) + (a.zV * b.zV);
+    };
+    // Subtract one vector from another, by subtracting each component
+    Vector.subtract = function (a, b) {
+        return new Vector(a.xV - b.xV, a.yV - b.yV, a.zV - b.zV);
+    };
+    return Vector;
+}());
+// # Constants
+var xxxUP = new Vector(0, 1, 0);
+var ZERO = new Vector(0, 0, 0);
+// const WHITE = new Vector(255, 255, 255)
+var ZEROcp = function () { return new Vector(0, 0, 0); };
+function vtest(label, a, b) {
+    if (!(almost(a.x, b.xV) && almost(a.y, b.yV) && almost(a.z, b.zV))) {
+        console.assert(false, label + ":  " + a.x + "===" + b.xV + ", " + a.y + "===" + b.yV + ", " + a.z + "===" + b.zV + " ");
+        throw '';
+    }
+}
+function ntest(label, a, b) {
+    if (!almost(a, b)) {
+        console.assert(false, label + ":  " + a + " " + b);
+        throw '';
+    }
+}
+function almost(a, b) {
+    if (isNaN(a) && isNaN(b)) // ignore this case
+        return true;
+    return (Math.abs(a - b) < .05);
+}
+function v3toVector(a) {
+    return new Vector(a.x, a.y, a.z);
+}
+function colortoVector(a) {
+    return new Vector(a.r, a.g, a.b);
+}
+// # Trace
+//
+// Given a ray, shoot it until it hits an object and return that object's color,
+// or `WHITE` if no object is found. This is the main function that's
+// called in order to draw the image, and it recurses into itself if rays
+// reflect off of objects and acquire more color.
+function xxx_trace(ray, scene, depth) {
+    var distObject = xxx_intersectScene(ray, scene);
+    // If we don't hit anything, fill this pixel with the background color -
+    // in this case, white.
+    if (distObject.distance === Infinity) {
+        return new Vector(255, 255, 255); // WHITE
+    }
+    // The `pointAtTime` is another way of saying the 'intersection point'
+    // of this ray into this object. We compute this by simply taking
+    // the direction of the ray and making it as long as the distance
+    // returned by the intersection check.
+    var pointAtTime = Vector.add(ray.point, Vector.scale(ray.vector, distObject.distance));
+    // console.log ('xxx_pointAt', ray.point)
+    // return surface(ray, scene, distObject.object, pointAtTime, sphereNormal(distObject.object, pointAtTime), depth);
+    var normal = xxx_sphereNormal(distObject.object, pointAtTime);
+    // # Surface
+    //
+    // ![](http://farm3.staticflickr.com/2851/10524788334_f2e3903b36_b.jpg)
+    //
+    // If `trace()` determines that a ray intersected with an object, `surface`
+    // decides what color it acquires from the interaction.
+    // function surface(ray: LR_Ray, scene: LR_Scene, object: LR_Object, pointAtTime: Vector, normal: Vector, depth: number): Color {
+    var b = colortoVector(distObject.object.color.copy()), c = new Vector(0, 0, 0), lambertAmount = 0;
+    // **[Lambert shading](http://en.wikipedia.org/wiki/Lambertian_reflectance)**
+    // is our pretty shading, which shows gradations from the most lit point on
+    // the object to the least.
+    if (distObject.object.lambert) {
+        for (var i = 0; i < scene.lights.length; i++) {
+            var lightPoint = scene.lights[i];
+            // First: can we see the light? If not, this is a shadowy area
+            // and it gets no light from the lambert shading process.
+            if (!xxx_isLightVisible(pointAtTime, scene, v3toVector(lightPoint)))
+                continue;
+            // Otherwise, calculate the lambertian reflectance, which
+            // essentially is a 'diffuse' lighting system - direct light
+            // is bright, and from there, less direct light is gradually,
+            // beautifully, less light.
+            var contribution = Vector.dotProduct(Vector.unitVector(Vector.subtract(v3toVector(lightPoint), pointAtTime)), normal);
+            // sometimes this formula can return negatives, so we check:
+            // we only want positive values for lighting.
+            if (contribution > 0)
+                lambertAmount += contribution;
+        }
+        // lambert should never 'blow out' the lighting of an object,
+        // even if the ray bounces between a lot of things and hits lights
+        lambertAmount = Math.min(1, lambertAmount);
+    }
+    // **[Specular](https://en.wikipedia.org/wiki/Specular_reflection)** is a fancy word for 'reflective': rays that hit objects
+    // with specular surfaces bounce off and acquire the colors of other objects
+    // they bounce into.
+    if (distObject.object.specular) {
+        // This is basically the same thing as what we did in `render()`, just
+        // instead of looking from the viewpoint of the camera, we're looking
+        // from a point on the surface of a shiny object, seeing what it sees
+        // and making that part of a reflection.
+        var reflectedRay = {
+            point: pointAtTime,
+            vector: Vector.reflectThrough(ray.vector, normal)
+        };
+        // This is a recursive method: if we hit something that's reflective,
+        // then the call to `surface()` at the bottom will return here and try
+        // to find what the ray reflected into. Since this could easily go
+        // on forever, first check that we haven't gone more than three bounces
+        // into a reflection.
+        if (depth < 3) {
+            // console.log('xxx_reflected', reflectedRay)
+            var reflectedColor = xxx_trace(reflectedRay, scene, ++depth);
+            // console.log('xxx_reflected', reflectedColor)
+            c = Vector.add(c, Vector.scale(reflectedColor, distObject.object.specular));
+        }
+        //        console.log('xxx_specular c', c)
+    }
+    // **Ambient** colors shine bright regardless of whether there's a light visible -
+    // a circle with a totally ambient blue color will always just be a flat blue
+    // circle.
+    return Vector.add3(c, Vector.scale(b, lambertAmount * distObject.object.lambert), Vector.scale(b, distObject.object.ambient));
+}
+// # Detecting collisions against all objects
+//
+// Given a ray, let's figure out whether it hits anything, and if so,
+// what's the closest thing it hits.
+function xxx_intersectScene(ray, scene) {
+    // The base case is that it hits nothing, and travels for `Infinity`
+    var closest = { distance: Infinity, object: null };
+    // But for each object, we check whether it has any intersection,
+    // and compare that intersection - is it closer than `Infinity` at first,
+    // and then is it closer than other objects that have been hit?
+    for (var i = 0; i < scene.objects.length; i++) {
+        var object = scene.objects[i], dist = xxx_sphereIntersection(object, ray);
+        if (dist !== undefined && dist < closest.distance) {
+            closest = { distance: dist, object: object };
+        }
+    }
+    return closest;
+}
+// ## Detecting collisions against a sphere
+//
+// ![](graphics/sphereintersection.png)
+//
+// Spheres are one of the simplest objects for rays to interact with, since
+// the geometrical math for finding intersections and reflections with them
+// is pretty straightforward.
+function xxx_sphereIntersection(sphere, ray) {
+    var eye_to_center = Vector.subtract(v3toVector(sphere.point), ray.point), 
+    // picture a triangle with one side going straight from the camera point
+    // to the center of the sphere, another side being the vector.
+    // the final side is a right angle.
+    //
+    // This equation first figures out the length of the vector side
+    v = Vector.dotProduct(eye_to_center, ray.vector), 
+    // then the length of the straight from the camera to the center
+    // of the sphere
+    eoDot = Vector.dotProduct(eye_to_center, eye_to_center), 
+    // and compute a segment from the right angle of the triangle to a point
+    // on the `v` line that also intersects the circle
+    discriminant = (sphere.radius * sphere.radius) - eoDot + (v * v);
+    // If the discriminant is negative, that means that the sphere hasn't
+    // been hit by the ray
+    if (discriminant < 0) {
+        return Infinity;
+    }
+    else {
+        // otherwise, we return the distance from the camera point to the sphere
+        // `Math.sqrt(dotProduct(a, a))` is the length of a vector, so
+        // `v - Math.sqrt(discriminant)` means the length of the the vector
+        // just from the camera to the intersection point.
+        return v - Math.sqrt(discriminant);
+    }
+}
+// A normal is, at each point on the surface of a sphere or some other object,
+// a vector that's perpendicular to the surface and radiates outward. We need
+// to know this so that we can calculate the way that a ray reflects off of
+// a sphere.
+function xxx_sphereNormal(sphere, pos) {
+    return Vector.unitVector(Vector.subtract(pos, v3toVector(sphere.point)));
+}
+// # Surface
+//
+// ![](http://farm3.staticflickr.com/2851/10524788334_f2e3903b36_b.jpg)
+//
+// If `trace()` determines that a ray intersected with an object, `surface`
+// decides what color it acquires from the interaction.
+function xxx_surface(ray, scene, object, pointAtTime, normal, depth) {
+    var b = colortoVector(object.color.copy()), c = new Vector(0, 0, 0), lambertAmount = 0;
+    // **[Lambert shading](http://en.wikipedia.org/wiki/Lambertian_reflectance)**
+    // is our pretty shading, which shows gradations from the most lit point on
+    // the object to the least.
+    if (object.lambert) {
+        for (var i = 0; i < scene.lights.length; i++) {
+            var lightPoint = scene.lights[i];
+            // First: can we see the light? If not, this is a shadowy area
+            // and it gets no light from the lambert shading process.
+            if (!xxx_isLightVisible(pointAtTime, scene, v3toVector(lightPoint)))
+                continue;
+            // Otherwise, calculate the lambertian reflectance, which
+            // essentially is a 'diffuse' lighting system - direct light
+            // is bright, and from there, less direct light is gradually,
+            // beautifully, less light.
+            var contribution = Vector.dotProduct(Vector.unitVector(Vector.subtract(v3toVector(lightPoint), pointAtTime)), normal);
+            // sometimes this formula can return negatives, so we check:
+            // we only want positive values for lighting.
+            if (contribution > 0)
+                lambertAmount += contribution;
+        }
+        // lambert should never 'blow out' the lighting of an object,
+        // even if the ray bounces between a lot of things and hits lights
+        lambertAmount = Math.min(1, lambertAmount);
+        Vector.add(c, Vector.scale(b, lambertAmount * object.lambert));
+    }
+    // **[Specular](https://en.wikipedia.org/wiki/Specular_reflection)** is a fancy word for 'reflective': rays that hit objects
+    // with specular surfaces bounce off and acquire the colors of other objects
+    // they bounce into.
+    if (object.specular) {
+        // This is basically the same thing as what we did in `render()`, just
+        // instead of looking from the viewpoint of the camera, we're looking
+        // from a point on the surface of a shiny object, seeing what it sees
+        // and making that part of a reflection.
+        var reflectedRay = {
+            point: pointAtTime,
+            vector: Vector.reflectThrough(ray.vector, normal)
+        };
+        // This is a recursive method: if we hit something that's reflective,
+        // then the call to `surface()` at the bottom will return here and try
+        // to find what the ray reflected into. Since this could easily go
+        // on forever, first check that we haven't gone more than three bounces
+        // into a reflection.
+        if (depth < 3) {
+            var reflectedColor = xxx_trace(reflectedRay, scene, ++depth);
+            Vector.add(c, Vector.scale(reflectedColor, object.specular));
+        }
+    }
+    // **Ambient** colors shine bright regardless of whether there's a light visible -
+    // a circle with a totally ambient blue color will always just be a flat blue
+    // circle.
+    return Vector.add(c, Vector.scale(b, object.ambient));
+}
+// Check whether a light is visible from some point on the surface of something.
+// Note that there might be an intersection here, which is tricky - but if it's
+// tiny, it's actually an intersection with the object we're trying to decide
+// the surface of. That's why we check for `> -0.005` at the end.
+//
+// This is the part that makes objects cast shadows on each other: from here
+// we'd check to see if the area in a shadowy spot can 'see' a light, and when
+// this returns `false`, we make the area shadowy.
+function xxx_isLightVisible(pt, scene, light) {
+    var distObject = xxx_intersectScene({
+        point: pt,
+        vector: Vector.unitVector(Vector.subtract(pt, light))
+    }, scene);
+    return distObject.distance > -0.005;
+}
 
 
 /***/ }),
@@ -1403,6 +2268,7 @@ var Scene = /** @class */ (function () {
         this.cache = true;
         this._renderGroupCache = {};
         this.canvas = new _canvas__WEBPACK_IMPORTED_MODULE_3__["Canvas"](domElementID);
+        this.pixelCamera = new _camera__WEBPACK_IMPORTED_MODULE_0__["PixelCamera"](this.canvas);
         this.options = {
             cache: true,
             answer: 42
@@ -1438,7 +2304,7 @@ var Scene = /** @class */ (function () {
         //////////////////////////////////////////////////////
         //////////////////////////////////////////////////////
         //////////////////////////////////////////////////////
-        32;
+        // 32
         //   renderGroup.fill = (ref1 = surface.fillMaterial) != null ? ref1.render(lights, _this.shader, renderGroup.transformed) : void 0;
         //   renderGroup.stroke = (ref2 = surface.strokeMaterial) != null ? ref2.render(lights, _this.shader, renderGroup.transformed) : void 0;
         // Compute the projection matrix including the viewport and camera
@@ -1528,6 +2394,51 @@ var Scene = /** @class */ (function () {
      remove many shapes from the scene's models since this cache has no eviction policy. */
     Scene.prototype.flushCache = function () {
         this._renderGroupCache = {};
+    };
+    // The primary method that produces the render models, which are then used
+    // by the `RenderContext` to paint the scene.
+    Scene.prototype.renderPixel = function ( /*camera:Camera*/) {
+        var _this = this;
+        console.log('renderPixel');
+        // should be the 'camera' property of scene
+        // let pixelElement = camera.pixelGenerator()
+        // let result = pixelElement.next()
+        // while (!result.done) {
+        var n = 0; // index of every pixel
+        var _loop_1 = function (i) {
+            var _loop_2 = function (j) {
+                // check every shape whether this pixel 'sees' it
+                var group = this_1.world;
+                // examine each shape in  this group
+                group.shapes.forEach(function (shape) {
+                    shape.recalculateSurfaces(); // update ever surface position
+                    // what is 'visible' depends on the position of the camera
+                    // next line uses tricky 'push spread' to append
+                    var point = shape.rayTrace(_this.pixelCamera.eyePosition, _this.pixelCamera.rayDirection(i, j));
+                    // if we get a point, then we have an intersection
+                    if (!point) {
+                        if ( /* this point is closer than existing one */true) {
+                        }
+                        //let pixelIntercept:PixelIntercept = shape.rayTrace(result)
+                        // visibleSurfaceList.push(...shape.visibleSurfaces(this.camera))
+                    }
+                });
+                return { value: void 0 };
+            };
+            for (var j = 0; j < this_1.canvas.height; j++) {
+                var state_2 = _loop_2(j);
+                if (typeof state_2 === "object")
+                    return state_2;
+            }
+            this_1.canvas.clearCanvas();
+            return { value: void 0 };
+        };
+        var this_1 = this;
+        for (var i = 0; i < this.canvas.width; i++) {
+            var state_1 = _loop_1(i);
+            if (typeof state_1 === "object")
+                return state_1.value;
+        }
     };
     return Scene;
 }());
@@ -1770,6 +2681,12 @@ var Shape = /** @class */ (function (_super) {
             surface.transform(_this.m);
             // surface.transformedPoints.map((p) => showPoint('transformedpoints', p))
         });
+    };
+    /** returns the interception point or false */
+    Shape.prototype.rayTrace = function (eye, direction) {
+        this.surfaces.forEach(function (surface) {
+        });
+        return false;
     };
     Shape.prototype.visibleSurfaces = function (camera) {
         var surfaceList = [];
@@ -2183,10 +3100,10 @@ function mapPointsToSurfaces(points, coordinateMap) {
     // TODO: convert all exterior quads to triangles  (eg: two triangles per side for a cube)
     var s = [];
     points.forEach(function (point) {
-        console.log('POINTS', point);
+        // console.log('POINTS', point)
     });
     coordinateMap.forEach(function (element) {
-        console.log('ELEMENT', element);
+        // console.log('ELEMENT', element)
         s.push(new _surface__WEBPACK_IMPORTED_MODULE_1__["Surface"]('triangle', points[element[0]], points[element[1]], points[element[2]]));
     });
     return s;
@@ -2288,7 +3205,7 @@ var Surface = /** @class */ (function (_super) {
         this.transformedCentroid.y = (this.transformedPoints[0].y + this.transformedPoints[1].y + this.transformedPoints[2].y) / 3;
         this.transformedCentroid.z = (this.transformedPoints[0].z + this.transformedPoints[1].z + this.transformedPoints[2].z) / 3;
         // this.transformedCentroid = this.centroid.copy().multiplyMat4(m)
-        console.log('centroid', this.centroid, this.transformedCentroid);
+        // console.log('centroid', this.centroid, this.transformedCentroid)
     };
     Surface.prototype.render = function (canvas) {
         // draw the triangle outline in blue
@@ -2315,6 +3232,92 @@ var Surface = /** @class */ (function (_super) {
     Surface.prototype.stroke = function (stroke) {
         this.strokeMaterial = new _materials__WEBPACK_IMPORTED_MODULE_1__["Material"]('gray').create(stroke);
         return this;
+    };
+    // adapted from https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/barycentric-coordinates
+    Surface.prototype.rayTriangleIntersect = function (orig, rayDirection) {
+        var v0 = new _vectorMath__WEBPACK_IMPORTED_MODULE_3__["V3"](); // replace with THIS triangle
+        var v1 = new _vectorMath__WEBPACK_IMPORTED_MODULE_3__["V3"]();
+        var v2 = new _vectorMath__WEBPACK_IMPORTED_MODULE_3__["V3"]();
+        // compute plane's normal (using vertex 0, but all three give the same answer)
+        var v0v1 = v1.subtract(v0);
+        var v0v2 = v2.subtract(v0);
+        // no need to normalize, the magnitude of N is useful
+        var N = v0v1.cross(v0v2); // N is normal to triangle 
+        // Step 1: finding P, the intersection point on the triangle plane
+        // first special case - check if ray and plane are parallel ?
+        var NdotRayDirection = N.dot(rayDirection);
+        if (Math.abs(NdotRayDirection) < _vectorMath__WEBPACK_IMPORTED_MODULE_3__["epsilon"]) // almost 0 
+            return false; // they are parallel so they don't intersect ! 
+        // any plane, most importantly the plane defined by the triangle, has equation
+        //       Ax + By + Cz + D =0
+        // we know that all three vertices lie in this plane, we can compute D with ANY point
+        // by convention, we use v0
+        var D = N.dot(v0); // dot of normal and any point gives D
+        // equation 3 tells us that v (the area ABP barycenter triangle) is
+        //
+        // v  =  triangle ABP area / triangle ABC area (area is 1/2 the parallelogram)
+        //
+        //    = (AB x AP) /2   =   (AB x AP)
+        //      ----------         ----------
+        //      (AB x AC) /2       (AB x AC)
+        //       
+        //    we already have N with is AB x AC.  Substitute in, multiply top and bottom, and 
+        // 
+        //    = (AB × AP) * N
+        //      ----------
+        //        N * N
+        // we know that point P is   Origin + t*rayDirection    (P=O+tR)
+        // and that the triangle plane is  Ax + By + Cz + D = 0
+        //    how do we figure out the value of t (distanceOriginToP)?? 
+        // A*Px + B*Py + CPz + D = 0   (assuming P actually intersects the plane)
+        //   let's get fancy and substitute P=O+tR
+        // A(Ox+tRx) + B(Oy+tRy) + C(Oz+TRz) + D = 0
+        //    expand the terms
+        // A*Ox + B*Oy + C* Oz + A*tRx + B*tRy + C*tRz + D = 0
+        //    rewrite with t extracted
+        // A*Ox + B*Oy + C* Oz + t(A*Rx + B*Ry + C*Rz) + D = 0
+        //    solve for t...
+        //
+        //  t = A*Ox + B*Oy + C*Oz + D             
+        //      -----------------------
+        //      A*Rx + B*Ry + C*Rz
+        //
+        // substitute in the normals and we get
+        //  t = N(A,B,C).dot O   + D 
+        //      ---------------------
+        //      N(A,B,C).dot R
+        //
+        // where R is the ray direction that we computed earlier
+        var distanceOriginToP = (N.dot(orig) + D) / NdotRayDirection;
+        // second special case - check if the triangle is in behind the ray?
+        if (distanceOriginToP < 0) // the triangle is behind 
+            return false;
+        // compute the intersection point using equation 1
+        var P = orig.add(rayDirection.scale(distanceOriginToP));
+        // Step 2: inside-outside test
+        // edge 0
+        var edge0 = v1.subtract(v0);
+        var vp0 = P.subtract(v0);
+        // edge0.cross(vp0) is a vector perpendicular to triangle's plane 
+        // and N.dot() will either be positive or negative depending on inside or outside
+        if (N.dot(edge0.cross(vp0)) < 0) // P is on the right side 
+            return false;
+        // edge 1
+        var edge1 = v2.subtract(v1);
+        var vp1 = P.subtract(v1);
+        if (N.dot(edge1.cross(vp1)) < 0) // P is on the right side 
+            return false;
+        // edge 2
+        var edge2 = v0.subtract(v2);
+        var vp2 = P.subtract(v2);
+        if (N.dot(edge2.cross(vp2)) < 0) // P is on the right side 
+            return false;
+        var triangleArea;
+        var denom = N.dot(N); // N dot N is square of N's length
+        // now can express barycenter as two numbers, u and v (because u+v+w=1)    
+        // u = u/denom
+        // v = v/ denom
+        return true; // this ray hits the triangle 
     };
     return Surface;
 }(_transformable__WEBPACK_IMPORTED_MODULE_2__["Transformable"]));
@@ -2376,6 +3379,7 @@ var IDENTITY = [1, 0, 0, 0,
 var Transformable = /** @class */ (function () {
     function Transformable() {
         this.m = new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["M4"](IDENTITY); // shallow copy
+        // rotation is classic Euler angles.  It rotates the whole system around a "Line of Nodes" N.
         this._rotation = new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["V3"]([1, 1, 1]); // really three angles
         this._scale = new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["V3"]([1, 1, 1]);
         this._position = new _vectorMath__WEBPACK_IMPORTED_MODULE_0__["V3"]([1, 1, 1]);
@@ -2491,11 +3495,12 @@ var Util = /** @class */ (function () {
 /*!***************************!*\
   !*** ./src/vectorMath.ts ***!
   \***************************/
-/*! exports provided: V2, V3, V4, M2, M3, M4, Quat */
+/*! exports provided: epsilon, V2, V3, V4, M2, M3, M4, Quat */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "epsilon", function() { return epsilon; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "V2", function() { return V2; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "V3", function() { return V3; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "V4", function() { return V4; });
@@ -2519,9 +3524,11 @@ __webpack_require__.r(__webpack_exports__);
  * whose copyright notice follows below.
  *
  *  - The names of the functions were changed (eg: vec3 -> V3).
- *  - A 'modified' flag added to V3
  *  - Added a V4.dot() scaler method
+ *  - Added a V3.reflection() method
  *  - The default M4 matrix is Identity, not Zero.
+ *  - V3.dot(a,b) became a.dot(b)
+ *  - V3.cross(a,b) became a.cross(b)
  *  - Combined into a single file to eliminate circular dependencies
  *  - Code was converted to newer TypeScript
  *  - Several small type errors were fixed (TypeScript found them)
@@ -2788,7 +3795,6 @@ var V2 = /** @class */ (function () {
 var V3 = /** @class */ (function () {
     function V3(values) {
         this.values = new Float32Array(3);
-        this.modified = false;
         if (values !== undefined) {
             this.xyz = values;
         }
@@ -2799,7 +3805,6 @@ var V3 = /** @class */ (function () {
         },
         set: function (value) {
             this.values[0] = value;
-            this.modified = true;
         },
         enumerable: true,
         configurable: true
@@ -2810,7 +3815,6 @@ var V3 = /** @class */ (function () {
         },
         set: function (value) {
             this.values[1] = value;
-            this.modified = true;
         },
         enumerable: true,
         configurable: true
@@ -2821,7 +3825,6 @@ var V3 = /** @class */ (function () {
         },
         set: function (value) {
             this.values[2] = value;
-            this.modified = true;
         },
         enumerable: true,
         configurable: true
@@ -2836,7 +3839,6 @@ var V3 = /** @class */ (function () {
         set: function (values) {
             this.values[0] = values[0];
             this.values[1] = values[1];
-            this.modified = true;
         },
         enumerable: true,
         configurable: true
@@ -2853,35 +3855,10 @@ var V3 = /** @class */ (function () {
             this.values[0] = values[0];
             this.values[1] = values[1];
             this.values[2] = values[2];
-            this.modified = true;
         },
         enumerable: true,
         configurable: true
     });
-    V3.cross = function (vector, vector2, dest) {
-        if (!dest) {
-            dest = new V3();
-        }
-        var x = vector.x;
-        var y = vector.y;
-        var z = vector.z;
-        var x2 = vector2.x;
-        var y2 = vector2.y;
-        var z2 = vector2.z;
-        dest.x = y * z2 - z * y2;
-        dest.y = z * x2 - x * z2;
-        dest.z = x * y2 - y * x2;
-        return dest;
-    };
-    V3.dot = function (vector, vector2) {
-        var x = vector.x;
-        var y = vector.y;
-        var z = vector.z;
-        var x2 = vector2.x;
-        var y2 = vector2.y;
-        var z2 = vector2.z;
-        return (x * x2 + y * y2 + z * z2);
-    };
     V3.distance = function (vector, vector2) {
         var x = vector2.x - vector.x;
         var y = vector2.y - vector.y;
@@ -2923,6 +3900,26 @@ var V3 = /** @class */ (function () {
         dest.z = vector.z + time * (vector2.z - vector.z);
         return dest;
     };
+    // Given a vector `d`, which is a point in space, and a `normal`, which is
+    // the angle the point hits a surface, returna  new vector that is reflect
+    // off of that surface
+    // static reflectThrough(a: Vector, normal: Vector) {
+    //     var d = Vector.scale(normal, Vector.dotProduct(a, normal));
+    //     return Vector.subtract(Vector.scale(d, 2), a);
+    // }
+    // https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
+    //  r=d−2(d⋅n)n  (n must be normalized)
+    V3.prototype.reflection = function (n) {
+        if (Math.abs((n.x * n.x) + (n.y * n.y) + (n.z * n.z) - 1) > .005) {
+            console.assert(false, 'reflection is not normalized');
+            throw '';
+        }
+        var d = n.copy().scale(this.dot(n));
+        var result = d.scale(2).subtract(this);
+        // console.log('n',this.xyz,n.xyz)
+        // console.log('reflect',result.xyz)
+        return result;
+    };
     V3.sum = function (vector, vector2, dest) {
         if (!dest) {
             dest = new V3();
@@ -2959,6 +3956,17 @@ var V3 = /** @class */ (function () {
         dest.z = vector.z / vector2.z;
         return dest;
     };
+    V3.prototype.show = function (msg) {
+        console.log(msg + " [" + this.values[0] + "," + this.values[1] + "," + this.values[2] + "]");
+    };
+    // converts a euler angle to a direction vector
+    V3.prototype.eulerToVector = function () {
+        var x = Math.sin(this.values[0]);
+        var y = Math.sin(this.values[1]) * Math.cos(this.values[0]);
+        var z = Math.cos(this.values[1]) * Math.cos(this.values[0]);
+        // note:  we do NOT need Z for this calculation
+        return (new V3([x, y, z]));
+    };
     V3.prototype.at = function (index) {
         return this.values[index];
     };
@@ -2984,6 +3992,21 @@ var V3 = /** @class */ (function () {
         dest.y = -this.y;
         dest.z = -this.z;
         return dest;
+    };
+    V3.prototype.cross = function (vector2) {
+        var x2 = vector2.x;
+        var y2 = vector2.y;
+        var z2 = vector2.z;
+        var x = this.y * z2 - this.z * y2;
+        var y = this.z * x2 - this.x * z2;
+        var z = this.x * y2 - this.y * x2;
+        return new V3([x, y, z]);
+    };
+    V3.prototype.dot = function (vector) {
+        var x = vector.x;
+        var y = vector.y;
+        var z = vector.z;
+        return (x * this.x + y * this.y + z * this.z);
     };
     V3.prototype.equals = function (vector, threshold) {
         if (threshold === void 0) { threshold = epsilon; }
@@ -4089,8 +5112,8 @@ var M4 = /** @class */ (function () {
             return this.identity;
         }
         var z = V3.difference(position, target).normalize();
-        var x = V3.cross(up, z).normalize();
-        var y = V3.cross(z, x).normalize();
+        var x = up.cross(z).normalize();
+        var y = z.cross(x).normalize();
         return new M4([
             x.x,
             y.x,
@@ -4104,9 +5127,9 @@ var M4 = /** @class */ (function () {
             y.z,
             z.z,
             0,
-            -V3.dot(x, position),
-            -V3.dot(y, position),
-            -V3.dot(z, position),
+            -x.dot(position),
+            -y.dot(position),
+            -z.dot(position),
             1,
         ]);
     };

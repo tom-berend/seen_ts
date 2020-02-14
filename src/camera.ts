@@ -5,6 +5,9 @@
 
 import { M, Transformable } from './transformable'
 import { V3, M4 } from './vectorMath'
+import { Canvas } from './canvas'
+import { Shape } from './shape'
+import { Surface } from './surface'
 
 
 // These projection methods return a 3D to 2D `Matrix` transformation.
@@ -139,10 +142,60 @@ export class Camera extends Transformable {
     }
 }
 
-export class PixelCamera extends Transformable {
-    constructor() {
-        super()
+// the pixelCamera has a generator that drives the raytrace
+export interface PixelElement {
+    n: number  // 0 to width*height
+    origin: V3
+    direction: V3
+}
+
+
+export class PixelCamera {  // does NOT extend Transformable yet
+
+    // the PixelCamera is a pyramid with a square bottom
+    // the flat grid bottom faces the scene, with the same # pixels as the canvas
+    // the pyramid height is the distance to the eye.
+
+    // a flag (orthographic:Boolean) marks the height as 'infinite'
+    // in which case all viewing rays are normal to the flat grid
+
+    public eyePosition: V3  // center of pixel flat square
+    public direction: V3  // normal to the flat square, pointing to scene
+    // if orthographic, then all rays get this direction
+
+    public eyeDistance: Number  // height of triangle, normal * -1 to the center of the flat grid
+
+    public width: number // comes from Canvas  
+    public height: number  // TODO: implement resize method
+
+    public orthographic = false  // default to perspective
+
+    constructor(canvas: Canvas) {
+        this.eyePosition = new V3([0, 0, 100])
+        this.direction = new V3([0, 0, 1])
+
+        this.width = 2 // canvas.width
+        this.height = 2 //canvas.height
+
+        this.eyeDistance = 100  // more intuitive if view angle?
+        this.orthographic = false
+
     }
 
+    rayDirection(iPixel:number,jPixel:number):V3{
+        if(this.orthographic){
+            // TODO use ip and jp to offset
+            return (this.direction)
+        }else{
+            // TODO calculate pixel position and then direction vector
+            return (this.direction)
+            
+        }
+    }
 
 }
+
+
+
+
+

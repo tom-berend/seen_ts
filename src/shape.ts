@@ -1,9 +1,15 @@
-import { Transformable,  M, IDENTITY } from './transformable'
-import {Material} from './materials'
-import {Surface} from './surface'
+import { Transformable, M, IDENTITY } from './transformable'
+import { Material } from './materials'
+import { Surface } from './surface'
 import { V4, V3 } from './vectorMath';
-import {Camera} from './camera'
+import { Camera, PixelElement } from './camera'
 
+// the raytrace function returns a point
+export interface PixelIntercept {
+    shape: Shape,
+    surface: Surface,
+    point: V3
+}
 
 // A `Shape` contains a collection of surface. They may create a closed 3D
 // shape, but not necessarily. For example, a cube is a closed shape, but a
@@ -20,8 +26,8 @@ export class Shape extends Transformable {
         this.surfaces = surfaces
     }
 
-    recalculateSurfaces(){
-        let surfaceList:Surface[] = [] 
+    recalculateSurfaces() {
+        let surfaceList: Surface[] = []
         this.recalculateMatrix()  // this shape is a 'transformable' with one matrix
         this.surfaces.forEach((surface) => {
             // apply the shape's m to that surface
@@ -31,9 +37,19 @@ export class Shape extends Transformable {
         })
     }
 
-    visibleSurfaces(camera:Camera):Surface[]{
-        let surfaceList:Surface[] = [] 
-        this.surfaces.forEach((surface)=>{
+    /** returns the interception point or false */
+    rayTrace(eye: V3, direction: V3): V3 | false {
+        this.surfaces.forEach(surface => {
+
+        })
+        return false
+
+    }
+
+
+    visibleSurfaces(camera: Camera): Surface[] {
+        let surfaceList: Surface[] = []
+        this.surfaces.forEach((surface) => {
             // some filter here...
             surfaceList.push(surface)
         })
@@ -54,6 +70,6 @@ export class Shape extends Transformable {
     }
 }
 
-function showPoint(msg:String, p: V4) {
+function showPoint(msg: String, p: V4) {
     console.log(`${msg} (${p.x},${p.y},${p.z},${p.w})`)
 }

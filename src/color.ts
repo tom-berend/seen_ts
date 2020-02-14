@@ -1,4 +1,4 @@
-// //// Colors
+// // Colors
 // ------------------
 
 import { Shape } from './shape'
@@ -11,25 +11,31 @@ export class Color {
     public b: number
     public a: number
 
-    CSS_RGBA_STRING_REGEX: RegExp
+    // CSS_RGBA_STRING_REGEX: RegExp
 
-    /** eg: '//888888' */
-    constructor(hexString?: string) {
+    /** eg: '(//888888') or (0,255,255) or () */
+    constructor(hexString?: string | number, g?: number, b?: number) {
         if (hexString) {
-            this.hex(hexString)
+            if (typeof hexString == 'number') {
+                this.r = hexString
+                this.g = g
+                this.b = b
+                this.a = 255
+            } else if (typeof hexString == 'string') {
+                this.hex(hexString)
+            }
         } else {
-
             // consider supporting 140 names from https://htmlcolorcodes.com/
 
-            // default is gray    
-            this.hex('//888888')
+            // default is black    
+            this.hex('//000000')
         }
         return this
     }
 
     /** Returns a new `Color` object with the same rgb and alpha values as the current object */
     copy() {
-        return new Color(this.hexString())
+        return new Color(this.r, this.g, this.b)
     }
 
     /** Scales the rgb channels by the supplied scalar value. */
@@ -73,6 +79,7 @@ export class Color {
         return this
     }
 
+    
     /** Multiplies the channels of the current `Color` with each respective channel from the supplied `Color` object. */
     multiplyChannels(c: Color) {
         this.r *= c.r
@@ -93,23 +100,23 @@ export class Color {
         return "rgba(//{this.r},//{this.g},//{this.b},//{this.a})"
     }
 
-    // Parses a hex string starting with an octothorpe (//) or an rgb/rgba CSS
-    // string. Note that the CSS rgba format uses a float value of 0-1.0 for
-    /** alpha, but seen uses an in from 0-255. */
-    parse(str: string) {
-        if (str.charAt(0) === '#' && str.length === 7) {
-            return this.hex(str);
-        } else if (str.indexOf('rgb') === 0) {
-            let m = this.CSS_RGBA_STRING_REGEX.exec(str);
-            if (m == null) {
-                return this.black();
-            }
-            let a = m[6] != null ? Math.round(parseFloat(m[6]) * 0xFF) : void 0;
-            return this.rgb(parseFloat(m[2]), parseFloat(m[3]), parseFloat(m[4]), a);
-        } else {
-            return this.black();
-        }
-    }
+    // // Parses a hex string starting with an octothorpe (//) or an rgb/rgba CSS
+    // // string. Note that the CSS rgba format uses a float value of 0-1.0 for
+    // /** alpha, but seen uses an in from 0-255. */
+    // parse(str: string) {
+    //     if (str.charAt(0) === '#' && str.length === 7) {
+    //         return this.hex(str);
+    //     } else if (str.indexOf('rgb') === 0) {
+    //         let m = this.CSS_RGBA_STRING_REGEX.exec(str);
+    //         if (m == null) {
+    //             return this.black();
+    //         }
+    //         let a = m[6] != null ? Math.round(parseFloat(m[6]) * 0xFF) : void 0;
+    //         return this.rgb(parseFloat(m[2]), parseFloat(m[3]), parseFloat(m[4]), a);
+    //     } else {
+    //         return this.black();
+    //     }
+    // }
 
 
     /** Loads the  `Color` using the supplied rgb and alpha values.
@@ -207,4 +214,4 @@ export class Color {
 
 }
 
-
+export const WHITE = new Color('//FFFFFF')

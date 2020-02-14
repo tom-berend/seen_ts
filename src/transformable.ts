@@ -50,6 +50,7 @@ export class Transformable {
     public m: M4 = new M4(IDENTITY) // shallow copy
     public projection: M4
 
+    // rotation is classic Euler angles.  It rotates the whole system around a "Line of Nodes" N.
     public _rotation: V3 = new V3([1, 1, 1])  // really three angles
     public _scale: V3 = new V3([1, 1, 1])
     public _position: V3 = new V3([1, 1, 1])

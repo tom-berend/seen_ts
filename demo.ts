@@ -4,13 +4,16 @@ import { Canvas } from "./src/canvas";
 //import {P} from "./src/point"
 import { Cube, Primitive, Pyramid, Icosahedron, TestTriangle } from './src/shapes/primitives'
 import { V3 } from "./src/vectorMath";
-import {Color} from "./src/color"
+import { Color } from "./src/color"
+
+import {Literary} from "./src/literateraytrace"
 
 let width = 900
 let height = 500
 
 let ctx = new Canvas('seen-canvas');
 
+Literary()
 
 
 // ////////////////// threeJS syntax  /////////////////
@@ -35,19 +38,32 @@ let ctx = new Canvas('seen-canvas');
 // animate();
 
 
+// // this code demonstrates how to create an array of 'undefined' 
+// let three = [...Array(3)]
+// console.log('three', three)
+// three.forEach(a => console.log('forEach',a))
+// console.log(three.map(a=>'map'))
+// throw ''
+
 
 // ////////////////// SEEN_TS  syntax  /////////////////
 let scene = new Scene('seen-canvas');   // includes the camera, renderer is always CANVAS
+let scene2 = new Scene('seen-canvas2');   // includes the camera, renderer is always CANVAS
 // let pyramid = new Pyramid({ color: 0x00ff00 })   // defaults to basic material
 // let cube = new Cube({ color: 0x0000ff })
-let ico = new Icosahedron({ color: 0x0000ff })
+
+//let ico =  new Icosahedron({ color: 0x0000ff })
+let ico =  new TestTriangle()  // new Icosahedron({ color: 0x0000ff })
+
 // let ico2 = new Icosahedron({ color: 0x0000ff })
-let tt = new TestTriangle()
+// let tt = new TestTriangle()
 
 // scene.add (tt)
 
-scene.add(ico)
 ico.scale = new V3([50, 50, 50])
+
+scene.add(ico)
+scene2.add(ico)
 
 // scene.add(ico2)
 
@@ -69,27 +85,41 @@ ico.scale = new V3([50, 50, 50])
 
 let x = 10
 let y = 10
+let timer = 0
+
+// scene.render()
+// throw '' 
 
 let animate = () => {
-    ico.position.x += .01
-    ico.rotation.x += .01
-    // ico.rotation.y += .01
-    // // //ico.scale.x += .01
-    //    scene.render()
+    timer += 1
+    if (timer %2 == 0) {
+        ico.position.x = 10 + Math.sin(x)
+        ico.rotation.x = Math.sin(y)
+        ico.rotation.y = Math.sin(y)
+        x += .05
+        y += .02
 
-    canvasPixelTest()
-    scene.canvas.updateDisplay()    
+
+        let test = new V3([0,0,x])
+        //test.show('rotation')
+        test.eulerToVector().show('vector')
+        
+        scene.render()
+        scene2.renderPixel()
+    }
+    // canvasPixelTest()
+    // scene.canvas.updateDisplay()    
 }
 
-scene.canvas.animationObservable.addObserver('tick', animate)
+// scene.canvas.animationObservable.addObserver('tick', animate)
 
 
-function canvasPixelTest(){
-    scene.canvas.setPixelColor(x++,y,new Color('//FF0000'))
-    scene.canvas.setPixelColor(x++,y,new Color('//00FF00'))
-    scene.canvas.setPixelColor(x++,y,new Color('//0000FF'))
-    
-     scene.canvas.setPixelRBG(x++,y+10,0,255,0)
+function canvasPixelTest() {
+    scene.canvas.setPixelColor(x++, y, new Color('//FF0000'))
+    scene.canvas.setPixelColor(x++, y, new Color('//00FF00'))
+    scene.canvas.setPixelColor(x++, y, new Color('//0000FF'))
+
+    scene.canvas.setPixelRBG(x++, y + 10, 0, 255, 0)
 }
 
 

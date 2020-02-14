@@ -376,10 +376,10 @@ function mapPointsToSurfaces(points: V4[], coordinateMap: any[]): Surface[] {
     // TODO: convert all exterior quads to triangles  (eg: two triangles per side for a cube)
     let s: Surface[] = [];
     points.forEach(point => {
-        console.log('POINTS', point)
+        // console.log('POINTS', point)
     })
     coordinateMap.forEach(element => {
-        console.log('ELEMENT', element)
+        // console.log('ELEMENT', element)
 
         s.push(new Surface('triangle', points[element[0]], points[element[1]], points[element[2]]))
     })

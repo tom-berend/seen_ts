@@ -1,6 +1,6 @@
 // //// Scene
 
-import { Camera, Viewport } from './camera'
+import { Camera, Viewport, PixelCamera } from './camera'
 import { Transformable } from './transformable'
 import { M4, V4 } from './vectorMath'
 
@@ -11,7 +11,7 @@ import { Group } from './model'
 import { Shaders } from './shaders'
 import { Canvas } from './canvas'
 import { Surface } from './surface'
-import { Shape } from './shape'
+import { Shape, PixelIntercept } from './shape'
 import { Light } from './light'
 
 interface SceneOptions {
@@ -29,6 +29,7 @@ export class Scene {
     // The `Camera`, which defines the projection transformation. The default
     // projection is perspective.
     public camera = new Camera()
+    public pixelCamera:PixelCamera 
 
     // The `Viewport`, which defines the projection from shape-space to
     // projection-space then to screen-space. The default viewport is on a
@@ -69,7 +70,7 @@ export class Scene {
     constructor(domElementID: string, options?: SceneOptions) {
 
         this.canvas = new Canvas(domElementID)
-
+        this.pixelCamera = new PixelCamera(this.canvas)
         this.options = {
             cache: true,
             answer: 42
@@ -89,7 +90,7 @@ export class Scene {
     // by the `RenderContext` to paint the scene.
     render() {
         // first find ALL the surfaces we eventually will have to draw
-         let visibleSurfaceList: Surface[] = []
+        let visibleSurfaceList: Surface[] = []
         // will be recursive, but start at the top
         let group = this.world
         // examine each shape in  this group
@@ -111,7 +112,7 @@ export class Scene {
         //////////////////////////////////////////////////////
         //////////////////////////////////////////////////////
         //////////////////////////////////////////////////////
-        32
+        // 32
 
         //   renderGroup.fill = (ref1 = surface.fillMaterial) != null ? ref1.render(lights, _this.shader, renderGroup.transformed) : void 0;
         //   renderGroup.stroke = (ref2 = surface.strokeMaterial) != null ? ref2.render(lights, _this.shader, renderGroup.transformed) : void 0;
@@ -220,6 +221,63 @@ export class Scene {
     flushCache() {
         this._renderGroupCache = {}
     }
+
+
+    // The primary method that produces the render models, which are then used
+    // by the `RenderContext` to paint the scene.
+    renderPixel(/*camera:Camera*/) {
+        console.log('renderPixel')
+        // should be the 'camera' property of scene
+
+        // let pixelElement = camera.pixelGenerator()
+        // let result = pixelElement.next()
+        // while (!result.done) {
+
+
+        let n = 0  // index of every pixel
+        for (let i = 0; i < this.canvas.width; i++) {
+            for (let j = 0; j < this.canvas.height; j++) {
+
+           // check every shape whether this pixel 'sees' it
+
+            let group = this.world
+            // examine each shape in  this group
+            group.shapes.forEach((shape) => {
+
+                shape.recalculateSurfaces()  // update ever surface position
+                // what is 'visible' depends on the position of the camera
+                // next line uses tricky 'push spread' to append
+
+                let point = shape.rayTrace(this.pixelCamera.eyePosition,this.pixelCamera.rayDirection(i,j))
+                // if we get a point, then we have an intersection
+                if(!point){
+                  if (/* this point is closer than existing one */true){
+
+                  }    
+
+
+                //let pixelIntercept:PixelIntercept = shape.rayTrace(result)
+                // visibleSurfaceList.push(...shape.visibleSurfaces(this.camera))
+            }
+
+        })
+    
+       return
+    }
+        this.canvas.clearCanvas()
+        // visibleSurfaceList.forEach((surface) => {
+        // surface.render(this.canvas)
+        //surface.points.map((p) => console.log(p.show()))
+        // })
+
+        return
+        //////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////
+
+
+    
+
+        }
+    }
 }
-
-
