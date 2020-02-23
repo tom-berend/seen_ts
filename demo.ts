@@ -34,11 +34,11 @@ Literary()
 // function animate() {
 // 	requestAnimationFrame( animate );
 // 	renderer.render( scene, camera );
-// 
+//
 // animate();
 
 
-// // this code demonstrates how to create an array of 'undefined' 
+// // this code demonstrates how to create an array of 'undefined'
 // let three = [...Array(3)]
 // console.log('three', three)
 // three.forEach(a => console.log('forEach',a))
@@ -88,7 +88,7 @@ let y = 10
 let timer = 0
 
 // scene.render()
-// throw '' 
+// throw ''
 
 let animate = () => {
     timer += 1
@@ -103,12 +103,12 @@ let animate = () => {
         let test = new V3([0,0,x])
         //test.show('rotation')
         test.eulerToVector().show('vector')
-        
+
         scene.render()
         scene2.renderPixel()
     }
     // canvasPixelTest()
-    // scene.canvas.updateDisplay()    
+    // scene.canvas.updateDisplay()
 }
 
 // scene.canvas.animationObservable.addObserver('tick', animate)

@@ -509,7 +509,7 @@ export class V3 {
     private _x:number
     private _y:number
     private _z:number
-    
+
     constructor(values?: [number, number, number]) {
         if (values !== undefined) {
             this.xyz = values
@@ -517,7 +517,7 @@ export class V3 {
     }
 
     public show(msg:string){
-        console.log(`${msg} [${this.values[0]},${this.values[1]},${this.values[2]}]`) 
+        console.log(`${msg} [${this.values[0]},${this.values[1]},${this.values[2]}]`)
     }
 
     // converts a euler angle to a direction vector
@@ -572,11 +572,7 @@ export class V3 {
     }
 
     public dot(vector: V3): number {
-        const x = vector.x
-        const y = vector.y
-        const z = vector.z
-
-        return (x * this.x + y * this.y + z * this.z)
+        return (vector.x * this.x + vector.y * this.y + vector.z * this.z)
     }
 
     public equals(vector: V3, threshold = epsilon): boolean {
@@ -639,14 +635,11 @@ export class V3 {
         return this
     }
 
-    public scale(value: number, dest?: V3): V3 {
-        if (!dest) { dest = this }
-
-        dest.x *= value
-        dest.y *= value
-        dest.z *= value
-
-        return dest
+    public scale(value: number): V3 {
+        this.x *= value
+        this.y *= value
+        this.z *= value
+        return this
     }
 
     public normalize(dest?: V3): V3 {

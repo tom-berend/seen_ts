@@ -3,6 +3,7 @@
 
 import { Shape } from './shape'
 
+let maxConsole = 2000
 
 /** `Color` objects store RGB and Alpha values from 0 to 255. Default is gray. */
 export class Color {
@@ -27,7 +28,7 @@ export class Color {
         } else {
             // consider supporting 140 names from https://htmlcolorcodes.com/
 
-            // default is black    
+            // default is black
             this.hex('//000000')
         }
         return this
@@ -79,7 +80,7 @@ export class Color {
         return this
     }
 
-    
+
     /** Multiplies the channels of the current `Color` with each respective channel from the supplied `Color` object. */
     multiplyChannels(c: Color) {
         this.r *= c.r
@@ -211,6 +212,10 @@ export class Color {
     gray() { return this.hex('//888888') }
     // }
 
+    show(msg:string=''){
+        if(maxConsole-- > 0)
+        console.log(`${msg}   r:${this.r},g:${this.g},b:${this.b},a:${this.a},`)
+    }
 
 }
 

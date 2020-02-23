@@ -36,6 +36,8 @@ import { V3 } from './vectorMath'
 
 // # Constants
 const UP = new V3([0, 1, 0])
+let globalx = 0
+let globaly = 0
 
 let c = document.getElementById('seen-canvas') as HTMLCanvasElement,
     width = 640 * 0.5,
@@ -61,23 +63,6 @@ export class LR_Camera {     // can be written as an Interface
 }
 
 
-
-export class XXX_LR_Object {   // can be written as an Interface
-    type: string
-    point: Vector
-    color: Vector
-    specular: number
-    lambert: number
-    ambient: number
-    radius: number
-
-    constructor(type: string, point: Vector, color: Vector) {
-        this.type = type
-        this.point = point
-        this.color = color
-    }
-}
-
 export class LR_Object {   // can be written as an Interface
     type: string
     point: V3
@@ -98,19 +83,9 @@ export class LR_Ray {
     point: V3
     vector: V3
 
-    constructor(point:V3, vector:V3) {
+    constructor(point: V3, vector: V3) {
         this.point = point
-        this.vector = vector 
-    }
-}
-
-export class xxx_LR_Ray {
-    point: Vector
-    vector: Vector
-
-    constructor(point:V3, vector:V3) {
-        this.point = v3toVector(point)
-        this.vector = v3toVector(vector)
+        this.vector = vector
     }
 }
 
@@ -129,7 +104,6 @@ export class LR_Scene {
 
     public camera: LR_Camera
     public objects: any[] = []
-    public xxx_objects: any[] = []
     public lights: V3[] = []
 
     constructor() {
@@ -164,24 +138,11 @@ export class LR_Scene {
         s1.ambient = 0.1
         s1.radius = 3
 
-        let xxx_s1 = new XXX_LR_Object('sphere', new Vector(0, 3.5, -3), new Vector(155, 200, 155))
-        s1.specular = 0.2
-        s1.lambert = 0.7
-        s1.ambient = 0.1
-        s1.radius = 3
-
-        let s2 = new LR_Object('sphere', new V3([-4, 2, -1]), new Color(155, 155, 155))
+        let s2 = new LR_Object('sphere', new V3([-4, 2, -1]), new Color(255, 0, 0))
         s2.specular = 0.1
         s2.lambert = 0.0
-        s2.ambient = 0.0
+        s2.ambient = 0.9
         s2.radius = 0.2
-
-        let xxx_s2 = new XXX_LR_Object('sphere', new Vector(-4, 2, -1), new Vector(155, 155, 155))
-        s2.specular = 0.1
-        s2.lambert = 0.0
-        s2.ambient = 0.0
-        s2.radius = 0.2
-
 
         let s3 = new LR_Object('sphere', new V3([-4, 3, -1]), new Color(255, 255, 255))
         s3.specular = 0.2
@@ -189,21 +150,9 @@ export class LR_Scene {
         s3.ambient = 0.1
         s3.radius = 0.1
 
-        let xxx_s3 = new XXX_LR_Object('sphere', new Vector(-4, 3, -1), new Vector(255, 255, 255))
-        s3.specular = 0.2
-        s3.lambert = 0.7
-        s3.ambient = 0.1
-        s3.radius = 0.1
-
-
         this.objects.push(s1)
         this.objects.push(s2)
         this.objects.push(s3)
-
-        this.xxx_objects.push(xxx_s1)
-        this.xxx_objects.push(xxx_s2)
-        this.xxx_objects.push(xxx_s3)
-
     }
 }
 
@@ -241,7 +190,6 @@ function render(scene: LR_Scene) {
     // pointing - a unit vector
     // let eyeVector = Vector.unitVector(Vector.subtract(camera.vector, camera.point)),
     let eyeVector = camera.vector.copy().subtract(camera.point).normalize()
-    let xxx_eyeVector = Vector.unitVector(Vector.subtract(v3toVector(camera.vector), v3toVector(camera.point)))
 
     // and then we'll rotate this by combining it with a version that's turned
     // 90° right and one that's turned 90° up. Since the [cross product](http://en.wikipedia.org/wiki/Cross_product)
@@ -252,15 +200,11 @@ function render(scene: LR_Scene) {
     let vpRight = eyeVector.copy().cross(UP).normalize()
     let vpUp = vpRight.copy().cross(eyeVector).normalize()
 
-    let xxx_vpRight = Vector.unitVector(Vector.crossProduct(xxx_eyeVector, v3toVector(UP)))
-    let xxx_vpUp = Vector.unitVector(Vector.crossProduct(xxx_vpRight, xxx_eyeVector))
-
-
-
     // The actual ending pixel dimensions of the image aren't important here -
     // note that `width` and `height` are in pixels, but the numbers we compute
     // here are just based on the ratio between them, `height/width`, and the
     // `fieldOfView` of the camera.
+
     let fovRadians = Math.PI * (camera.fieldOfView / 2) / 180,
         heightWidthRatio = height / width,
         halfWidth = Math.tan(fovRadians),
@@ -270,17 +214,17 @@ function render(scene: LR_Scene) {
         pixelWidth = camerawidth / (width - 1),
         pixelHeight = cameraheight / (height - 1);
 
-        let index: number
-        let color: Color
-        let xxx_color: Vector
-        let ray = new LR_Ray(camera.point,new V3([0,0,0]))
-        let xxx_ray = new xxx_LR_Ray(camera.point, new V3([0,0,0]))
-    
-    
-    for (let x = 69; x < width; x++) {
-        for (let y = 122; y < height; y++) {
+    let index: number
+    let color: Color
+    let ray = new LR_Ray(camera.point, new V3([0, 0, 0]))
 
-            // turn the raw pixel `x` and `y` values into values from -1 to 1
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
+
+                    globalx = x
+                    globaly = y  // debugging
+
+            // turn the raw pixel `x` and `y` values into values from -1 to 1n tra
             // and use these values to scale the facing-right and facing-up
             // vectors so that we generate versions of the `eyeVector` that are
             // skewed in each necessary direction.
@@ -288,42 +232,30 @@ function render(scene: LR_Scene) {
             let xcomp = vpRight.copy().scale((x * pixelWidth) - halfWidth)
             let ycomp = vpUp.copy().scale((y * pixelHeight) - halfHeight)
 
-            let xxx_xcomp = Vector.scale(xxx_vpRight, (x * pixelWidth) - halfWidth),
-            xxx_ycomp = Vector.scale(xxx_vpUp, (y * pixelHeight) - halfHeight);
-
             ray.vector = eyeVector.copy().add(xcomp).add(ycomp).normalize()
-            xxx_ray.vector = Vector.unitVector(Vector.add3(xxx_eyeVector, xxx_xcomp, xxx_ycomp));
 
             // use the vector generated to raytrace the scene, returning a color
             // as a `{x, y, z}` vector of RGB values
             color = trace(ray, scene, 0);
-            xxx_color = xxx_trace(xxx_ray, scene, 0);
+
+            if(globalx === 2 && globaly === 2 && color.r !== 255){
+                console.log('discriminant',color)
+            }
 
 
-            // index = (x * 4) + (y * width * 4),
-            //     data.data[index + 0] = color.r;
-            // data.data[index + 1] = color.g;
-            // data.data[index + 2] = color.b;
-            // data.data[index + 3] = 255;
 
             index = (x * 4) + (y * width * 4),
-                data.data[index + 0] = xxx_color.xV;
-            data.data[index + 1] = xxx_color.yV;
-            data.data[index + 2] = xxx_color.zV;
+                data.data[index + 0] = color.r;
+            data.data[index + 1] = color.g;
+            data.data[index + 2] = color.b;
             data.data[index + 3] = 255;
 
-
-            // index = (x * 4) + (y * width * 4),
-            //     data.data[index + 0] = color.r;
-            // data.data[index + 1] = color.g;
-            // data.data[index + 2] = color.b;
-            // data.data[index + 3] = color.a;
-
-            if ( ! (color.r === xxx_color.xV  && color.g === xxx_color.yV && color.g === xxx_color.zV ) ){
-                console.log(`mismatch `,x,y,color, xxx_color)
-                ctx.putImageData(data, 0, 0);
+            if (color.r > 255 || color.g > 255 || color.b > 255) {
+                color.show('> 255')
                 throw ''
             }
+
+            // ctx.putImageData(data, 0, 0);
 
         }
     }
@@ -342,10 +274,11 @@ function render(scene: LR_Scene) {
 // called in order to draw the image, and it recurses into itself if rays
 // reflect off of objects and acquire more color.
 function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
-    var distObject = intersectScene(ray, scene);
+    let distObject = intersectScene(ray, scene);
 
     // If we don't hit anything, fill this pixel with the background color -
     // in this case, white.
+
     if (distObject.distance === Infinity) {
         return WHITE
     }
@@ -355,8 +288,15 @@ function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
     // the direction of the ray and making it as long as the distance
     // returned by the intersection check.
 
-    let pointAtTime = ray.point.copy().add(ray.vector.scale(distObject.distance))
-// console.log ('pointAt', ray.point.xyz)
+    let pointAtTime = ray.point.copy().add(ray.vector.copy().scale(distObject.distance))
+    // ray.point.show('ray.point')
+    // ray.vector.show('ray.vector')
+    // console.log('distance', distObject.distance)
+    let temp = ray.vector.copy().scale(distObject.distance)
+    // temp.show('temp')
+    // pointAtTime.show('PointatTime')
+
+    // console.log ('pointAt', ray.point.xyz)
 
 
     // return surface(ray, scene, distObject.object, pointAtTime, sphereNormal(distObject.object, pointAtTime), depth);
@@ -369,17 +309,20 @@ function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
     // If `trace()` determines that a ray intersected with an object, `surface`
     // decides what color it acquires from the interaction.
 
+
+    let b = distObject.object.color.copy()
+    let c = new Color(0, 0, 0)
+
+
     // function surface(ray: LR_Ray, scene: LR_Scene, object: LR_Object, pointAtTime: Vector, normal: Vector, depth: number): Color {
-    let b = distObject.object.color.copy(),
-        c = new Color(),
-        lambertAmount = 0;
+    let lambertAmount = 0;
 
     // **[Lambert shading](http://en.wikipedia.org/wiki/Lambertian_reflectance)**
     // is our pretty shading, which shows gradations from the most lit point on
     // the object to the least.
     if (distObject.object.lambert) {
-        for (var i = 0; i < scene.lights.length; i++) {
-            var lightPoint = scene.lights[i];
+        for (let i = 0; i < scene.lights.length; i++) {
+            let lightPoint = scene.lights[i];
             // First: can we see the light? If not, this is a shadowy area
             // and it gets no light from the lambert shading process.
             if (!isLightVisible(pointAtTime, scene, lightPoint)) continue;
@@ -388,18 +331,24 @@ function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
             // is bright, and from there, less direct light is gradually,
             // beautifully, less light.
 
+            // console.log('unit LightPoint',lightPoint.copy().normalize().show('lightpnt'))
+            // console.log('unit subtract',lightPoint.copy().subtract(pointAtTime))
+
+            // pointAtTime.show('pointAtTime')
             let contribution = lightPoint.copy().subtract(pointAtTime).normalize().dot(normal)
 
             // sometimes this formula can return negatives, so we check:
             // we only want positive values for lighting.
             // TODO: this can also return NAN.  why??
+            // console.log ('contribution', contribution)
+
             if (contribution > 0) lambertAmount += contribution;
         }
 
         // lambert should never 'blow out' the lighting of an object,
         // even if the ray bounces between a lot of things and hits lights
         lambertAmount = Math.min(1, lambertAmount);
-        
+
     }
 
     // **[Specular](https://en.wikipedia.org/wiki/Specular_reflection)** is a fancy word for 'reflective': rays that hit objects
@@ -410,7 +359,7 @@ function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
         // instead of looking from the viewpoint of the camera, we're looking
         // from a point on the surface of a shiny object, seeing what it sees
         // and making that part of a reflection.
-        var reflectedRay = {
+        let reflectedRay = {
             point: pointAtTime,
             vector: ray.vector.copy().reflection(normal)
         };
@@ -427,8 +376,9 @@ function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
             // console.log('reflected', reflectedRay)
             let reflectedColor = trace(reflectedRay, scene, ++depth);
             //  console.log('reflected', reflectedColor)
-            
-            c.addChannels(reflectedColor.scale(distObject.object.specular));
+
+            // watch out - don't change reflectedColor because it might be WHITE
+            c.addChannels(reflectedColor.copy().scale(distObject.object.specular));
         }
         //console.log('specular c', c)
     }
@@ -436,8 +386,17 @@ function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
     // **Ambient** colors shine bright regardless of whether there's a light visible -
     // a circle with a totally ambient blue color will always just be a flat blue
     // circle.
-    c.addChannels(b.scale(lambertAmount * distObject.object.lambert))
-    c.addChannels(b.scale(distObject.object.ambient))
+
+    // console.log('c.addchannels', b.copy().scale(distObject.object.ambient))
+    // b.show('b before')
+    c.addChannels(b.copy().scale(lambertAmount * distObject.object.lambert))
+    // c.show('c before add ambient')
+    // b.copy().show('b.copy')
+    // b.copy().scale(lambertAmount * distObject.object.lambert).show('b copy scaled')
+    // b.show('b1')
+    c.addChannels(b.copy().scale(distObject.object.ambient))
+    // c.show('c after add ambient')
+    // c.show('adding three colors')
 
     return c
 
@@ -454,14 +413,15 @@ interface RayIntersect {
 // what's the closest thing it hits.
 function intersectScene(ray: LR_Ray, scene: LR_Scene) {
     // The base case is that it hits nothing, and travels for `Infinity`
-    var closest: RayIntersect = { distance: Infinity, object: null }
+    let closest: RayIntersect = { distance: Infinity, object: null }
     // But for each object, we check whether it has any intersection,
     // and compare that intersection - is it closer than `Infinity` at first,
     // and then is it closer than other objects that have been hit?
-    for (var i = 0; i < scene.objects.length; i++) {
-        var object = scene.objects[i],
-            dist = sphereIntersection(object, ray);
-        if (dist !== undefined && dist < closest.distance) {
+    for (let i = 0; i < scene.objects.length; i++) {
+        let object = scene.objects[i]
+        let dist = sphereIntersection(object, ray);
+
+        if (dist < closest.distance) {
             closest = { distance: dist, object: object }
         }
     }
@@ -476,6 +436,8 @@ function intersectScene(ray: LR_Ray, scene: LR_Scene) {
 // the geometrical math for finding intersections and reflections with them
 // is pretty straightforward.
 function sphereIntersection(sphere: LR_Object, ray: LR_Ray): number {
+    // ray.point.show('sphere ray point')
+
     let eye_to_center = sphere.point.copy().subtract(ray.point)
     // picture a triangle with one side going straight from the camera point
     // to the center of the sphere, another side being the vector.
@@ -490,8 +452,13 @@ function sphereIntersection(sphere: LR_Object, ray: LR_Ray): number {
     // and compute a segment from the right angle of the triangle to a point
     // on the `v` line that also intersects the circle
     let discriminant = (sphere.radius * sphere.radius) - eoDot + (v * v);
+
+    // eye_to_center.show('Eye')
+    // console.log('eoDot',eoDot)
+
     // If the discriminant is negative, that means that the sphere hasn't
     // been hit by the ray
+
     if (discriminant < 0) {
         return Infinity;
     } else {
@@ -508,7 +475,7 @@ function sphereIntersection(sphere: LR_Object, ray: LR_Ray): number {
 // to know this so that we can calculate the way that a ray reflects off of
 // a sphere.
 function sphereNormal(sphere: LR_Object, pos: V3) {
-    return pos.copy().subtract(sphere.point).normalize()
+    return pos.copy().subtract(sphere.point.copy()).normalize()
 }
 
 // // # Surface
@@ -591,9 +558,9 @@ function sphereNormal(sphere: LR_Object, pos: V3) {
 // we'd check to see if the area in a shadowy spot can 'see' a light, and when
 // this returns `false`, we make the area shadowy.
 function isLightVisible(pt: V3, scene: LR_Scene, light: V3) {
-    var distObject = intersectScene({
+    let distObject = intersectScene({
         point: pt,
-        vector: pt.copy().subtract(light).normalize()
+        vector: pt.copy().subtract(light.copy()).normalize()
     }, scene);
     return distObject.distance > -0.005;
 }
@@ -620,8 +587,8 @@ export function Literary() {
     let tick = () => {
         // make one planet spin a little bit faster than the other, just for
         // effect.
-        planet1 += 0.1;
-        planet2 += 0.2;
+        planet1 += 0.05;
+        planet2 += 0.10;
 
         // set the position of each moon with some trig.
         scene.objects[1].point.x = Math.sin(planet1) * 3.5;
@@ -635,7 +602,7 @@ export function Literary() {
 
         // and as soon as we're finished, render it again and move the planets
         // again
-        if (playing) setTimeout(tick, 10);
+        if (playing) setTimeout(tick, 5);
     }
 
     tick()
@@ -684,7 +651,7 @@ class Vector {
     // ## [Dot Product](https://en.wikipedia.org/wiki/Dot_product)
     // is different than the rest of these since it takes two vectors but
     // returns a single number value.
-    static dotProduct = function(a: Vector, b: Vector): number {
+    static dotProduct = function (a: Vector, b: Vector): number {
         return (a.xV * b.xV) + (a.yV * b.yV) + (a.zV * b.zV);
     };
 
@@ -750,7 +717,7 @@ class Vector {
 
 
     // Subtract one vector from another, by subtracting each component
-    static subtract = function(a: Vector, b: Vector) {
+    static subtract = function (a: Vector, b: Vector) {
         return new Vector(
             a.xV - b.xV,
             a.yV - b.yV,
@@ -762,302 +729,64 @@ class Vector {
     // the angle the point hits a surface, returna  new vector that is reflect
     // off of that surface
     static reflectThrough(a: Vector, normal: Vector) {
-        var d = Vector.scale(normal, Vector.dotProduct(a, normal));
+        let d = Vector.scale(normal, Vector.dotProduct(a, normal));
         let result = Vector.subtract(Vector.scale(d, 2), a);
         // console.log('xxx_n', a, normal)
         // console.log('xxx_reflect', result)
         return result
     }
-}
-
-
-// # Constants
-const xxxUP = new Vector(0, 1, 0)
-const ZERO = new Vector(0, 0, 0)
-// const WHITE = new Vector(255, 255, 255)
-const ZEROcp = () => { return new Vector(0, 0, 0); };
-
-function vtest(label: string, a: V3, b: Vector) {
-    if (!(almost(a.x, b.xV) && almost(a.y, b.yV) && almost(a.z, b.zV))) {
-        console.assert(false, `${label}:  ${a.x}===${b.xV}, ${a.y}===${b.yV}, ${a.z}===${b.zV} `)
-        throw ''
-    }
-}
-function ntest(label: string, a: number, b: number) {
-    if (!almost(a, b)) {
-        console.assert(false, `${label}:  ${a} ${b}`)
-        throw ''
-    }
-}
-function almost(a: number, b: number): boolean {
-    if (isNaN(a) && isNaN(b))  // ignore this case
-        return true
-    return (Math.abs(a - b) < .05)
-}
-function v3toVector(a: V3): Vector {
-    return new Vector(a.x, a.y, a.z)
-}
-function colortoVector(a: Color): Vector {
-    return new Vector(a.r, a.g, a.b)
-}
-
-
-
-
-
-
-
-// # Trace
-//
-// Given a ray, shoot it until it hits an object and return that object's color,
-// or `WHITE` if no object is found. This is the main function that's
-// called in order to draw the image, and it recurses into itself if rays
-// reflect off of objects and acquire more color.
-function xxx_trace(ray: xxx_LR_Ray, scene: LR_Scene, depth: number): Vector {
-    var distObject = xxx_intersectScene(ray, scene);
-
-    // If we don't hit anything, fill this pixel with the background color -
-    // in this case, white.
-    if (distObject.distance === Infinity) {
-        return new Vector(255, 255, 255)  // WHITE
-    }
-
-    // The `pointAtTime` is another way of saying the 'intersection point'
-    // of this ray into this object. We compute this by simply taking
-    // the direction of the ray and making it as long as the distance
-    // returned by the intersection check.
-    var pointAtTime = Vector.add(ray.point, Vector.scale(ray.vector, distObject.distance));
-    // console.log ('xxx_pointAt', ray.point)
-
-
-
-
-    // return surface(ray, scene, distObject.object, pointAtTime, sphereNormal(distObject.object, pointAtTime), depth);
-    let normal = xxx_sphereNormal(distObject.object, pointAtTime)
-    // # Surface
-    //
-    // ![](http://farm3.staticflickr.com/2851/10524788334_f2e3903b36_b.jpg)
-    //
-    // If `trace()` determines that a ray intersected with an object, `surface`
-    // decides what color it acquires from the interaction.
-
-    // function surface(ray: LR_Ray, scene: LR_Scene, object: LR_Object, pointAtTime: Vector, normal: Vector, depth: number): Color {
-    let b = colortoVector(distObject.object.color.copy()),
-        c = new Vector(0, 0, 0),
-        lambertAmount = 0;
-
-    // **[Lambert shading](http://en.wikipedia.org/wiki/Lambertian_reflectance)**
-    // is our pretty shading, which shows gradations from the most lit point on
-    // the object to the least.
-    if (distObject.object.lambert) {
-        for (var i = 0; i < scene.lights.length; i++) {
-            var lightPoint = scene.lights[i];
-            // First: can we see the light? If not, this is a shadowy area
-            // and it gets no light from the lambert shading process.
-            if (!xxx_isLightVisible(pointAtTime, scene, v3toVector(lightPoint))) continue;
-            // Otherwise, calculate the lambertian reflectance, which
-            // essentially is a 'diffuse' lighting system - direct light
-            // is bright, and from there, less direct light is gradually,
-            // beautifully, less light.
-            var contribution = Vector.dotProduct(Vector.unitVector(
-                Vector.subtract(v3toVector(lightPoint), pointAtTime)), normal);
-            // sometimes this formula can return negatives, so we check:
-            // we only want positive values for lighting.
-            if (contribution > 0) lambertAmount += contribution;
-        }
-
-        // lambert should never 'blow out' the lighting of an object,
-        // even if the ray bounces between a lot of things and hits lights
-        lambertAmount = Math.min(1, lambertAmount);
-    }
-
-    // **[Specular](https://en.wikipedia.org/wiki/Specular_reflection)** is a fancy word for 'reflective': rays that hit objects
-    // with specular surfaces bounce off and acquire the colors of other objects
-    // they bounce into.
-    if (distObject.object.specular) {
-        // This is basically the same thing as what we did in `render()`, just
-        // instead of looking from the viewpoint of the camera, we're looking
-        // from a point on the surface of a shiny object, seeing what it sees
-        // and making that part of a reflection.
-        var reflectedRay = {
-            point: pointAtTime,
-            vector: Vector.reflectThrough(ray.vector, normal)
-        };
-
-        // This is a recursive method: if we hit something that's reflective,
-        // then the call to `surface()` at the bottom will return here and try
-        // to find what the ray reflected into. Since this could easily go
-        // on forever, first check that we haven't gone more than three bounces
-        // into a reflection.
-        if (depth < 3) {
-            // console.log('xxx_reflected', reflectedRay)
-
-            let reflectedColor = xxx_trace(reflectedRay, scene, ++depth);
-            // console.log('xxx_reflected', reflectedColor)
-            c = Vector.add(c, Vector.scale(reflectedColor, distObject.object.specular));
-        }
-//        console.log('xxx_specular c', c)
-
-    }
-
-    // **Ambient** colors shine bright regardless of whether there's a light visible -
-    // a circle with a totally ambient blue color will always just be a flat blue
-    // circle.
-
-    return Vector.add3(c,
-        Vector.scale(b, lambertAmount * distObject.object.lambert),
-        Vector.scale(b, distObject.object.ambient))
 
 }
+
+
+// // # Constants
+// const xxxUP = new Vector(0, 1, 0)
+// const ZERO = new Vector(0, 0, 0)
+// // const WHITE = new Vector(255, 255, 255)
+// const ZEROcp = () => { return new Vector(0, 0, 0); };
+
+// function vtest(label: string, a: V3, b: Vector) {
+//     if (!(almost(a.x, b.xV) && almost(a.y, b.yV) && almost(a.z, b.zV))) {
+//         console.assert(false, `${label}:  ${a.x}===${b.xV}, ${a.y}===${b.yV}, ${a.z}===${b.zV} `)
+//         throw ''
+//     }
+// }
+// function ntest(label: string, a: number, b: number) {
+//     if (!almost(a, b)) {
+//         console.assert(false, `${label}:  ${a} ${b}`)
+//         throw ''
+//     }
+// }
+
+// function ctest(label: string, color: Color, xxx_color: Vector, x: number = 0, y: number = 0) {
+
+//     if (!(almost(color.r,xxx_color.xV) && almost(color.g,xxx_color.yV) && almost(color.b, xxx_color.zV))) {
+//         color.show(`color mismatch at ${x} ${y}`)
+//         xxx_color.show(`xxx_color mismatch at ${x} ${y}`)
+//         throw ''
+//     }
+// }
+
+// function almost(a: number, b: number): boolean {
+//     if (isNaN(a) && isNaN(b))  // ignore this case
+//         return true
+//     return (Math.abs(a - b) < 1)
+// }
+// function v3toVector(a: V3): Vector {
+//     return new Vector(a.x, a.y, a.z)
+// }
+// function colortoVector(a: Color): Vector {
+//     return new Vector(a.r, a.g, a.b)
+// }
+
+
+
+
+
+
 
 interface RayIntersect {
     distance: number,
     object: LR_Object | null
-}
-
-// # Detecting collisions against all objects
-//
-// Given a ray, let's figure out whether it hits anything, and if so,
-// what's the closest thing it hits.
-function xxx_intersectScene(ray: xxx_LR_Ray, scene: LR_Scene) {
-    // The base case is that it hits nothing, and travels for `Infinity`
-    var closest: RayIntersect = { distance: Infinity, object: null }
-    // But for each object, we check whether it has any intersection,
-    // and compare that intersection - is it closer than `Infinity` at first,
-    // and then is it closer than other objects that have been hit?
-    for (var i = 0; i < scene.objects.length; i++) {
-        var object = scene.objects[i],
-            dist = xxx_sphereIntersection(object, ray);
-        if (dist !== undefined && dist < closest.distance) {
-            closest = { distance: dist, object: object }
-        }
-    }
-    return closest;
-}
-
-// ## Detecting collisions against a sphere
-//
-// ![](graphics/sphereintersection.png)
-//
-// Spheres are one of the simplest objects for rays to interact with, since
-// the geometrical math for finding intersections and reflections with them
-// is pretty straightforward.
-function xxx_sphereIntersection(sphere: LR_Object, ray: xxx_LR_Ray): number {
-    var eye_to_center = Vector.subtract(v3toVector(sphere.point), ray.point),
-        // picture a triangle with one side going straight from the camera point
-        // to the center of the sphere, another side being the vector.
-        // the final side is a right angle.
-        //
-        // This equation first figures out the length of the vector side
-        v = Vector.dotProduct(eye_to_center, ray.vector),
-        // then the length of the straight from the camera to the center
-        // of the sphere
-        eoDot = Vector.dotProduct(eye_to_center, eye_to_center),
-        // and compute a segment from the right angle of the triangle to a point
-        // on the `v` line that also intersects the circle
-        discriminant = (sphere.radius * sphere.radius) - eoDot + (v * v);
-    // If the discriminant is negative, that means that the sphere hasn't
-    // been hit by the ray
-    if (discriminant < 0) {
-        return Infinity;
-    } else {
-        // otherwise, we return the distance from the camera point to the sphere
-        // `Math.sqrt(dotProduct(a, a))` is the length of a vector, so
-        // `v - Math.sqrt(discriminant)` means the length of the the vector
-        // just from the camera to the intersection point.
-        return v - Math.sqrt(discriminant);
-    }
-}
-
-// A normal is, at each point on the surface of a sphere or some other object,
-// a vector that's perpendicular to the surface and radiates outward. We need
-// to know this so that we can calculate the way that a ray reflects off of
-// a sphere.
-function xxx_sphereNormal(sphere: LR_Object, pos: Vector) {
-    return Vector.unitVector(
-        Vector.subtract(pos, v3toVector(sphere.point)));
-}
-
-// # Surface
-//
-// ![](http://farm3.staticflickr.com/2851/10524788334_f2e3903b36_b.jpg)
-//
-// If `trace()` determines that a ray intersected with an object, `surface`
-// decides what color it acquires from the interaction.
-function xxx_surface(ray: xxx_LR_Ray, scene: LR_Scene, object: LR_Object, pointAtTime: Vector, normal: Vector, depth: number): Vector {
-    let b = colortoVector(object.color.copy()),
-        c = new Vector(0, 0, 0),
-        lambertAmount = 0;
-
-    // **[Lambert shading](http://en.wikipedia.org/wiki/Lambertian_reflectance)**
-    // is our pretty shading, which shows gradations from the most lit point on
-    // the object to the least.
-    if (object.lambert) {
-        for (var i = 0; i < scene.lights.length; i++) {
-            var lightPoint = scene.lights[i];
-            // First: can we see the light? If not, this is a shadowy area
-            // and it gets no light from the lambert shading process.
-            if (!xxx_isLightVisible(pointAtTime, scene, v3toVector(lightPoint))) continue;
-            // Otherwise, calculate the lambertian reflectance, which
-            // essentially is a 'diffuse' lighting system - direct light
-            // is bright, and from there, less direct light is gradually,
-            // beautifully, less light.
-            var contribution = Vector.dotProduct(Vector.unitVector(
-                Vector.subtract(v3toVector(lightPoint), pointAtTime)), normal);
-            // sometimes this formula can return negatives, so we check:
-            // we only want positive values for lighting.
-            if (contribution > 0) lambertAmount += contribution;
-        }
-
-        // lambert should never 'blow out' the lighting of an object,
-        // even if the ray bounces between a lot of things and hits lights
-        lambertAmount = Math.min(1, lambertAmount);
-        Vector.add(c, Vector.scale(b, lambertAmount * object.lambert))
-    }
-
-    // **[Specular](https://en.wikipedia.org/wiki/Specular_reflection)** is a fancy word for 'reflective': rays that hit objects
-    // with specular surfaces bounce off and acquire the colors of other objects
-    // they bounce into.
-    if (object.specular) {
-        // This is basically the same thing as what we did in `render()`, just
-        // instead of looking from the viewpoint of the camera, we're looking
-        // from a point on the surface of a shiny object, seeing what it sees
-        // and making that part of a reflection.
-        var reflectedRay = {
-            point: pointAtTime,
-            vector: Vector.reflectThrough(ray.vector, normal)
-        };
-
-        // This is a recursive method: if we hit something that's reflective,
-        // then the call to `surface()` at the bottom will return here and try
-        // to find what the ray reflected into. Since this could easily go
-        // on forever, first check that we haven't gone more than three bounces
-        // into a reflection.
-        if (depth < 3) {
-            let reflectedColor = xxx_trace(reflectedRay, scene, ++depth);
-            Vector.add(c, Vector.scale(reflectedColor, object.specular));
-        }
-    }
-
-    // **Ambient** colors shine bright regardless of whether there's a light visible -
-    // a circle with a totally ambient blue color will always just be a flat blue
-    // circle.
-    return Vector.add(c, Vector.scale(b, object.ambient))
-}
-
-// Check whether a light is visible from some point on the surface of something.
-// Note that there might be an intersection here, which is tricky - but if it's
-// tiny, it's actually an intersection with the object we're trying to decide
-// the surface of. That's why we check for `> -0.005` at the end.
-//
-// This is the part that makes objects cast shadows on each other: from here
-// we'd check to see if the area in a shadowy spot can 'see' a light, and when
-// this returns `false`, we make the area shadowy.
-function xxx_isLightVisible(pt: Vector, scene: LR_Scene, light: Vector) {
-    var distObject = xxx_intersectScene({
-        point: pt,
-        vector: Vector.unitVector(Vector.subtract(pt, light))
-    }, scene);
-    return distObject.distance > -0.005;
 }
 

@@ -8,7 +8,6 @@
     "target": "es5",
     "jsx": "react",
     "allowJs": true,
-    "incremental": true,
     "lib": [
       "dom",
       "es2017",
