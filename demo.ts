@@ -2,7 +2,7 @@
 import { Scene, Group, Shape, Viewport, P } from "./src/Seen2";
 import { Canvas } from "./src/canvas";
 //import {P} from "./src/point"
-import { Cube, Primitive, Pyramid, Icosahedron, TestTriangle } from './src/shapes/primitives'
+import { Cube, Primitive, Pyramid, Icosahedron, TestTriangle } from './src/shapes/meshprimitives'
 import { V3 } from "./src/vectorMath";
 import { Color } from "./src/color"
 

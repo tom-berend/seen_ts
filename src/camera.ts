@@ -6,7 +6,7 @@
 import { M, Transformable } from './transformable'
 import { V3, M4 } from './vectorMath'
 import { Canvas } from './canvas'
-import { Shape } from './shape'
+import { Mesh } from './shape'
 import { Surface } from './surface'
 
 
@@ -165,7 +165,7 @@ export class PixelCamera {  // does NOT extend Transformable yet
 
     public eyeDistance: Number  // height of triangle, normal * -1 to the center of the flat grid
 
-    public width: number // comes from Canvas  
+    public width: number // comes from Canvas
     public height: number  // TODO: implement resize method
 
     public orthographic = false  // default to perspective
@@ -189,7 +189,7 @@ export class PixelCamera {  // does NOT extend Transformable yet
         }else{
             // TODO calculate pixel position and then direction vector
             return (this.direction)
-            
+
         }
     }
 

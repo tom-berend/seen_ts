@@ -7,9 +7,9 @@
 
  export { Scene } from './scene';
  export { Group } from './model';
-export { Primitive } from './shapes/primitives';
+export { Primitive } from './shapes/meshprimitives';
 export { Viewport } from "./camera";   // TODO: should this be exported, or is it just part of camera?
-export {Shape} from './shape';
+export {Mesh as Shape} from './shape';
 export {P} from './point'
 //export {C} from './color'
 

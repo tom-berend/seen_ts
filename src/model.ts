@@ -4,7 +4,7 @@
 import { Transformable } from './transformable';
 import { Light } from './light'
 import { Surface } from './surface'
-import {Shape} from './shape'
+import {Mesh} from './shape'
 import {V4} from './vectorMath'
 
 
@@ -18,13 +18,13 @@ export class Group extends Transformable {
     public groups: Group[] = [];   // sub-groups
     public lights: Light[] = [];
     public surfaces: Surface[] = [];
-    public shapes: Shape[] = []
+    public shapes: Mesh[] = []
 
     public barycenter: V4
     public normal:V4
 
     /** Add a `Shape`, `Surface`, Light`, and other `Group` */
-    add(child: Shape | Surface | Group | Light) {
+    add(child: Mesh | Surface | Group | Light) {
 
         if (child instanceof Light)
             this.lights.push(child)
@@ -35,7 +35,7 @@ export class Group extends Transformable {
         else if (child instanceof Surface)
             this.surfaces.push(child)
 
-        else if (child instanceof Shape)
+        else if (child instanceof Mesh)
             this.shapes.push(child)
 
         else   // shouldn't get here

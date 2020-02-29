@@ -1,4 +1,5 @@
 
+
 /*********************
  * see:  https://github.com/matthiasferch/tsm
  *
@@ -57,6 +58,367 @@
  */
 
 export const epsilon = 0.00001
+
+
+export class V3 {
+
+    get x(): number {
+        return this.values[0]
+    }
+
+    get y(): number {
+        return this.values[1]
+    }
+
+    get z(): number {
+        return this.values[2]
+    }
+
+    get xy(): [number, number] {
+        return [
+            this.values[0],
+            this.values[1],
+        ]
+    }
+
+    get xyz(): [number, number, number] {
+        return [
+            this.values[0],
+            this.values[1],
+            this.values[2],
+        ]
+    }
+
+    set x(value: number) {
+        this.values[0] = value
+    }
+
+    set y(value: number) {
+        this.values[1] = value
+    }
+
+    set z(value: number) {
+        this.values[2] = value
+    }
+
+    set xy(values: [number, number]) {
+        this.values[0] = values[0]
+        this.values[1] = values[1]
+    }
+
+    set xyz(values: [number, number, number]) {
+        this.values[0] = values[0]
+        this.values[1] = values[1]
+        this.values[2] = values[2]
+    }
+
+    public static readonly zero = new V3([0, 0, 0])
+    public static readonly one = new V3([1, 1, 1])
+
+    public static readonly up = new V3([0, 1, 0])
+    public static readonly right = new V3([1, 0, 0])
+    public static readonly forward = new V3([0, 0, 1])
+
+    public static distance(vector: V3, vector2: V3): number {
+        const x = vector2.x - vector.x
+        const y = vector2.y - vector.y
+        const z = vector2.z - vector.z
+
+        return Math.sqrt(this.squaredDistance(vector, vector2))
+    }
+
+    public static squaredDistance(vector: V3, vector2: V3): number {
+        const x = vector2.x - vector.x
+        const y = vector2.y - vector.y
+        const z = vector2.z - vector.z
+
+        return (x * x + y * y + z * z)
+    }
+
+    public static direction(vector: V3, vector2: V3): V3 {
+        let dest = new V3()
+
+        const x = vector.x - vector2.x
+        const y = vector.y - vector2.y
+        const z = vector.z - vector2.z
+
+        let length = Math.sqrt(x * x + y * y + z * z)
+
+        if (length === 0) {
+            dest.x = 0
+            dest.y = 0
+            dest.z = 0
+
+            return dest
+        }
+
+        length = 1 / length
+
+        dest.x = x * length
+        dest.y = y * length
+        dest.z = z * length
+
+        return dest
+    }
+
+    public static mix(vector: V3, vector2: V3, time: number, dest?: V3): V3 {
+        if (!dest) { dest = new V3() }
+
+        dest.x = vector.x + time * (vector2.x - vector.x)
+        dest.y = vector.y + time * (vector2.y - vector.y)
+        dest.z = vector.z + time * (vector2.z - vector.z)
+
+        return dest
+    }
+
+        // Given a vector `d`, which is a point in space, and a `normal`, which is
+    // the angle the point hits a surface, returna  new vector that is reflect
+    // off of that surface
+    // static reflectThrough(a: Vector, normal: Vector) {
+    //     var d = Vector.scale(normal, Vector.dotProduct(a, normal));
+    //     return Vector.subtract(Vector.scale(d, 2), a);
+    // }
+    // https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
+    //  r=d−2(d⋅n)n  (n must be normalized)
+    // but somehow I get the sign wrong so I subtract the other way
+
+    public reflection(normal: V3 ): V3{
+        if(  Math.abs((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z) - 1) > epsilon){
+            throw `reflection is not normalized`
+        }
+
+        let twoDN = this.dot(normal)*2
+        let result = normal.copy().scale(twoDN).subtract(this)
+        return result
+    }
+
+
+    public static sum(vector: V3, vector2: V3, dest?: V3): V3 {
+        if (!dest) { dest = new V3() }
+
+        dest.x = vector.x + vector2.x
+        dest.y = vector.y + vector2.y
+        dest.z = vector.z + vector2.z
+
+        return dest
+    }
+
+    public static difference(vector: V3, vector2: V3, dest?: V3): V3 {
+        if (!dest) { dest = new V3() }
+
+        dest.x = vector.x - vector2.x
+        dest.y = vector.y - vector2.y
+        dest.z = vector.z - vector2.z
+
+        return dest
+    }
+
+    public static product(vector: V3, vector2: V3, dest?: V3): V3 {
+        if (!dest) { dest = new V3() }
+
+        dest.x = vector.x * vector2.x
+        dest.y = vector.y * vector2.y
+        dest.z = vector.z * vector2.z
+
+        return dest
+    }
+
+    public static quotient(vector: V3, vector2: V3, dest?: V3): V3 {
+        if (!dest) { dest = new V3() }
+
+        dest.x = vector.x / vector2.x
+        dest.y = vector.y / vector2.y
+        dest.z = vector.z / vector2.z
+
+        return dest
+    }
+
+    public values = new Float32Array(3)   // i wish it was private
+
+
+    constructor(values?: [number, number, number]) {
+        if (values !== undefined) {
+            this.values[0] = values[0]
+            this.values[1] = values[1]
+            this.values[2] = values[2]
+        }
+
+    }
+
+    public show(msg:string){
+        console.log(`${msg} [${this.values[0]},${this.values[1]},${this.values[2]}]`)
+    }
+    public show100(msg:string){
+        console.log(`${msg} [${Math.floor(this.values[0] * 100)},${Math.floor(this.values[1] * 100)},${Math.floor(this.values[2] * 100)}]`)
+    }
+
+
+    // converts a euler angle to a direction vector
+    public eulerToVector(): V3 {
+        let x = Math.sin(this.values[0])
+        let y = Math.sin(this.values[1]) * Math.cos(this.values[0])
+        let z = Math.cos(this.values[1]) * Math.cos(this.values[0])
+        // note:  we do NOT need Z for this calculation
+        return (new V3([x, y, z]))
+    }
+
+    public at(index: number): number {
+        return this.values[index]
+    }
+
+    public reset(): void {
+        this.x = 0
+        this.y = 0
+        this.z = 0
+    }
+
+    public copy(): V3 {
+        return new V3([this.values[0], this.values[1], this.values[2]])
+    }
+
+    public negate(dest?: V3): V3 {
+        if (!dest) { dest = this }
+
+        dest.x = -this.x
+        dest.y = -this.y
+        dest.z = -this.z
+
+        return dest
+    }
+
+    public cross(vector2: V3) :V3{
+        const x2 = this.values[1] * vector2.values[2]- this.values[2] * vector2.values[1]
+        const y2 = this.values[2] * vector2.values[0]- this.values[0] * vector2.values[2]
+        const z2 = this.values[0] * vector2.values[1]- this.values[1] * vector2.values[0]
+
+        this.values[0] = x2
+        this.values[1] = y2
+        this.values[2] = z2
+
+        return this
+
+    }
+
+    public dot(vector: V3): number {
+        return (vector.values[0] * this.values[0] + vector.values[1] * this.values[1] + vector.values[2] * this.values[2])
+    }
+
+    public equals(vector: V3, threshold = epsilon): boolean {
+        if (Math.abs(this.x - vector.x) > threshold) {
+            return false
+        }
+
+        if (Math.abs(this.y - vector.y) > threshold) {
+            return false
+        }
+
+        if (Math.abs(this.z - vector.z) > threshold) {
+            return false
+        }
+
+        return true
+    }
+
+    public length(): number {
+        return Math.sqrt(this.values[0] * this.values[0] + this.values[1] * this.values[1] + this.values[2] * this.values[2])
+    }
+
+
+    public add(vector: V3): V3 {
+        this.values[0] += vector.values[0]
+        this.values[1] += vector.values[1]
+        this.values[2] += vector.values[2]
+        return this
+    }
+
+    public subtract(vector: V3): V3 {
+        this.values[0] -= vector.values[0]
+        this.values[1] -= vector.values[1]
+        this.values[2] -= vector.values[2]
+        return this
+    }
+
+    public multiply(vector: V3): V3 {
+        this.values[0] *= vector.values[0]
+        this.values[1] *= vector.values[1]
+        this.values[2] *= vector.values[2]
+        return this
+    }
+
+    public divide(vector: V3): V3 {
+        this.values[0] /= vector.values[0]
+        this.values[1] /= vector.values[1]
+        this.values[2] /= vector.values[2]
+        return this
+    }
+
+    public scale(scaleValue: number): V3 {
+
+        this.values[0] *= scaleValue
+        this.values[1] *= scaleValue
+        this.values[2] *= scaleValue
+        return this
+    }
+
+    public normalize(): V3 {
+
+        let squaredValue = this.values[0] * this.values[0] + this.values[1] * this.values[1] + this.values[2] * this.values[2]
+
+        if (squaredValue < epsilon) {
+            throw 'V3.normalize called on zero-length vector'
+        }
+
+        let length = 1.0 / Math.sqrt(squaredValue)
+
+        this.values[0] *= length
+        this.values[1] *= length
+        this.values[2] *= length
+
+        return this
+    }
+
+
+    public multiplyByMat3(matrix: M3, dest?: V3): V3 {
+        if (!dest) { dest = this }
+
+        return matrix.multiplyVec3(this, dest)
+    }
+
+    public multiplyByQuat(quaternion: Quat, dest?: V3): V3 {
+        if (!dest) { dest = this }
+
+        return quaternion.multiplyVec3(this, dest)
+    }
+
+    public toQuat(dest?: Quat): Quat {
+        if (!dest) { dest = new Quat() }
+
+        const c = new V3()
+        const s = new V3()
+
+        c.x = Math.cos(this.x * 0.5)
+        s.x = Math.sin(this.x * 0.5)
+
+        c.y = Math.cos(this.y * 0.5)
+        s.y = Math.sin(this.y * 0.5)
+
+        c.z = Math.cos(this.z * 0.5)
+        s.z = Math.sin(this.z * 0.5)
+
+        dest.x = s.x * c.y * c.z - c.x * s.y * s.z
+        dest.y = c.x * s.y * c.z + s.x * c.y * s.z
+        dest.z = c.x * c.y * s.z - s.x * s.y * c.z
+        dest.w = c.x * c.y * c.z + s.x * s.y * s.z
+
+        return dest
+    }
+}
+
+
+
+
+
+
 
 export class V2 {
     // a v2 is an array [x , y]
@@ -331,379 +693,6 @@ export class V2 {
     }
 
 }
-
-export class V3 {
-
-    get x(): number {
-        return this.values[0]
-    }
-
-    get y(): number {
-        return this.values[1]
-    }
-
-    get z(): number {
-        return this.values[2]
-    }
-
-    get xy(): [number, number] {
-        return [
-            this.values[0],
-            this.values[1],
-        ]
-    }
-
-    get xyz(): [number, number, number] {
-        return [
-            this.values[0],
-            this.values[1],
-            this.values[2],
-        ]
-    }
-
-    set x(value: number) {
-        this.values[0] = value
-    }
-
-    set y(value: number) {
-        this.values[1] = value
-    }
-
-    set z(value: number) {
-        this.values[2] = value
-    }
-
-    set xy(values: [number, number]) {
-        this.values[0] = values[0]
-        this.values[1] = values[1]
-    }
-
-    set xyz(values: [number, number, number]) {
-        this.values[0] = values[0]
-        this.values[1] = values[1]
-        this.values[2] = values[2]
-    }
-
-    public static readonly zero = new V3([0, 0, 0])
-    public static readonly one = new V3([1, 1, 1])
-
-    public static readonly up = new V3([0, 1, 0])
-    public static readonly right = new V3([1, 0, 0])
-    public static readonly forward = new V3([0, 0, 1])
-
-    public static distance(vector: V3, vector2: V3): number {
-        const x = vector2.x - vector.x
-        const y = vector2.y - vector.y
-        const z = vector2.z - vector.z
-
-        return Math.sqrt(this.squaredDistance(vector, vector2))
-    }
-
-    public static squaredDistance(vector: V3, vector2: V3): number {
-        const x = vector2.x - vector.x
-        const y = vector2.y - vector.y
-        const z = vector2.z - vector.z
-
-        return (x * x + y * y + z * z)
-    }
-
-    public static direction(vector: V3, vector2: V3, dest?: V3): V3 {
-        if (!dest) { dest = new V3() }
-
-        const x = vector.x - vector2.x
-        const y = vector.y - vector2.y
-        const z = vector.z - vector2.z
-
-        let length = Math.sqrt(x * x + y * y + z * z)
-
-        if (length === 0) {
-            dest.x = 0
-            dest.y = 0
-            dest.z = 0
-
-            return dest
-        }
-
-        length = 1 / length
-
-        dest.x = x * length
-        dest.y = y * length
-        dest.z = z * length
-
-        return dest
-    }
-
-    public static mix(vector: V3, vector2: V3, time: number, dest?: V3): V3 {
-        if (!dest) { dest = new V3() }
-
-        dest.x = vector.x + time * (vector2.x - vector.x)
-        dest.y = vector.y + time * (vector2.y - vector.y)
-        dest.z = vector.z + time * (vector2.z - vector.z)
-
-        return dest
-    }
-
-        // Given a vector `d`, which is a point in space, and a `normal`, which is
-    // the angle the point hits a surface, returna  new vector that is reflect
-    // off of that surface
-    // static reflectThrough(a: Vector, normal: Vector) {
-    //     var d = Vector.scale(normal, Vector.dotProduct(a, normal));
-    //     return Vector.subtract(Vector.scale(d, 2), a);
-    // }
-    // https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
-    //  r=d−2(d⋅n)n  (n must be normalized)
-    public reflection(n: V3 ): V3{
-        if(  Math.abs((n.x * n.x) + (n.y * n.y) + (n.z * n.z) - 1) > .005){
-            console.assert(false,'reflection is not normalized')
-            throw ''
-        }
-        let d = n.copy().scale(this.dot(n))
-        let result = d.scale(2).subtract(this)
-        // console.log('n',this.xyz,n.xyz)
-        // console.log('reflect',result.xyz)
-        return result
-    }
-
-
-    public static sum(vector: V3, vector2: V3, dest?: V3): V3 {
-        if (!dest) { dest = new V3() }
-
-        dest.x = vector.x + vector2.x
-        dest.y = vector.y + vector2.y
-        dest.z = vector.z + vector2.z
-
-        return dest
-    }
-
-    public static difference(vector: V3, vector2: V3, dest?: V3): V3 {
-        if (!dest) { dest = new V3() }
-
-        dest.x = vector.x - vector2.x
-        dest.y = vector.y - vector2.y
-        dest.z = vector.z - vector2.z
-
-        return dest
-    }
-
-    public static product(vector: V3, vector2: V3, dest?: V3): V3 {
-        if (!dest) { dest = new V3() }
-
-        dest.x = vector.x * vector2.x
-        dest.y = vector.y * vector2.y
-        dest.z = vector.z * vector2.z
-
-        return dest
-    }
-
-    public static quotient(vector: V3, vector2: V3, dest?: V3): V3 {
-        if (!dest) { dest = new V3() }
-
-        dest.x = vector.x / vector2.x
-        dest.y = vector.y / vector2.y
-        dest.z = vector.z / vector2.z
-
-        return dest
-    }
-
-    private values = new Float32Array(3)
-    private _x:number
-    private _y:number
-    private _z:number
-
-    constructor(values?: [number, number, number]) {
-        if (values !== undefined) {
-            this.xyz = values
-        }
-    }
-
-    public show(msg:string){
-        console.log(`${msg} [${this.values[0]},${this.values[1]},${this.values[2]}]`)
-    }
-
-    // converts a euler angle to a direction vector
-    public eulerToVector(): V3 {
-        let x = Math.sin(this.values[0])
-        let y = Math.sin(this.values[1]) * Math.cos(this.values[0])
-        let z = Math.cos(this.values[1]) * Math.cos(this.values[0])
-        // note:  we do NOT need Z for this calculation
-        return (new V3([x, y, z]))
-    }
-
-    public at(index: number): number {
-        return this.values[index]
-    }
-
-    public reset(): void {
-        this.x = 0
-        this.y = 0
-        this.z = 0
-    }
-
-    public copy(dest?: V3): V3 {
-        if (!dest) { dest = new V3() }
-
-        dest.x = this.x
-        dest.y = this.y
-        dest.z = this.z
-
-        return dest
-    }
-
-    public negate(dest?: V3): V3 {
-        if (!dest) { dest = this }
-
-        dest.x = -this.x
-        dest.y = -this.y
-        dest.z = -this.z
-
-        return dest
-    }
-
-    public cross(vector2: V3): V3 {
-        const x2 = vector2.x
-        const y2 = vector2.y
-        const z2 = vector2.z
-
-        let x = this.y * z2 - this.z * y2
-        let y = this.z * x2 - this.x * z2
-        let z = this.x * y2 - this.y * x2
-
-        return new V3([x,y,z])
-    }
-
-    public dot(vector: V3): number {
-        return (vector.x * this.x + vector.y * this.y + vector.z * this.z)
-    }
-
-    public equals(vector: V3, threshold = epsilon): boolean {
-        if (Math.abs(this.x - vector.x) > threshold) {
-            return false
-        }
-
-        if (Math.abs(this.y - vector.y) > threshold) {
-            return false
-        }
-
-        if (Math.abs(this.z - vector.z) > threshold) {
-            return false
-        }
-
-        return true
-    }
-
-    public length(): number {
-        return Math.sqrt(this.squaredLength())
-    }
-
-    public squaredLength(): number {
-        const x = this.x
-        const y = this.y
-        const z = this.z
-
-        return (x * x + y * y + z * z)
-    }
-
-    public add(vector: V3): V3 {
-        this.x += vector.x
-        this.y += vector.y
-        this.z += vector.z
-
-        return this
-    }
-
-    public subtract(vector: V3): V3 {
-        this.x -= vector.x
-        this.y -= vector.y
-        this.z -= vector.z
-
-        return this
-    }
-
-    public multiply(vector: V3): V3 {
-        this.x *= vector.x
-        this.y *= vector.y
-        this.z *= vector.z
-
-        return this
-    }
-
-    public divide(vector: V3): V3 {
-        this.x /= vector.x
-        this.y /= vector.y
-        this.z /= vector.z
-
-        return this
-    }
-
-    public scale(value: number): V3 {
-        this.x *= value
-        this.y *= value
-        this.z *= value
-        return this
-    }
-
-    public normalize(dest?: V3): V3 {
-        if (!dest) { dest = this }
-
-        let length = this.length()
-
-        if (length === 1) {
-            return this
-        }
-
-        if (length === 0) {
-            dest.x = 0
-            dest.y = 0
-            dest.z = 0
-
-            return dest
-        }
-
-        length = 1.0 / length
-
-        dest.x *= length
-        dest.y *= length
-        dest.z *= length
-
-        return dest
-    }
-
-    public multiplyByMat3(matrix: M3, dest?: V3): V3 {
-        if (!dest) { dest = this }
-
-        return matrix.multiplyVec3(this, dest)
-    }
-
-    public multiplyByQuat(quaternion: Quat, dest?: V3): V3 {
-        if (!dest) { dest = this }
-
-        return quaternion.multiplyVec3(this, dest)
-    }
-
-    public toQuat(dest?: Quat): Quat {
-        if (!dest) { dest = new Quat() }
-
-        const c = new V3()
-        const s = new V3()
-
-        c.x = Math.cos(this.x * 0.5)
-        s.x = Math.sin(this.x * 0.5)
-
-        c.y = Math.cos(this.y * 0.5)
-        s.y = Math.sin(this.y * 0.5)
-
-        c.z = Math.cos(this.z * 0.5)
-        s.z = Math.sin(this.z * 0.5)
-
-        dest.x = s.x * c.y * c.z - c.x * s.y * s.z
-        dest.y = c.x * s.y * c.z + s.x * c.y * s.z
-        dest.z = c.x * c.y * s.z - s.x * s.y * c.z
-        dest.w = c.x * c.y * c.z + s.x * s.y * s.z
-
-        return dest
-    }
-}
-
 
 
 export class V4 {

@@ -1,7 +1,7 @@
 // // Colors
 // ------------------
 
-import { Shape } from './shape'
+import { Mesh } from './shape'
 
 let maxConsole = 2000
 

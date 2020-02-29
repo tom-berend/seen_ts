@@ -82,6 +82,308 @@
      *    distribution.
      */
     var epsilon = 0.00001;
+    var V3 = /** @class */ (function () {
+        function V3(values) {
+            this.values = new Float32Array(3); // i wish it was private
+            if (values !== undefined) {
+                this.values[0] = values[0];
+                this.values[1] = values[1];
+                this.values[2] = values[2];
+            }
+        }
+        Object.defineProperty(V3.prototype, "x", {
+            get: function () {
+                return this.values[0];
+            },
+            set: function (value) {
+                this.values[0] = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(V3.prototype, "y", {
+            get: function () {
+                return this.values[1];
+            },
+            set: function (value) {
+                this.values[1] = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(V3.prototype, "z", {
+            get: function () {
+                return this.values[2];
+            },
+            set: function (value) {
+                this.values[2] = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(V3.prototype, "xy", {
+            get: function () {
+                return [
+                    this.values[0],
+                    this.values[1],
+                ];
+            },
+            set: function (values) {
+                this.values[0] = values[0];
+                this.values[1] = values[1];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(V3.prototype, "xyz", {
+            get: function () {
+                return [
+                    this.values[0],
+                    this.values[1],
+                    this.values[2],
+                ];
+            },
+            set: function (values) {
+                this.values[0] = values[0];
+                this.values[1] = values[1];
+                this.values[2] = values[2];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        V3.distance = function (vector, vector2) {
+            var x = vector2.x - vector.x;
+            var y = vector2.y - vector.y;
+            var z = vector2.z - vector.z;
+            return Math.sqrt(this.squaredDistance(vector, vector2));
+        };
+        V3.squaredDistance = function (vector, vector2) {
+            var x = vector2.x - vector.x;
+            var y = vector2.y - vector.y;
+            var z = vector2.z - vector.z;
+            return (x * x + y * y + z * z);
+        };
+        V3.direction = function (vector, vector2) {
+            var dest = new V3();
+            var x = vector.x - vector2.x;
+            var y = vector.y - vector2.y;
+            var z = vector.z - vector2.z;
+            var length = Math.sqrt(x * x + y * y + z * z);
+            if (length === 0) {
+                dest.x = 0;
+                dest.y = 0;
+                dest.z = 0;
+                return dest;
+            }
+            length = 1 / length;
+            dest.x = x * length;
+            dest.y = y * length;
+            dest.z = z * length;
+            return dest;
+        };
+        V3.mix = function (vector, vector2, time, dest) {
+            if (!dest) {
+                dest = new V3();
+            }
+            dest.x = vector.x + time * (vector2.x - vector.x);
+            dest.y = vector.y + time * (vector2.y - vector.y);
+            dest.z = vector.z + time * (vector2.z - vector.z);
+            return dest;
+        };
+        // Given a vector `d`, which is a point in space, and a `normal`, which is
+        // the angle the point hits a surface, returna  new vector that is reflect
+        // off of that surface
+        // static reflectThrough(a: Vector, normal: Vector) {
+        //     var d = Vector.scale(normal, Vector.dotProduct(a, normal));
+        //     return Vector.subtract(Vector.scale(d, 2), a);
+        // }
+        // https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
+        //  r=d−2(d⋅n)n  (n must be normalized)
+        // but somehow I get the sign wrong so I subtract the other way
+        V3.prototype.reflection = function (normal) {
+            if (Math.abs((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z) - 1) > epsilon) {
+                throw "reflection is not normalized";
+            }
+            var twoDN = this.dot(normal) * 2;
+            var result = normal.copy().scale(twoDN).subtract(this);
+            return result;
+        };
+        V3.sum = function (vector, vector2, dest) {
+            if (!dest) {
+                dest = new V3();
+            }
+            dest.x = vector.x + vector2.x;
+            dest.y = vector.y + vector2.y;
+            dest.z = vector.z + vector2.z;
+            return dest;
+        };
+        V3.difference = function (vector, vector2, dest) {
+            if (!dest) {
+                dest = new V3();
+            }
+            dest.x = vector.x - vector2.x;
+            dest.y = vector.y - vector2.y;
+            dest.z = vector.z - vector2.z;
+            return dest;
+        };
+        V3.product = function (vector, vector2, dest) {
+            if (!dest) {
+                dest = new V3();
+            }
+            dest.x = vector.x * vector2.x;
+            dest.y = vector.y * vector2.y;
+            dest.z = vector.z * vector2.z;
+            return dest;
+        };
+        V3.quotient = function (vector, vector2, dest) {
+            if (!dest) {
+                dest = new V3();
+            }
+            dest.x = vector.x / vector2.x;
+            dest.y = vector.y / vector2.y;
+            dest.z = vector.z / vector2.z;
+            return dest;
+        };
+        V3.prototype.show = function (msg) {
+            console.log(msg + " [" + this.values[0] + "," + this.values[1] + "," + this.values[2] + "]");
+        };
+        V3.prototype.show100 = function (msg) {
+            console.log(msg + " [" + Math.floor(this.values[0] * 100) + "," + Math.floor(this.values[1] * 100) + "," + Math.floor(this.values[2] * 100) + "]");
+        };
+        // converts a euler angle to a direction vector
+        V3.prototype.eulerToVector = function () {
+            var x = Math.sin(this.values[0]);
+            var y = Math.sin(this.values[1]) * Math.cos(this.values[0]);
+            var z = Math.cos(this.values[1]) * Math.cos(this.values[0]);
+            // note:  we do NOT need Z for this calculation
+            return (new V3([x, y, z]));
+        };
+        V3.prototype.at = function (index) {
+            return this.values[index];
+        };
+        V3.prototype.reset = function () {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+        };
+        V3.prototype.copy = function () {
+            return new V3([this.values[0], this.values[1], this.values[2]]);
+        };
+        V3.prototype.negate = function (dest) {
+            if (!dest) {
+                dest = this;
+            }
+            dest.x = -this.x;
+            dest.y = -this.y;
+            dest.z = -this.z;
+            return dest;
+        };
+        V3.prototype.cross = function (vector2) {
+            var x2 = this.values[1] * vector2.values[2] - this.values[2] * vector2.values[1];
+            var y2 = this.values[2] * vector2.values[0] - this.values[0] * vector2.values[2];
+            var z2 = this.values[0] * vector2.values[1] - this.values[1] * vector2.values[0];
+            this.values[0] = x2;
+            this.values[1] = y2;
+            this.values[2] = z2;
+            return this;
+        };
+        V3.prototype.dot = function (vector) {
+            return (vector.values[0] * this.values[0] + vector.values[1] * this.values[1] + vector.values[2] * this.values[2]);
+        };
+        V3.prototype.equals = function (vector, threshold) {
+            if (threshold === void 0) { threshold = epsilon; }
+            if (Math.abs(this.x - vector.x) > threshold) {
+                return false;
+            }
+            if (Math.abs(this.y - vector.y) > threshold) {
+                return false;
+            }
+            if (Math.abs(this.z - vector.z) > threshold) {
+                return false;
+            }
+            return true;
+        };
+        V3.prototype.length = function () {
+            return Math.sqrt(this.values[0] * this.values[0] + this.values[1] * this.values[1] + this.values[2] * this.values[2]);
+        };
+        V3.prototype.add = function (vector) {
+            this.values[0] += vector.values[0];
+            this.values[1] += vector.values[1];
+            this.values[2] += vector.values[2];
+            return this;
+        };
+        V3.prototype.subtract = function (vector) {
+            this.values[0] -= vector.values[0];
+            this.values[1] -= vector.values[1];
+            this.values[2] -= vector.values[2];
+            return this;
+        };
+        V3.prototype.multiply = function (vector) {
+            this.values[0] *= vector.values[0];
+            this.values[1] *= vector.values[1];
+            this.values[2] *= vector.values[2];
+            return this;
+        };
+        V3.prototype.divide = function (vector) {
+            this.values[0] /= vector.values[0];
+            this.values[1] /= vector.values[1];
+            this.values[2] /= vector.values[2];
+            return this;
+        };
+        V3.prototype.scale = function (scaleValue) {
+            this.values[0] *= scaleValue;
+            this.values[1] *= scaleValue;
+            this.values[2] *= scaleValue;
+            return this;
+        };
+        V3.prototype.normalize = function () {
+            var squaredValue = this.values[0] * this.values[0] + this.values[1] * this.values[1] + this.values[2] * this.values[2];
+            if (squaredValue < epsilon) {
+                throw 'V3.normalize called on zero-length vector';
+            }
+            var length = 1.0 / Math.sqrt(squaredValue);
+            this.values[0] *= length;
+            this.values[1] *= length;
+            this.values[2] *= length;
+            return this;
+        };
+        V3.prototype.multiplyByMat3 = function (matrix, dest) {
+            if (!dest) {
+                dest = this;
+            }
+            return matrix.multiplyVec3(this, dest);
+        };
+        V3.prototype.multiplyByQuat = function (quaternion, dest) {
+            if (!dest) {
+                dest = this;
+            }
+            return quaternion.multiplyVec3(this, dest);
+        };
+        V3.prototype.toQuat = function (dest) {
+            if (!dest) {
+                dest = new Quat();
+            }
+            var c = new V3();
+            var s = new V3();
+            c.x = Math.cos(this.x * 0.5);
+            s.x = Math.sin(this.x * 0.5);
+            c.y = Math.cos(this.y * 0.5);
+            s.y = Math.sin(this.y * 0.5);
+            c.z = Math.cos(this.z * 0.5);
+            s.z = Math.sin(this.z * 0.5);
+            dest.x = s.x * c.y * c.z - c.x * s.y * s.z;
+            dest.y = c.x * s.y * c.z + s.x * c.y * s.z;
+            dest.z = c.x * c.y * s.z - s.x * s.y * c.z;
+            dest.w = c.x * c.y * c.z + s.x * s.y * s.z;
+            return dest;
+        };
+        V3.zero = new V3([0, 0, 0]);
+        V3.one = new V3([1, 1, 1]);
+        V3.up = new V3([0, 1, 0]);
+        V3.right = new V3([1, 0, 0]);
+        V3.forward = new V3([0, 0, 1]);
+        return V3;
+    }());
     var V2 = /** @class */ (function () {
         function V2(values) {
             this.values = new Float32Array(2);
@@ -312,328 +614,6 @@
         V2.zero = new V2([0, 0]);
         V2.one = new V2([1, 1]);
         return V2;
-    }());
-    var V3 = /** @class */ (function () {
-        function V3(values) {
-            this.values = new Float32Array(3);
-            if (values !== undefined) {
-                this.xyz = values;
-            }
-        }
-        Object.defineProperty(V3.prototype, "x", {
-            get: function () {
-                return this.values[0];
-            },
-            set: function (value) {
-                this.values[0] = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(V3.prototype, "y", {
-            get: function () {
-                return this.values[1];
-            },
-            set: function (value) {
-                this.values[1] = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(V3.prototype, "z", {
-            get: function () {
-                return this.values[2];
-            },
-            set: function (value) {
-                this.values[2] = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(V3.prototype, "xy", {
-            get: function () {
-                return [
-                    this.values[0],
-                    this.values[1],
-                ];
-            },
-            set: function (values) {
-                this.values[0] = values[0];
-                this.values[1] = values[1];
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(V3.prototype, "xyz", {
-            get: function () {
-                return [
-                    this.values[0],
-                    this.values[1],
-                    this.values[2],
-                ];
-            },
-            set: function (values) {
-                this.values[0] = values[0];
-                this.values[1] = values[1];
-                this.values[2] = values[2];
-            },
-            enumerable: true,
-            configurable: true
-        });
-        V3.distance = function (vector, vector2) {
-            var x = vector2.x - vector.x;
-            var y = vector2.y - vector.y;
-            var z = vector2.z - vector.z;
-            return Math.sqrt(this.squaredDistance(vector, vector2));
-        };
-        V3.squaredDistance = function (vector, vector2) {
-            var x = vector2.x - vector.x;
-            var y = vector2.y - vector.y;
-            var z = vector2.z - vector.z;
-            return (x * x + y * y + z * z);
-        };
-        V3.direction = function (vector, vector2, dest) {
-            if (!dest) {
-                dest = new V3();
-            }
-            var x = vector.x - vector2.x;
-            var y = vector.y - vector2.y;
-            var z = vector.z - vector2.z;
-            var length = Math.sqrt(x * x + y * y + z * z);
-            if (length === 0) {
-                dest.x = 0;
-                dest.y = 0;
-                dest.z = 0;
-                return dest;
-            }
-            length = 1 / length;
-            dest.x = x * length;
-            dest.y = y * length;
-            dest.z = z * length;
-            return dest;
-        };
-        V3.mix = function (vector, vector2, time, dest) {
-            if (!dest) {
-                dest = new V3();
-            }
-            dest.x = vector.x + time * (vector2.x - vector.x);
-            dest.y = vector.y + time * (vector2.y - vector.y);
-            dest.z = vector.z + time * (vector2.z - vector.z);
-            return dest;
-        };
-        // Given a vector `d`, which is a point in space, and a `normal`, which is
-        // the angle the point hits a surface, returna  new vector that is reflect
-        // off of that surface
-        // static reflectThrough(a: Vector, normal: Vector) {
-        //     var d = Vector.scale(normal, Vector.dotProduct(a, normal));
-        //     return Vector.subtract(Vector.scale(d, 2), a);
-        // }
-        // https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
-        //  r=d−2(d⋅n)n  (n must be normalized)
-        V3.prototype.reflection = function (n) {
-            if (Math.abs((n.x * n.x) + (n.y * n.y) + (n.z * n.z) - 1) > .005) {
-                console.assert(false, 'reflection is not normalized');
-                throw '';
-            }
-            var d = n.copy().scale(this.dot(n));
-            var result = d.scale(2).subtract(this);
-            // console.log('n',this.xyz,n.xyz)
-            // console.log('reflect',result.xyz)
-            return result;
-        };
-        V3.sum = function (vector, vector2, dest) {
-            if (!dest) {
-                dest = new V3();
-            }
-            dest.x = vector.x + vector2.x;
-            dest.y = vector.y + vector2.y;
-            dest.z = vector.z + vector2.z;
-            return dest;
-        };
-        V3.difference = function (vector, vector2, dest) {
-            if (!dest) {
-                dest = new V3();
-            }
-            dest.x = vector.x - vector2.x;
-            dest.y = vector.y - vector2.y;
-            dest.z = vector.z - vector2.z;
-            return dest;
-        };
-        V3.product = function (vector, vector2, dest) {
-            if (!dest) {
-                dest = new V3();
-            }
-            dest.x = vector.x * vector2.x;
-            dest.y = vector.y * vector2.y;
-            dest.z = vector.z * vector2.z;
-            return dest;
-        };
-        V3.quotient = function (vector, vector2, dest) {
-            if (!dest) {
-                dest = new V3();
-            }
-            dest.x = vector.x / vector2.x;
-            dest.y = vector.y / vector2.y;
-            dest.z = vector.z / vector2.z;
-            return dest;
-        };
-        V3.prototype.show = function (msg) {
-            console.log(msg + " [" + this.values[0] + "," + this.values[1] + "," + this.values[2] + "]");
-        };
-        // converts a euler angle to a direction vector
-        V3.prototype.eulerToVector = function () {
-            var x = Math.sin(this.values[0]);
-            var y = Math.sin(this.values[1]) * Math.cos(this.values[0]);
-            var z = Math.cos(this.values[1]) * Math.cos(this.values[0]);
-            // note:  we do NOT need Z for this calculation
-            return (new V3([x, y, z]));
-        };
-        V3.prototype.at = function (index) {
-            return this.values[index];
-        };
-        V3.prototype.reset = function () {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-        };
-        V3.prototype.copy = function (dest) {
-            if (!dest) {
-                dest = new V3();
-            }
-            dest.x = this.x;
-            dest.y = this.y;
-            dest.z = this.z;
-            return dest;
-        };
-        V3.prototype.negate = function (dest) {
-            if (!dest) {
-                dest = this;
-            }
-            dest.x = -this.x;
-            dest.y = -this.y;
-            dest.z = -this.z;
-            return dest;
-        };
-        V3.prototype.cross = function (vector2) {
-            var x2 = vector2.x;
-            var y2 = vector2.y;
-            var z2 = vector2.z;
-            var x = this.y * z2 - this.z * y2;
-            var y = this.z * x2 - this.x * z2;
-            var z = this.x * y2 - this.y * x2;
-            return new V3([x, y, z]);
-        };
-        V3.prototype.dot = function (vector) {
-            return (vector.x * this.x + vector.y * this.y + vector.z * this.z);
-        };
-        V3.prototype.equals = function (vector, threshold) {
-            if (threshold === void 0) { threshold = epsilon; }
-            if (Math.abs(this.x - vector.x) > threshold) {
-                return false;
-            }
-            if (Math.abs(this.y - vector.y) > threshold) {
-                return false;
-            }
-            if (Math.abs(this.z - vector.z) > threshold) {
-                return false;
-            }
-            return true;
-        };
-        V3.prototype.length = function () {
-            return Math.sqrt(this.squaredLength());
-        };
-        V3.prototype.squaredLength = function () {
-            var x = this.x;
-            var y = this.y;
-            var z = this.z;
-            return (x * x + y * y + z * z);
-        };
-        V3.prototype.add = function (vector) {
-            this.x += vector.x;
-            this.y += vector.y;
-            this.z += vector.z;
-            return this;
-        };
-        V3.prototype.subtract = function (vector) {
-            this.x -= vector.x;
-            this.y -= vector.y;
-            this.z -= vector.z;
-            return this;
-        };
-        V3.prototype.multiply = function (vector) {
-            this.x *= vector.x;
-            this.y *= vector.y;
-            this.z *= vector.z;
-            return this;
-        };
-        V3.prototype.divide = function (vector) {
-            this.x /= vector.x;
-            this.y /= vector.y;
-            this.z /= vector.z;
-            return this;
-        };
-        V3.prototype.scale = function (value) {
-            this.x *= value;
-            this.y *= value;
-            this.z *= value;
-            return this;
-        };
-        V3.prototype.normalize = function (dest) {
-            if (!dest) {
-                dest = this;
-            }
-            var length = this.length();
-            if (length === 1) {
-                return this;
-            }
-            if (length === 0) {
-                dest.x = 0;
-                dest.y = 0;
-                dest.z = 0;
-                return dest;
-            }
-            length = 1.0 / length;
-            dest.x *= length;
-            dest.y *= length;
-            dest.z *= length;
-            return dest;
-        };
-        V3.prototype.multiplyByMat3 = function (matrix, dest) {
-            if (!dest) {
-                dest = this;
-            }
-            return matrix.multiplyVec3(this, dest);
-        };
-        V3.prototype.multiplyByQuat = function (quaternion, dest) {
-            if (!dest) {
-                dest = this;
-            }
-            return quaternion.multiplyVec3(this, dest);
-        };
-        V3.prototype.toQuat = function (dest) {
-            if (!dest) {
-                dest = new Quat();
-            }
-            var c = new V3();
-            var s = new V3();
-            c.x = Math.cos(this.x * 0.5);
-            s.x = Math.sin(this.x * 0.5);
-            c.y = Math.cos(this.y * 0.5);
-            s.y = Math.sin(this.y * 0.5);
-            c.z = Math.cos(this.z * 0.5);
-            s.z = Math.sin(this.z * 0.5);
-            dest.x = s.x * c.y * c.z - c.x * s.y * s.z;
-            dest.y = c.x * s.y * c.z + s.x * c.y * s.z;
-            dest.z = c.x * c.y * s.z - s.x * s.y * c.z;
-            dest.w = c.x * c.y * c.z + s.x * s.y * s.z;
-            return dest;
-        };
-        V3.zero = new V3([0, 0, 0]);
-        V3.one = new V3([1, 1, 1]);
-        V3.up = new V3([0, 1, 0]);
-        V3.right = new V3([1, 0, 0]);
-        V3.forward = new V3([0, 0, 1]);
-        return V3;
     }());
     var V4 = /** @class */ (function () {
         function V4(values) {
@@ -3398,18 +3378,25 @@
         return Surface;
     }(Transformable));
 
-    // A `Shape` contains a collection of surface. They may create a closed 3D
-    // shape, but not necessarily. For example, a cube is a closed shape, but a
-    // patch is not.
     var Shape = /** @class */ (function (_super) {
         __extends(Shape, _super);
-        function Shape(type, surfaces) {
+        function Shape() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return Shape;
+    }(Transformable));
+    // A `Mesh` contains a collection of surfaces. They may create a closed 3D
+    // shape, but not necessarily. For example, a cube is a closed shape, but a
+    // patch is not.
+    var Mesh = /** @class */ (function (_super) {
+        __extends(Mesh, _super);
+        function Mesh(type, surfaces) {
             var _this = _super.call(this) || this;
             _this.type = type;
             _this.surfaces = surfaces;
             return _this;
         }
-        Shape.prototype.recalculateSurfaces = function () {
+        Mesh.prototype.recalculateSurfaces = function () {
             var _this = this;
             this.recalculateMatrix(); // this shape is a 'transformable' with one matrix
             this.surfaces.forEach(function (surface) {
@@ -3420,12 +3407,12 @@
             });
         };
         /** returns the interception point or false */
-        Shape.prototype.rayTrace = function (eye, direction) {
+        Mesh.prototype.rayTrace = function (eye, direction) {
             this.surfaces.forEach(function (surface) {
             });
             return false;
         };
-        Shape.prototype.visibleSurfaces = function (camera) {
+        Mesh.prototype.visibleSurfaces = function (camera) {
             var surfaceList = [];
             this.surfaces.forEach(function (surface) {
                 // some filter here...
@@ -3434,17 +3421,17 @@
             return (surfaceList);
         };
         /** Apply the supplied fill `Material` to each surface */
-        Shape.prototype.fill = function (fill) {
+        Mesh.prototype.fill = function (fill) {
             //    this.eachSurface (s) => { s.fill(fill)}
             return this;
         };
         /** Apply the supplied stroke `Material` to each surface */
-        Shape.prototype.stroke = function (stroke) {
+        Mesh.prototype.stroke = function (stroke) {
             //    this.eachSurface (s) -> s.stroke(stroke)
             return this;
         };
-        return Shape;
-    }(Transformable));
+        return Mesh;
+    }(Shape));
 
     // //// Groups
     // The object group class. It stores `Shapes`, `Lights`, and sub-Groups
@@ -3491,7 +3478,7 @@
                 this.groups.push(child);
             else if (child instanceof Surface)
                 this.surfaces.push(child);
-            else if (child instanceof Shape)
+            else if (child instanceof Mesh)
                 this.shapes.push(child);
             else // shouldn't get here
                 throw new Error('Tried to add something strange');
@@ -4082,7 +4069,7 @@
             return _super.call(this, 'testTriangle', mapPointsToSurfaces(testTrianglePoints, testTriangle_coordinate_map)) || this;
         }
         return TestTriangle;
-    }(Shape));
+    }(Mesh));
     var cubePoints = [P(-1, -1, -1), P(-1, -1, 1), P(-1, 1, -1), P(-1, 1, 1), P(1, -1, -1), P(1, -1, 1), P(1, 1, -1), P(1, 1, 1)];
     // Map to points in the surfaces of a cube, two triangles to a side
     var CUBE_COORDINATE_MAP = [
@@ -4105,7 +4092,7 @@
             return _super.call(this, 'cube', mapPointsToSurfaces(cubePoints, CUBE_COORDINATE_MAP)) || this;
         }
         return Cube;
-    }(Shape));
+    }(Mesh));
     var pyramidPoints = [P(0, 0, 0), P(0, 0, 1), P(1, 0, 0), P(1, 0, 1), P(0.5, 1, 0.5)];
     // Map to points in the surfaces of a rectangular pyramid
     var PYRAMID_COORDINATE_MAP = [
@@ -4121,7 +4108,7 @@
             return _super.call(this, 'pyramid', mapPointsToSurfaces(pyramidPoints, PYRAMID_COORDINATE_MAP)) || this;
         }
         return Pyramid;
-    }(Shape));
+    }(Mesh));
     // Map to points in the surfaces of an icosahedron
     var ICOSAHEDRON_COORDINATE_MAP = [
         [0, 4, 1],
@@ -4168,7 +4155,7 @@
             return _super.call(this, 'icosahedron', mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP)) || this;
         }
         return Icosahedron;
-    }(Shape));
+    }(Mesh));
     //   unitcube() {
     //   let points = [P(0, 0, 0), P(0, 0, 1), P(0, 1, 0), P(0, 1, 1), P(1, 0, 0), P(1, 0, 1), P(1, 1, 0), P(1, 1, 1)];
     //   return new Shape('unitcube', this.mapPointsToSurfaces( points, CUBE_COORDINATE_MAP ));
@@ -4392,6 +4379,18 @@
     //   }
     // };
 
+    var Sphere = /** @class */ (function (_super) {
+        __extends(Sphere, _super);
+        function Sphere(type, point, color) {
+            var _this = _super.call(this) || this;
+            // this.type = type
+            _this.point = point;
+            _this.color = color;
+            return _this;
+        }
+        return Sphere;
+    }(Transformable));
+
     // # Raytracing
     //
     // **Raytracing** is a relatively simple way to render images of 3D objects.
@@ -4426,9 +4425,7 @@
     // # Setup
     // # Constants
     var UP = new V3([0, 1, 0]);
-    var globalx = 0;
-    var globaly = 0;
-    var c = document.getElementById('seen-canvas'), width = 640 * 0.5, height = 480 * 0.5;
+    var c = document.getElementById('seen-canvas'), width = 640, height = 480;
     // Get a context in order to generate a proper data array. We aren't going to
     // use traditional Canvas drawing functions like `fillRect` - instead this
     // raytracer will directly compute pixel data and then put it into an image.
@@ -4441,14 +4438,6 @@
         function LR_Camera() {
         }
         return LR_Camera;
-    }());
-    var LR_Object = /** @class */ (function () {
-        function LR_Object(type, point, color) {
-            this.type = type;
-            this.point = point;
-            this.color = color;
-        }
-        return LR_Object;
     }());
     var LR_Ray = /** @class */ (function () {
         function LR_Ray(point, vector) {
@@ -4481,24 +4470,37 @@
             //
             // This raytracer handles sphere objects, with any color, position, radius,
             // and surface properties.
-            var s1 = new LR_Object('sphere', new V3([0, 3.5, -3]), new Color(155, 200, 155));
-            s1.specular = 0.2;
-            s1.lambert = 0.7;
+            var s1 = new Sphere('sphere', new V3([0, 3.5, -3]), new Color(155, 200, 155));
+            s1.specular = 0.5;
+            s1.lambert = 0.4;
             s1.ambient = 0.1;
             s1.radius = 3;
-            var s2 = new LR_Object('sphere', new V3([-4, 2, -1]), new Color(255, 0, 0));
-            s2.specular = 0.1;
-            s2.lambert = 0.0;
-            s2.ambient = 0.9;
-            s2.radius = 0.2;
-            var s3 = new LR_Object('sphere', new V3([-4, 3, -1]), new Color(255, 255, 255));
+            var s2 = new Sphere('sphere', new V3([-4, 2, -1]), new Color(255, 0, 0));
+            s2.specular = 0.2;
+            s2.lambert = 0.3;
+            s2.ambient = 0.20;
+            s2.radius = 0.3;
+            var s3 = new Sphere('sphere', new V3([-4, 3, -1]), new Color(255, 0, 255));
             s3.specular = 0.2;
             s3.lambert = 0.7;
             s3.ambient = 0.1;
-            s3.radius = 0.1;
+            s3.radius = 0.3;
+            var s4 = new Sphere('sphere', new V3([-4, 4, -1]), new Color(255, 255, 0));
+            s4.specular = 0.2;
+            s4.lambert = 0.7;
+            s4.ambient = 0.1;
+            s4.radius = 0.3;
+            // this sphere is 100% specular
+            var s5 = new Sphere('sphere', new V3([-4, 4, -1]), new Color(255, 255, 0));
+            s5.specular = 0.99;
+            s5.lambert = 0.0;
+            s5.ambient = 0.0;
+            s5.radius = 0.5;
             this.objects.push(s1);
             this.objects.push(s2);
             this.objects.push(s3);
+            this.objects.push(s4);
+            this.objects.push(s5);
         }
         return LR_Scene;
     }());
@@ -4516,6 +4518,7 @@
     // For each pixel in the canvas, there needs to be at least one ray of light
     // that determines its color by bouncing through the scene.
     function render(scene) {
+        var loopTime = performance.now();
         // first 'unpack' the scene to make it easier to reference
         var camera = scene.camera, objects = scene.objects, lights = scene.lights;
         // This process
@@ -4535,7 +4538,7 @@
         // takes two vectors and creates a third that's perpendicular to both,
         // we use a pure 'UP' vector to turn the camera right, and that 'right'
         // vector to turn the camera up.
-        var vpRight = eyeVector.copy().cross(UP).normalize();
+        var vpRight = eyeVector.copy().cross(V3.up).normalize();
         var vpUp = vpRight.copy().cross(eyeVector).normalize();
         // The actual ending pixel dimensions of the image aren't important here -
         // note that `width` and `height` are in pixels, but the numbers we compute
@@ -4547,8 +4550,6 @@
         var ray = new LR_Ray(camera.point, new V3([0, 0, 0]));
         for (var x = 0; x < width; x++) {
             for (var y = 0; y < height; y++) {
-                globalx = x;
-                globaly = y; // debugging
                 // turn the raw pixel `x` and `y` values into values from -1 to 1n tra
                 // and use these values to scale the facing-right and facing-up
                 // vectors so that we generate versions of the `eyeVector` that are
@@ -4559,9 +4560,6 @@
                 // use the vector generated to raytrace the scene, returning a color
                 // as a `{x, y, z}` vector of RGB values
                 color = trace(ray, scene, 0);
-                if (globalx === 2 && globaly === 2 && color.r !== 255) {
-                    console.log('discriminant', color);
-                }
                 index = (x * 4) + (y * width * 4),
                     data.data[index + 0] = color.r;
                 data.data[index + 1] = color.g;
@@ -4569,9 +4567,8 @@
                 data.data[index + 3] = 255;
                 if (color.r > 255 || color.g > 255 || color.b > 255) {
                     color.show('> 255');
-                    throw '';
+                    throw "color value > 255 ";
                 }
-                // ctx.putImageData(data, 0, 0);
             }
         }
         // Now that each ray has returned and populated the `data` array with
@@ -4580,6 +4577,7 @@
     }
     // # Trace
     //
+    // consider updating algorithms with info from https://www.tomdalling.com/blog/modern-opengl/07-more-lighting-ambient-specular-attenuation-gamma/
     // Given a ray, shoot it until it hits an object and return that object's color,
     // or `WHITE` if no object is found. This is the main function that's
     // called in order to draw the image, and it recurses into itself if rays
@@ -4591,11 +4589,10 @@
         if (distObject.distance === Infinity) {
             return WHITE;
         }
-        // The `pointAtTime` is another way of saying the 'intersection point'
-        // of this ray into this object. We compute this by simply taking
+        // We compute intersectionPoint by simply taking
         // the direction of the ray and making it as long as the distance
         // returned by the intersection check.
-        var pointAtTime = ray.point.copy().add(ray.vector.copy().scale(distObject.distance));
+        var intersectionPoint = ray.point.copy().add(ray.vector.copy().scale(distObject.distance));
         // ray.point.show('ray.point')
         // ray.vector.show('ray.vector')
         // console.log('distance', distObject.distance)
@@ -4604,7 +4601,7 @@
         // pointAtTime.show('PointatTime')
         // console.log ('pointAt', ray.point.xyz)
         // return surface(ray, scene, distObject.object, pointAtTime, sphereNormal(distObject.object, pointAtTime), depth);
-        var normal = sphereNormal(distObject.object, pointAtTime);
+        var normal = sphereNormal(distObject.object, intersectionPoint);
         // # Surface
         //
         // ![](http://farm3.staticflickr.com/2851/10524788334_f2e3903b36_b.jpg)
@@ -4623,7 +4620,7 @@
                 var lightPoint = scene.lights[i];
                 // First: can we see the light? If not, this is a shadowy area
                 // and it gets no light from the lambert shading process.
-                if (!isLightVisible(pointAtTime, scene, lightPoint))
+                if (!isLightVisible(intersectionPoint, scene, lightPoint))
                     continue;
                 // Otherwise, calculate the lambertian reflectance, which
                 // essentially is a 'diffuse' lighting system - direct light
@@ -4632,7 +4629,7 @@
                 // console.log('unit LightPoint',lightPoint.copy().normalize().show('lightpnt'))
                 // console.log('unit subtract',lightPoint.copy().subtract(pointAtTime))
                 // pointAtTime.show('pointAtTime')
-                var contribution = lightPoint.copy().subtract(pointAtTime).normalize().dot(normal);
+                var contribution = lightPoint.copy().subtract(intersectionPoint).normalize().dot(normal);
                 // sometimes this formula can return negatives, so we check:
                 // we only want positive values for lighting.
                 // TODO: this can also return NAN.  why??
@@ -4653,14 +4650,11 @@
             // from a point on the surface of a shiny object, seeing what it sees
             // and making that part of a reflection.
             var reflectedRay = {
-                point: pointAtTime,
+                point: intersectionPoint,
                 vector: ray.vector.copy().reflection(normal)
             };
-            // Big number, but tests ok
-            // vtest('reflectedRay', reflectedRay.vector, Vector.reflectThrough(v3toVector(ray.vector), v3toVector(normal)))
-            // This is a recursive method: if we hit something that's reflective,
-            // then the call to `surface()` at the bottom will return here and try
-            // to find what the ray reflected into. Since this could easily go
+            // This is a recursive method.: if we hit something that's reflective,
+            // then try to find what the ray reflected into. Since this could easily go
             // on forever, first check that we haven't gone more than three bounces
             // into a reflection.
             if (depth < 3) {
@@ -4675,16 +4669,8 @@
         // **Ambient** colors shine bright regardless of whether there's a light visible -
         // a circle with a totally ambient blue color will always just be a flat blue
         // circle.
-        // console.log('c.addchannels', b.copy().scale(distObject.object.ambient))
-        // b.show('b before')
         c.addChannels(b.copy().scale(lambertAmount * distObject.object.lambert));
-        // c.show('c before add ambient')
-        // b.copy().show('b.copy')
-        // b.copy().scale(lambertAmount * distObject.object.lambert).show('b copy scaled')
-        // b.show('b1')
         c.addChannels(b.copy().scale(distObject.object.ambient));
-        // c.show('c after add ambient')
-        // c.show('adding three colors')
         return c;
     }
     // # Detecting collisions against all objects
@@ -4748,7 +4734,7 @@
     // to know this so that we can calculate the way that a ray reflects off of
     // a sphere.
     function sphereNormal(sphere, pos) {
-        return pos.copy().subtract(sphere.point.copy()).normalize();
+        return pos.copy().subtract(sphere.point).normalize();
     }
     // // # Surface
     // //
@@ -4838,109 +4824,35 @@
     // for each planet. Here's [an article I wrote](http://macwright.org/2013/03/05/math-for-pictures.html)
     // for getting to know `sin` and `cos`.
     function Literary() {
-        var planet1 = 0, planet2 = 0;
+        var planet1 = 0, planet2 = 0, planet3 = 0, planet4 = .2;
         var scene = new LR_Scene();
         var tick = function () {
             // make one planet spin a little bit faster than the other, just for
             // effect.
-            planet1 += 0.05;
+            planet1 += 0.07;
             planet2 += 0.10;
+            planet3 += 0.12;
+            planet4 += 0.14;
             // set the position of each moon with some trig.
             scene.objects[1].point.x = Math.sin(planet1) * 3.5;
             scene.objects[1].point.z = -3 + (Math.cos(planet1) * 3.5);
             scene.objects[2].point.x = Math.sin(planet2) * 4;
             scene.objects[2].point.z = -3 + (Math.cos(planet2) * 4);
+            scene.objects[3].point.x = Math.sin(planet3) * 4.5;
+            scene.objects[3].point.z = -3 + (Math.cos(planet3) * 4.5);
+            scene.objects[4].point.x = Math.sin(planet4) * 5.5;
+            scene.objects[4].point.z = -3 + (Math.cos(planet4) * 5.5);
             // finally, render the scene!
+            var t0 = performance.now();
             render(scene);
+            var t1 = performance.now();
+            console.log("Render took " + Math.floor(t1 - t0) + " milliseconds.");
             // and as soon as we're finished, render it again and move the planets
             // again
             setTimeout(tick, 5);
         };
         tick();
     }
-    // Then let the user control a cute playing animation!
-    // document.getElementById('play').onclick = play;
-    // document.getElementById('stop').onclick = stop;
-    // # Vector Operations
-    //
-    // These are general-purpose functions that deal with vectors - in this case,
-    // three-dimensional vectors represented as objects in the form
-    //
-    //     { x, y, z }
-    //
-    // Since we're not using traditional object oriented techniques, these
-    // functions take and return that sort of logic-less object, so you'll see
-    // `add(a, b)` rather than `a.add(b)`.
-    var Vector = /** @class */ (function () {
-        function Vector(x, y, z) {
-            this.xV = 0;
-            this.yV = 0;
-            this.zV = 0;
-            this.xV = x;
-            this.yV = y;
-            this.zV = z;
-        }
-        // ## [Cross Product](https://en.wikipedia.org/wiki/Cross_product)
-        //
-        // generates a new vector that's perpendicular to both of the vectors
-        // given.
-        Vector.crossProduct = function (a, b) {
-            return new Vector((a.yV * b.zV) - (a.zV * b.yV), (a.zV * b.xV) - (a.xV * b.zV), (a.xV * b.yV) - (a.yV * b.xV));
-        };
-        // Enlongate or shrink a vector by a factor of `t`
-        Vector.scale = function (a, t) {
-            return new Vector(a.xV * t, a.yV * t, a.zV * t);
-        };
-        // Length, or magnitude, measured by [Euclidean norm](https://en.wikipedia.org/wiki/Euclidean_vector#Length)
-        Vector.prototype.length = function (a) {
-            return Math.sqrt(Vector.dotProduct(a, a));
-        };
-        // ## [Unit Vector](http://en.wikipedia.org/wiki/Unit_vector)
-        //
-        // Turn any vector into a vector that has a magnitude of 1.
-        //
-        // If you consider that a [unit sphere](http://en.wikipedia.org/wiki/Unit_sphere)
-        // is a sphere with a radius of 1, a unit vector is like a vector from the
-        // center point (0, 0, 0) to any point on its surface.
-        Vector.unitVector = function (a) {
-            return this.scale(a, 1 / a.length(a)); // scale returns a new vector, so we don't have to
-        };
-        // Add two vectors to each other, by simply combining each
-        // of their components
-        Vector.add = function (a, b) {
-            return new Vector(a.xV + b.xV, a.yV + b.yV, a.zV + b.zV);
-        };
-        // A version of `add` that adds three vectors at the same time. While
-        // it's possible to write a clever version of `Vector.add` that takes
-        // any number of arguments, it's not fast, so we're keeping it simple and
-        // just making two versions.
-        Vector.add3 = function (a, b, c) {
-            return new Vector(a.xV + b.xV + c.xV, a.yV + b.yV + c.yV, a.zV + b.zV + c.zV);
-        };
-        // Given a vector `a`, which is a point in space, and a `normal`, which is
-        // the angle the point hits a surface, returna  new vector that is reflect
-        // off of that surface
-        Vector.reflectThrough = function (a, normal) {
-            var d = Vector.scale(normal, Vector.dotProduct(a, normal));
-            var result = Vector.subtract(Vector.scale(d, 2), a);
-            // console.log('xxx_n', a, normal)
-            // console.log('xxx_reflect', result)
-            return result;
-        };
-        // # Operations
-        //
-        // ## [Dot Product](https://en.wikipedia.org/wiki/Dot_product)
-        // is different than the rest of these since it takes two vectors but
-        // returns a single number value.
-        Vector.dotProduct = function (a, b) {
-            return (a.xV * b.xV) + (a.yV * b.yV) + (a.zV * b.zV);
-        };
-        // Subtract one vector from another, by subtracting each component
-        Vector.subtract = function (a, b) {
-            return new Vector(a.xV - b.xV, a.yV - b.yV, a.zV - b.zV);
-        };
-        return Vector;
-    }());
 
     var ctx$1 = new Canvas('seen-canvas');
     Literary();
@@ -5016,4 +4928,4 @@
     // }).start();
 
 }());
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoic2Vlbl90cy5qcyIsInNvdXJjZXMiOltdLCJzb3VyY2VzQ29udGVudCI6W10sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OzsifQ==
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoic2Vlbl90cy5qcyIsInNvdXJjZXMiOltdLCJzb3VyY2VzQ29udGVudCI6W10sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OyJ9

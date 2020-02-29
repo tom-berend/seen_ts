@@ -4,7 +4,7 @@
 
 import { P } from '../point'
 import { Surface } from '../surface'  // TODO: rename Shape to Surface, Surface to Triangle
-import {Shape } from '../shape'
+import {Mesh } from '../shape'
 import { Material } from '../materials'
 import {V4} from '../vectorMath'
 
@@ -55,7 +55,7 @@ export class Primitive {
 /** Sometimes we just want an empty `Group` that we can add children to */
 export function NullShape() {
     let points = [P(0, 0, 0), P(0, 0, 0), P(0, 0, 0)]
-    return new Shape('nullshape', mapPointsToSurfaces(points, []))
+    return new Mesh('nullshape', mapPointsToSurfaces(points, []))
 }
 
 interface ShapeOptions {
@@ -68,7 +68,7 @@ const testTrianglePoints = [P(0, 0, 0), P(1, 0, 0), P(0, 1, 0)];
 const testTriangle_coordinate_map = [
     [0, 1, 2], // that's all folks
 ]
-export class TestTriangle extends Shape {
+export class TestTriangle extends Mesh {
     constructor(options?: ShapeOptions) {
         super('testTriangle', mapPointsToSurfaces(testTrianglePoints, testTriangle_coordinate_map))
     }
@@ -92,7 +92,7 @@ const CUBE_COORDINATE_MAP = [
     [0, 2, 6], // backA
     [0, 6, 4], // backB
 ]
-export class Cube extends Shape {
+export class Cube extends Mesh {
     constructor(options?: ShapeOptions) {
         super('cube', mapPointsToSurfaces(cubePoints, CUBE_COORDINATE_MAP))
     }
@@ -101,7 +101,7 @@ export class Cube extends Shape {
 
 
 
-const pyramidPoints = [P(0, 0, 0), P(0, 0, 1), P(1, 0, 0), P(1, 0, 1), P(0.5, 1, 0.5)] 
+const pyramidPoints = [P(0, 0, 0), P(0, 0, 1), P(1, 0, 0), P(1, 0, 1), P(0.5, 1, 0.5)]
 // Map to points in the surfaces of a rectangular pyramid
 const PYRAMID_COORDINATE_MAP = [
     [1, 0, 2, 3], // bottom
@@ -110,7 +110,7 @@ const PYRAMID_COORDINATE_MAP = [
     [3, 2, 4], // right
     [1, 3, 4], // front
 ]
-export class Pyramid extends Shape {
+export class Pyramid extends Mesh {
     constructor(options?: ShapeOptions) {
         super('pyramid', mapPointsToSurfaces(pyramidPoints, PYRAMID_COORDINATE_MAP))
     }
@@ -163,7 +163,7 @@ const ICOSAHEDRON_POINTS = [
     P(-ICOS_Z, -ICOS_X, 0.0),
 ]
 
-export class Icosahedron extends Shape {
+export class Icosahedron extends Mesh {
     constructor(options?: ShapeOptions) {
         super('icosahedron', mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP))
     }
@@ -369,8 +369,8 @@ export class Icosahedron extends Shape {
 //   },
 
 
-/** points[] are the vertexes of the shape (indexed from zero), 
- * coordinateMap[] are sets of vertex indexes that form exterior triangles or quads 
+/** points[] are the vertexes of the shape (indexed from zero),
+ * coordinateMap[] are sets of vertex indexes that form exterior triangles or quads
  * we return an array of `Surface` objects (triangles) ready to transform  */
 function mapPointsToSurfaces(points: V4[], coordinateMap: any[]): Surface[] {
     // TODO: convert all exterior quads to triangles  (eg: two triangles per side for a cube)

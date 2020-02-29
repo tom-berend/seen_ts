@@ -3,18 +3,30 @@ import { Material } from './materials'
 import { Surface } from './surface'
 import { V4, V3 } from './vectorMath';
 import { Camera, PixelElement } from './camera'
+import {Color} from './color'
 
 // the raytrace function returns a point
 export interface PixelIntercept {
-    shape: Shape,
+    shape: Mesh,
     surface: Surface,
     point: V3
 }
 
-// A `Shape` contains a collection of surface. They may create a closed 3D
+export class Shape extends Transformable{
+    type: string
+    point: V3
+    color: Color
+    specular: number
+    lambert: number
+    ambient: number
+
+}
+
+
+// A `Mesh` contains a collection of surfaces. They may create a closed 3D
 // shape, but not necessarily. For example, a cube is a closed shape, but a
 // patch is not.
-export class Shape extends Transformable {
+export class Mesh extends Shape {
 
     public type: string;
     public surfaces: Surface[];

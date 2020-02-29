@@ -1,5 +1,9 @@
+import { Transformable, M, IDENTITY } from './transformable'
+import {Shape} from './shape'
 import { Color, WHITE } from "./color";
-import { V3 } from './vectorMath'
+import { V3, epsilon } from './vectorMath'
+import {Sphere} from './shapes/sphere'
+
 
 // # Raytracing
 //
@@ -40,8 +44,10 @@ let globalx = 0
 let globaly = 0
 
 let c = document.getElementById('seen-canvas') as HTMLCanvasElement,
-    width = 640 * 0.5,
-    height = 480 * 0.5;
+    width = 640,
+    height = 480,
+    halfWidth = 640 * 0.5,
+    halfHeight = 480 * 0.5;
 
 // Get a context in order to generate a proper data array. We aren't going to
 // use traditional Canvas drawing functions like `fillRect` - instead this
@@ -54,6 +60,9 @@ let ctx = c.getContext('2d')
 let data = ctx.getImageData(0, 0, width, height);
 
 
+
+
+
 export class LR_Camera {     // can be written as an Interface
     point: V3
     fieldOfView: number
@@ -63,21 +72,6 @@ export class LR_Camera {     // can be written as an Interface
 }
 
 
-export class LR_Object {   // can be written as an Interface
-    type: string
-    point: V3
-    color: Color
-    specular: number
-    lambert: number
-    ambient: number
-    radius: number
-
-    constructor(type: string, point: V3, color: Color) {
-        this.type = type
-        this.point = point
-        this.color = color
-    }
-}
 
 export class LR_Ray {
     point: V3
@@ -132,27 +126,43 @@ export class LR_Scene {
         // This raytracer handles sphere objects, with any color, position, radius,
         // and surface properties.
 
-        let s1 = new LR_Object('sphere', new V3([0, 3.5, -3]), new Color(155, 200, 155))
-        s1.specular = 0.2
-        s1.lambert = 0.7
+        let s1 = new Sphere('sphere', new V3([0, 3.5, -3]), new Color(155, 200, 155))
+        s1.specular = 0.5
+        s1.lambert = 0.4
         s1.ambient = 0.1
         s1.radius = 3
 
-        let s2 = new LR_Object('sphere', new V3([-4, 2, -1]), new Color(255, 0, 0))
-        s2.specular = 0.1
-        s2.lambert = 0.0
-        s2.ambient = 0.9
-        s2.radius = 0.2
+        let s2 = new Sphere('sphere', new V3([-4, 2, -1]), new Color(255, 0, 0))
+        s2.specular = 0.2
+        s2.lambert = 0.3
+        s2.ambient = 0.20
+        s2.radius = 0.3
 
-        let s3 = new LR_Object('sphere', new V3([-4, 3, -1]), new Color(255, 255, 255))
+        let s3 = new Sphere('sphere', new V3([-4, 3, -1]), new Color(255, 0, 255))
         s3.specular = 0.2
         s3.lambert = 0.7
         s3.ambient = 0.1
-        s3.radius = 0.1
+        s3.radius = 0.3
+
+        let s4 = new Sphere('sphere', new V3([-4, 4, -1]), new Color(255,255, 0))
+        s4.specular = 0.2
+        s4.lambert = 0.7
+        s4.ambient = 0.1
+        s4.radius = 0.3
+
+        // this sphere is 100% specular
+        let s5 = new Sphere('sphere', new V3([-4, 4, -1]), new Color(255,255, 0))
+        s5.specular = 0.99
+        s5.lambert = 0.0
+        s5.ambient = 0.0
+        s5.radius = 0.5
+
 
         this.objects.push(s1)
         this.objects.push(s2)
         this.objects.push(s3)
+        this.objects.push(s4)
+        this.objects.push(s5)
     }
 }
 
@@ -172,6 +182,9 @@ export class LR_Scene {
 // For each pixel in the canvas, there needs to be at least one ray of light
 // that determines its color by bouncing through the scene.
 function render(scene: LR_Scene) {
+
+    let loopTime = performance.now();
+
     // first 'unpack' the scene to make it easier to reference
     let camera = scene.camera,
         objects = scene.objects,
@@ -197,7 +210,7 @@ function render(scene: LR_Scene) {
     // we use a pure 'UP' vector to turn the camera right, and that 'right'
     // vector to turn the camera up.
 
-    let vpRight = eyeVector.copy().cross(UP).normalize()
+    let vpRight = eyeVector.copy().cross(V3.up).normalize()
     let vpUp = vpRight.copy().cross(eyeVector).normalize()
 
     // The actual ending pixel dimensions of the image aren't important here -
@@ -218,11 +231,11 @@ function render(scene: LR_Scene) {
     let color: Color
     let ray = new LR_Ray(camera.point, new V3([0, 0, 0]))
 
-            for (let x = 0; x < width; x++) {
-                for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
 
-                    globalx = x
-                    globaly = y  // debugging
+            globalx = x
+            globaly = y  // debugging
 
             // turn the raw pixel `x` and `y` values into values from -1 to 1n tra
             // and use these values to scale the facing-right and facing-up
@@ -238,12 +251,6 @@ function render(scene: LR_Scene) {
             // as a `{x, y, z}` vector of RGB values
             color = trace(ray, scene, 0);
 
-            if(globalx === 2 && globaly === 2 && color.r !== 255){
-                console.log('discriminant',color)
-            }
-
-
-
             index = (x * 4) + (y * width * 4),
                 data.data[index + 0] = color.r;
             data.data[index + 1] = color.g;
@@ -252,14 +259,10 @@ function render(scene: LR_Scene) {
 
             if (color.r > 255 || color.g > 255 || color.b > 255) {
                 color.show('> 255')
-                throw ''
+                throw `color value > 255 `
             }
-
-            // ctx.putImageData(data, 0, 0);
-
         }
     }
-
     // Now that each ray has returned and populated the `data` array with
     // correctly lit colors, fill the canvas with the generated data.
     ctx.putImageData(data, 0, 0);
@@ -269,6 +272,9 @@ function render(scene: LR_Scene) {
 
 // # Trace
 //
+
+// consider updating algorithms with info from https://www.tomdalling.com/blog/modern-opengl/07-more-lighting-ambient-specular-attenuation-gamma/
+
 // Given a ray, shoot it until it hits an object and return that object's color,
 // or `WHITE` if no object is found. This is the main function that's
 // called in order to draw the image, and it recurses into itself if rays
@@ -283,12 +289,11 @@ function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
         return WHITE
     }
 
-    // The `pointAtTime` is another way of saying the 'intersection point'
-    // of this ray into this object. We compute this by simply taking
+    // We compute intersectionPoint by simply taking
     // the direction of the ray and making it as long as the distance
     // returned by the intersection check.
 
-    let pointAtTime = ray.point.copy().add(ray.vector.copy().scale(distObject.distance))
+    let intersectionPoint = ray.point.copy().add(ray.vector.copy().scale(distObject.distance))
     // ray.point.show('ray.point')
     // ray.vector.show('ray.vector')
     // console.log('distance', distObject.distance)
@@ -300,7 +305,7 @@ function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
 
 
     // return surface(ray, scene, distObject.object, pointAtTime, sphereNormal(distObject.object, pointAtTime), depth);
-    let normal = sphereNormal(distObject.object, pointAtTime)
+    let normal = sphereNormal(distObject.object, intersectionPoint)
 
     // # Surface
     //
@@ -325,7 +330,7 @@ function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
             let lightPoint = scene.lights[i];
             // First: can we see the light? If not, this is a shadowy area
             // and it gets no light from the lambert shading process.
-            if (!isLightVisible(pointAtTime, scene, lightPoint)) continue;
+            if (!isLightVisible(intersectionPoint, scene, lightPoint)) continue;
             // Otherwise, calculate the lambertian reflectance, which
             // essentially is a 'diffuse' lighting system - direct light
             // is bright, and from there, less direct light is gradually,
@@ -335,7 +340,7 @@ function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
             // console.log('unit subtract',lightPoint.copy().subtract(pointAtTime))
 
             // pointAtTime.show('pointAtTime')
-            let contribution = lightPoint.copy().subtract(pointAtTime).normalize().dot(normal)
+            let contribution = lightPoint.copy().subtract(intersectionPoint).normalize().dot(normal)
 
             // sometimes this formula can return negatives, so we check:
             // we only want positive values for lighting.
@@ -359,17 +364,14 @@ function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
         // instead of looking from the viewpoint of the camera, we're looking
         // from a point on the surface of a shiny object, seeing what it sees
         // and making that part of a reflection.
+
         let reflectedRay = {
-            point: pointAtTime,
+            point: intersectionPoint,
             vector: ray.vector.copy().reflection(normal)
         };
 
-        // Big number, but tests ok
-        // vtest('reflectedRay', reflectedRay.vector, Vector.reflectThrough(v3toVector(ray.vector), v3toVector(normal)))
-
-        // This is a recursive method: if we hit something that's reflective,
-        // then the call to `surface()` at the bottom will return here and try
-        // to find what the ray reflected into. Since this could easily go
+        // This is a recursive method.: if we hit something that's reflective,
+        // then try to find what the ray reflected into. Since this could easily go
         // on forever, first check that we haven't gone more than three bounces
         // into a reflection.
         if (depth < 3) {
@@ -387,16 +389,8 @@ function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
     // a circle with a totally ambient blue color will always just be a flat blue
     // circle.
 
-    // console.log('c.addchannels', b.copy().scale(distObject.object.ambient))
-    // b.show('b before')
     c.addChannels(b.copy().scale(lambertAmount * distObject.object.lambert))
-    // c.show('c before add ambient')
-    // b.copy().show('b.copy')
-    // b.copy().scale(lambertAmount * distObject.object.lambert).show('b copy scaled')
-    // b.show('b1')
     c.addChannels(b.copy().scale(distObject.object.ambient))
-    // c.show('c after add ambient')
-    // c.show('adding three colors')
 
     return c
 
@@ -404,7 +398,7 @@ function trace(ray: LR_Ray, scene: LR_Scene, depth: number): Color {
 
 interface RayIntersect {
     distance: number,
-    object: LR_Object | null
+    object: Sphere | null
 }
 
 // # Detecting collisions against all objects
@@ -435,7 +429,7 @@ function intersectScene(ray: LR_Ray, scene: LR_Scene) {
 // Spheres are one of the simplest objects for rays to interact with, since
 // the geometrical math for finding intersections and reflections with them
 // is pretty straightforward.
-function sphereIntersection(sphere: LR_Object, ray: LR_Ray): number {
+function sphereIntersection(sphere: Sphere, ray: LR_Ray): number {
     // ray.point.show('sphere ray point')
 
     let eye_to_center = sphere.point.copy().subtract(ray.point)
@@ -474,8 +468,8 @@ function sphereIntersection(sphere: LR_Object, ray: LR_Ray): number {
 // a vector that's perpendicular to the surface and radiates outward. We need
 // to know this so that we can calculate the way that a ray reflects off of
 // a sphere.
-function sphereNormal(sphere: LR_Object, pos: V3) {
-    return pos.copy().subtract(sphere.point.copy()).normalize()
+function sphereNormal(sphere: Sphere, pos: V3) {
+    return pos.copy().subtract(sphere.point).normalize()
 }
 
 // // # Surface
@@ -579,7 +573,8 @@ function isLightVisible(pt: V3, scene: LR_Scene, light: V3) {
 
 
 export function Literary() {
-    let planet1 = 0, planet2 = 0;
+
+    let planet1 = 0, planet2 = 0, planet3 = 0, planet4 = .2
     let scene = new LR_Scene()
     let playing = true;
 
@@ -587,8 +582,10 @@ export function Literary() {
     let tick = () => {
         // make one planet spin a little bit faster than the other, just for
         // effect.
-        planet1 += 0.05;
+        planet1 += 0.07;
         planet2 += 0.10;
+        planet3 += 0.12;
+        planet4 += 0.14;
 
         // set the position of each moon with some trig.
         scene.objects[1].point.x = Math.sin(planet1) * 3.5;
@@ -597,8 +594,19 @@ export function Literary() {
         scene.objects[2].point.x = Math.sin(planet2) * 4;
         scene.objects[2].point.z = -3 + (Math.cos(planet2) * 4);
 
+        scene.objects[3].point.x = Math.sin(planet3) * 4.5;
+        scene.objects[3].point.z = -3 + (Math.cos(planet3) * 4.5);
+
+        scene.objects[4].point.x = Math.sin(planet4) * 5.5;
+        scene.objects[4].point.z = -3 + (Math.cos(planet4) * 5.5);
+
+
         // finally, render the scene!
+
+        var t0 = performance.now()
         render(scene);
+        var t1 = performance.now();
+        console.log("Render took " + Math.floor(t1 - t0) + " milliseconds.");
 
         // and as soon as we're finished, render it again and move the planets
         // again
@@ -618,125 +626,7 @@ export function Literary() {
 
 
 
-// # Vector Operations
-//
-// These are general-purpose functions that deal with vectors - in this case,
-// three-dimensional vectors represented as objects in the form
-//
-//     { x, y, z }
-//
-// Since we're not using traditional object oriented techniques, these
-// functions take and return that sort of logic-less object, so you'll see
-// `add(a, b)` rather than `a.add(b)`.
 
-
-
-
-
-class Vector {
-
-    public xV: number = 0
-    public yV: number = 0
-    public zV: number = 0
-
-    constructor(x: number, y: number, z: number) {
-        this.xV = x
-        this.yV = y
-        this.zV = z
-    }
-
-
-    // # Operations
-    //
-    // ## [Dot Product](https://en.wikipedia.org/wiki/Dot_product)
-    // is different than the rest of these since it takes two vectors but
-    // returns a single number value.
-    static dotProduct = function (a: Vector, b: Vector): number {
-        return (a.xV * b.xV) + (a.yV * b.yV) + (a.zV * b.zV);
-    };
-
-    // ## [Cross Product](https://en.wikipedia.org/wiki/Cross_product)
-    //
-    // generates a new vector that's perpendicular to both of the vectors
-    // given.
-    static crossProduct(a: Vector, b: Vector): Vector {
-        return new Vector(
-            (a.yV * b.zV) - (a.zV * b.yV),
-            (a.zV * b.xV) - (a.xV * b.zV),
-            (a.xV * b.yV) - (a.yV * b.xV)
-        )
-    };
-
-    // Enlongate or shrink a vector by a factor of `t`
-    static scale(a: Vector, t: number): Vector {
-        return new Vector(
-            a.xV * t,
-            a.yV * t,
-            a.zV * t
-        )
-    }
-
-    // Length, or magnitude, measured by [Euclidean norm](https://en.wikipedia.org/wiki/Euclidean_vector#Length)
-    length(a: Vector): number {
-        return Math.sqrt(Vector.dotProduct(a, a));
-    };
-
-
-    // ## [Unit Vector](http://en.wikipedia.org/wiki/Unit_vector)
-    //
-    // Turn any vector into a vector that has a magnitude of 1.
-    //
-    // If you consider that a [unit sphere](http://en.wikipedia.org/wiki/Unit_sphere)
-    // is a sphere with a radius of 1, a unit vector is like a vector from the
-    // center point (0, 0, 0) to any point on its surface.
-    static unitVector(a: Vector): Vector {
-        return this.scale(a, 1 / a.length(a))   // scale returns a new vector, so we don't have to
-    }
-
-    // Add two vectors to each other, by simply combining each
-    // of their components
-    static add(a: Vector, b: Vector): Vector {
-        return new Vector(
-            a.xV + b.xV,
-            a.yV + b.yV,
-            a.zV + b.zV
-        )
-    };
-
-    // A version of `add` that adds three vectors at the same time. While
-    // it's possible to write a clever version of `Vector.add` that takes
-    // any number of arguments, it's not fast, so we're keeping it simple and
-    // just making two versions.
-    static add3(a: Vector, b: Vector, c: Vector): Vector {
-        return new Vector(
-            a.xV + b.xV + c.xV,
-            a.yV + b.yV + c.yV,
-            a.zV + b.zV + c.zV
-        )
-    };
-
-
-    // Subtract one vector from another, by subtracting each component
-    static subtract = function (a: Vector, b: Vector) {
-        return new Vector(
-            a.xV - b.xV,
-            a.yV - b.yV,
-            a.zV - b.zV
-        )
-    }
-
-    // Given a vector `a`, which is a point in space, and a `normal`, which is
-    // the angle the point hits a surface, returna  new vector that is reflect
-    // off of that surface
-    static reflectThrough(a: Vector, normal: Vector) {
-        let d = Vector.scale(normal, Vector.dotProduct(a, normal));
-        let result = Vector.subtract(Vector.scale(d, 2), a);
-        // console.log('xxx_n', a, normal)
-        // console.log('xxx_reflect', result)
-        return result
-    }
-
-}
 
 
 // // # Constants
@@ -787,6 +677,6 @@ class Vector {
 
 interface RayIntersect {
     distance: number,
-    object: LR_Object | null
+    object: Sphere | null
 }
 

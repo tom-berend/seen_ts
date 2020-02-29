@@ -11,7 +11,7 @@ import { Group } from './model'
 import { Shaders } from './shaders'
 import { Canvas } from './canvas'
 import { Surface } from './surface'
-import { Shape, PixelIntercept } from './shape'
+import { Mesh, PixelIntercept } from './shape'
 import { Light } from './light'
 
 interface SceneOptions {
@@ -29,7 +29,7 @@ export class Scene {
     // The `Camera`, which defines the projection transformation. The default
     // projection is perspective.
     public camera = new Camera()
-    public pixelCamera:PixelCamera 
+    public pixelCamera:PixelCamera
 
     // The `Viewport`, which defines the projection from shape-space to
     // projection-space then to screen-space. The default viewport is on a
@@ -80,7 +80,7 @@ export class Scene {
 
 
     /** Add a `Shape`, `Surface`, Light`, and other `Group` */
-    add(child: Shape | Surface | Group | Light) {
+    add(child: Mesh | Surface | Group | Light) {
         this.world.add(child)
     }
 
@@ -119,7 +119,7 @@ export class Scene {
 
         // Compute the projection matrix including the viewport and camera
         // transformation matrices.
-        // 
+        //
 
         let projection = this.camera
             .m
@@ -253,7 +253,7 @@ export class Scene {
                 if(!point){
                   if (/* this point is closer than existing one */true){
 
-                  }    
+                  }
 
 
                 //let pixelIntercept:PixelIntercept = shape.rayTrace(result)
@@ -261,7 +261,7 @@ export class Scene {
             }
 
         })
-    
+
        return
     }
         this.canvas.clearCanvas()
@@ -276,7 +276,7 @@ export class Scene {
         //////////////////////////////////////////////////////
 
 
-    
+
 
         }
     }
